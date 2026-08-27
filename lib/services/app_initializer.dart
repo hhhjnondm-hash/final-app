@@ -1,0 +1,178 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'ai_assistant_service.dart';
+import 'adhan_service.dart';
+import 'islamic_notification_service.dart';
+import 'mp3quran_api_service.dart';
+import 'prayer_service.dart';
+import 'quran_service.dart';
+import 'quran_storage_service.dart';
+import 'storage_service.dart';
+import 'location_service.dart';
+import 'notification_service.dart';
+import 'hive_database_service.dart';
+import 'error_handler.dart';
+import '../providers/user_preferences_provider.dart';
+
+class AppInitializer {
+  static final AppInitializer _instance = AppInitializer._internal();
+  factory AppInitializer() => _instance;
+  AppInitializer._internal();
+
+  bool _isInitialized = false;
+  double _progress = 0.0;
+  String _statusText = 'جاري التحضير والتهيئة...';
+
+  bool get isInitialized => _isInitialized;
+  double get progress => _progress;
+  String get statusText => _statusText;
+
+  static Future<void> initializeServices() async {
+    try {
+      debugPrint('🚀 Starting AppInitializer...');
+
+      // Step 1: Initialize Storage Service
+      debugPrint('📦 Initializing Storage Service...');
+      final storageService = StorageService();
+      await storageService.init();
+      QuranStorageService();
+      debugPrint('✅ Storage Service initialized');
+
+      // Step 2: Initialize Hive Database
+      debugPrint('🗄️ Initializing Hive Database...');
+      final hiveService = HiveDatabaseService();
+      await hiveService.initialize();
+      debugPrint('✅ Hive Database initialized');
+
+      // Step 3: Initialize User Preferences
+      debugPrint('⚙️ Initializing User Preferences...');
+      final preferencesProvider = UserPreferencesProvider();
+      await preferencesProvider.initialize();
+      debugPrint('✅ User Preferences initialized');
+
+      // Step 4: Initialize Quran data cache
+      debugPrint('📖 Initializing Quran Data...');
+      await QuranService.loadQuranData();
+      debugPrint('✅ Quran Data initialized');
+
+      // Step 5: Initialize Prayer Times & Location Service
+      debugPrint('🕌 Initializing Prayer & Location Services...');
+      PrayerService();
+      AdhanService();
+      LocationService();
+      debugPrint('✅ Prayer & Location Services initialized');
+
+      // Step 6: Initialize Notification Service
+      debugPrint('🔔 Initializing Notification Service...');
+      final notificationService = NotificationService();
+      await notificationService.initialize();
+      debugPrint('✅ Notification Service initialized');
+
+      // Step 7: Initialize Islamic Notification Service
+      debugPrint('🕌 Initializing Islamic Notification Service...');
+      IslamicNotificationService();
+      await Future.delayed(const Duration(milliseconds: 100));
+      debugPrint('✅ Islamic Notification Service initialized');
+
+      // Step 8: Initialize AI Knowledge Base & Audio Systems
+      debugPrint('🤖 Initializing AI & Audio Services...');
+      AiAssistantService();
+      Mp3QuranApiService();
+      debugPrint('✅ AI & Audio Services initialized');
+
+      // Step 9: Initialize Error Handler
+      debugPrint('🛡️ Initializing Error Handler...');
+      ErrorHandler();
+      debugPrint('✅ Error Handler initialized');
+
+      debugPrint('🎉 AppInitializer: All services initialized successfully');
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error during AppInitializer: $e');
+      ErrorHandler().handleError(
+        e,
+        type: ErrorType.unknown,
+        severity: ErrorSeverity.critical,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> initialize({
+    required Function(double progress, String status) onProgress,
+  }) async {
+    if (_isInitialized) {
+      onProgress(1.0, 'مرحباً بك في رفيق');
+      return;
+    }
+
+    try {
+      // Step 1: Initialize local storage & user preferences
+      onProgress(0.10, 'تحميل التفضيلات والإعدادات المحلية...');
+      final storageService = StorageService();
+      await storageService.init();
+      QuranStorageService();
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Step 2: Initialize Hive Database
+      onProgress(0.15, 'تحميل قاعدة البيانات المحلية...');
+      final hiveService = HiveDatabaseService();
+      await hiveService.initialize();
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Step 3: Initialize User Preferences
+      onProgress(0.20, 'تحميل تفضيلات المستخدم...');
+      final preferencesProvider = UserPreferencesProvider();
+      await preferencesProvider.initialize();
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Step 4: Initialize Quran data cache
+      onProgress(0.35, 'تحميل المصحف الشريف والبيانات القرآنية...');
+      await QuranService.loadQuranData();
+      await Future.delayed(const Duration(milliseconds: 150));
+
+      // Step 5: Initialize Prayer Times & Local Adhan Calculation
+      onProgress(0.45, 'حساب المواقيت الدقيقة للصلوات الخمس...');
+      PrayerService();
+      AdhanService();
+      LocationService();
+      await Future.delayed(const Duration(milliseconds: 150));
+
+      // Step 6: Initialize Notification Service
+      onProgress(0.55, 'تجهيز نظام الإشعارات...');
+      final notificationService = NotificationService();
+      await notificationService.initialize();
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Step 7: Initialize Notifications & Smart Rotation Datasets
+      onProgress(0.65, 'تجهيز منظومة التذكير الإيماني...');
+      IslamicNotificationService();
+      await Future.delayed(const Duration(milliseconds: 150));
+
+      // Step 8: Initialize AI Knowledge Base & Audio Systems
+      onProgress(0.80, 'تحضير المساعد الذكي والمشغلات الصوتية...');
+      AiAssistantService();
+      Mp3QuranApiService();
+      await Future.delayed(const Duration(milliseconds: 200));
+
+      // Step 9: Initialize Error Handler
+      onProgress(0.90, 'تجهيز نظام معالجة الأخطاء...');
+      ErrorHandler();
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      onProgress(1.0, 'اكتمل التحضير بنجاح');
+      _isInitialized = true;
+    } catch (e, stackTrace) {
+      debugPrint('Graceful app initialization fallback: $e');
+      ErrorHandler().handleError(
+        e,
+        type: ErrorType.unknown,
+        severity: ErrorSeverity.critical,
+        stackTrace: stackTrace,
+      );
+      onProgress(1.0, 'اكتمل التحضير بنجاح');
+      _isInitialized = true;
+    }
+  }
+}

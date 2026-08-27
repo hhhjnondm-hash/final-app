@@ -1,0 +1,84 @@
+{
+  "surahs": [
+    {
+      "id": 1,
+      "name": "الفاتحة",
+      "name_en": "Al-Fatiha",
+      "ayahs": 7,
+      "type": "مكية",
+      "order": 1
+    },
+    {
+      "id": 2,
+      "name": "البقرة",
+      "name_en": "Al-Baqara",
+      "ayahs": 286,
+      "type": "مدنية",
+      "order": 2
+    },
+    {
+      "id": 3,
+      "name": "آل عمران",
+      "name_en": "Aal-Imran",
+      "ayahs": 200,
+      "type": "مدنية",
+      "order": 3
+    },
+    {
+      "id": 4,
+      "name": "النساء",
+      "name_en": "An-Nisa",
+      "ayahs": 176,
+      "type": "مدنية",
+      "order": 4
+    },
+    {
+      "id": 5,
+      "name": "المائدة",
+      "name_en": "Al-Ma'ida",
+      "ayahs": 120,
+      "type": "مدنية",
+      "order": 5
+    },
+    {
+      "id": 6,
+      "name": "الأنعام",
+      "name_en": "Al-An'am",
+      "ayahs": 165,
+      "type": "مكية",
+      "order": 6
+    },
+    {
+      "id": 7,
+      "name": "الأعراف",
+      "name_en": "Al-A'raf",
+      "ayahs": 206,
+      "type": "مكية",
+      "order": 7
+    },
+    {
+      "id": 8,
+      "name": "الأنفال",
+      "name_en": "Al-Anfal",
+      "ayahs": 75,
+      "type": "مدنية",
+      "order": 8
+    },
+    {
+      "id": 9,
+      "name": "التوبة",
+      "name_en": "At-Tawba",
+      "ayahs": 129,
+      "type": "مدنية",
+      "order": 9
+    },
+    {
+      "id": 10,
+      "name": "يونس",
+      "name_en": "Yunus",
+      "ayahs": 109,
+      "type": "مكية",
+      "order": 10
+    }
+  ]
+}

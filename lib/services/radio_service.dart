@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../data/radio_data.dart';
 import '../models/radio_models.dart';
-import 'unified_audio_engine.dart';
+import '../models/canonical_identities.dart';
 import 'global_audio_manager.dart';
 
 enum RadioPlaybackState {
@@ -20,7 +20,7 @@ class RadioService extends ChangeNotifier {
     _initAudioListeners();
   }
 
-  final UnifiedAudioEngine _audioPlayer = UnifiedAudioEngine();
+  final GlobalAudioManager _audioManager = GlobalAudioManager();
 
   RadioStation _currentStation = RadioData.stations.first;
   RadioPlaybackState _playbackState = RadioPlaybackState.stopped;
@@ -31,6 +31,9 @@ class RadioService extends ChangeNotifier {
   Timer? _sleepTimer;
   Duration? _sleepTimerRemaining;
   Timer? _sleepCountdownTimer;
+
+  StreamSubscription? _stateSub;
+  StreamSubscription? _errorSub;
 
   RadioStation get currentStation => _currentStation;
   RadioPlaybackState get playbackState => _playbackState;
@@ -44,11 +47,35 @@ class RadioService extends ChangeNotifier {
   bool isFavorite(String id) => _favoriteStationIds.contains(id);
 
   void _initAudioListeners() {
-    _audioPlayer.errorStream.listen((err) {
+    _stateSub = _audioManager.playbackStateStream.listen((state) {
+      _updatePlaybackStateFromGlobal(state);
+    });
+
+    _errorSub = _audioManager.errorStream.listen((err) {
       debugPrint('Radio Stream Error: $err');
       _playbackState = RadioPlaybackState.error;
       notifyListeners();
     });
+  }
+
+  void _updatePlaybackStateFromGlobal(PlaybackState globalState) {
+    switch (globalState) {
+      case PlaybackState.playing:
+        _playbackState = RadioPlaybackState.playing;
+        break;
+      case PlaybackState.paused:
+        _playbackState = RadioPlaybackState.paused;
+        break;
+      case PlaybackState.loading:
+        _playbackState = RadioPlaybackState.buffering;
+        break;
+      case PlaybackState.error:
+        _playbackState = RadioPlaybackState.error;
+        break;
+      default:
+        _playbackState = RadioPlaybackState.stopped;
+    }
+    notifyListeners();
   }
 
   void toggleFavorite(String id) {
@@ -74,12 +101,24 @@ class RadioService extends ChangeNotifier {
 
     try {
       debugPrint('Attempting to play radio: ${_currentStation.streamUrl}');
-      await _audioPlayer.play(_currentStation.streamUrl);
+      
+      final descriptor = AudioSourceDescriptor(
+        type: AudioSourceType.radio,
+        url: _currentStation.streamUrl,
+        title: _currentStation.name,
+        subtitle: _currentStation.language,
+        metadata: {
+          'stationId': _currentStation.id,
+          'quality': _selectedQuality,
+        },
+      );
+
+      await _audioManager.play(descriptor);
 
       // Wait a moment to see if it starts successfully
       await Future.delayed(const Duration(seconds: 2));
 
-      if (_audioPlayer.isPlaying) {
+      if (_audioManager.isPlaying) {
         _playbackState = RadioPlaybackState.playing;
         debugPrint('Radio started successfully');
       } else {
@@ -95,9 +134,7 @@ class RadioService extends ChangeNotifier {
   }
 
   Future<void> pause() async {
-    _playbackState = RadioPlaybackState.paused;
-    await _audioPlayer.pause();
-    notifyListeners();
+    await _audioManager.pause();
   }
 
   Future<void> resume() async {
@@ -107,8 +144,8 @@ class RadioService extends ChangeNotifier {
   }
 
   Future<void> stop() async {
+    await _audioManager.stop();
     _playbackState = RadioPlaybackState.stopped;
-    await _audioPlayer.stop();
     notifyListeners();
   }
 
@@ -136,7 +173,7 @@ class RadioService extends ChangeNotifier {
 
   Future<void> setVolume(double val) async {
     _volume = val;
-    await _audioPlayer.setVolume(val);
+    await _audioManager.setVolume(val);
     notifyListeners();
   }
 
@@ -177,6 +214,8 @@ class RadioService extends ChangeNotifier {
   @override
   void dispose() {
     _cancelSleepTimer();
+    _stateSub?.cancel();
+    _errorSub?.cancel();
     super.dispose();
   }
 }

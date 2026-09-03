@@ -2,87 +2,155 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/canonical_identities.dart';
 import '../models/audio_playback.dart';
+import 'unified_audio_engine.dart';
 
 export '../models/canonical_identities.dart' show AudioSourceType;
 
-/// Simplified global audio manager for compilation
+/// Unified global audio manager - ONE canonical audio engine
+/// All screens must use this manager - never create another AudioPlayer
 class GlobalAudioManager extends ChangeNotifier {
   GlobalAudioManager._internal();
 
   static final GlobalAudioManager _instance = GlobalAudioManager._internal();
   factory GlobalAudioManager() => _instance;
 
+  final UnifiedAudioEngine _engine = UnifiedAudioEngine();
+  
   AudioSourceType _currentSource = AudioSourceType.quran;
   AudioSourceDescriptor? _currentDescriptor;
-  bool _isPlaying = false;
+  PlaybackState _playbackState = PlaybackState.idle;
+  Duration _position = Duration.zero;
+  Duration? _duration;
+  String? _currentUrl;
+
+  StreamSubscription? _posSub;
+  StreamSubscription? _durSub;
+  StreamSubscription? _stateSub;
+  StreamSubscription? _errorSub;
 
   AudioSourceType get currentSource => _currentSource;
-  bool get isPlaying => _isPlaying;
-  PlaybackState get playbackState => _isPlaying ? PlaybackState.playing : PlaybackState.idle;
   AudioSourceDescriptor? get currentDescriptor => _currentDescriptor;
-
-  Stream<bool> get isPlayingStream => Stream.value(_isPlaying);
-  Stream<Duration> get positionStream => Stream.value(Duration.zero);
-  Stream<Duration?> get durationStream => Stream.value(null);
-  Stream<String> get errorStream => Stream.empty();
-  Stream<PlaybackState> get playbackStateStream => Stream.value(playbackState);
-
-  Duration get position => Duration.zero;
-  Duration? get duration => null;
+  PlaybackState get playbackState => _playbackState;
+  bool get isPlaying => _playbackState == PlaybackState.playing;
+  bool get isPaused => _playbackState == PlaybackState.paused;
+  bool isPlayingOrBuffering => _playbackState == PlaybackState.playing || _playbackState == PlaybackState.loading;
+  Duration get position => _position;
+  Duration? get duration => _duration;
+  String? get currentUrl => _currentUrl;
 
   String get currentTitle => _currentDescriptor?.title ?? '';
   String get currentSubtitle => _currentDescriptor?.subtitle ?? '';
   String? get currentArtwork => _currentDescriptor?.metadata?['artwork'] as String?;
 
-  Future<void> play(AudioSourceDescriptor source) async {
-    _currentSource = source.type;
-    _currentDescriptor = source;
-    _isPlaying = true;
-    notifyListeners();
+  Stream<bool> get isPlayingStream => _engine.isPlayingStream;
+  Stream<Duration> get positionStream => _engine.positionStream;
+  Stream<Duration?> get durationStream => _engine.durationStream;
+  Stream<String> get errorStream => _engine.errorStream;
+  Stream<PlaybackState> get playbackStateStream => _engine.playbackStateStream;
+
+  GlobalAudioManager() {
+    _initListeners();
   }
 
-  Future<void> stopAdhan({bool restorePrevious = false}) async {
-    _isPlaying = false;
-    _currentDescriptor = null;
+  void _initListeners() {
+    _posSub = _engine.positionStream.listen((pos) {
+      _position = pos;
+      notifyListeners();
+    });
+
+    _durSub = _engine.durationStream.listen((dur) {
+      _duration = dur;
+      notifyListeners();
+    });
+
+    _stateSub = _engine.playbackStateStream.listen((state) {
+      _playbackState = state;
+      notifyListeners();
+    });
+
+    _errorSub = _engine.errorStream.listen((error) {
+      debugPrint('GlobalAudioManager Error: $error');
+      notifyListeners();
+    });
+  }
+
+  Future<void> play(AudioSourceDescriptor source) async {
+    debugPrint('🎵 GlobalAudioManager: Playing ${source.type} - ${source.title}');
+    
+    _currentSource = source.type;
+    _currentDescriptor = source;
+    _currentUrl = source.url;
+    _playbackState = PlaybackState.loading;
     notifyListeners();
+
+    try {
+      await _engine.play(
+        source.url,
+        isLiveStream: source.type == AudioSourceType.radio,
+      );
+      _playbackState = PlaybackState.playing;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('❌ GlobalAudioManager: Failed to play - $e');
+      _playbackState = PlaybackState.error;
+      notifyListeners();
+      rethrow;
+    }
   }
 
   Future<void> pause() async {
-    _isPlaying = false;
+    await _engine.pause();
+    _playbackState = PlaybackState.paused;
     notifyListeners();
   }
 
   Future<void> resume() async {
-    _isPlaying = true;
+    await _engine.resume();
+    _playbackState = PlaybackState.playing;
     notifyListeners();
   }
 
   Future<void> stop() async {
-    _isPlaying = false;
+    await _engine.stop();
+    _playbackState = PlaybackState.idle;
     _currentDescriptor = null;
+    _currentUrl = null;
     notifyListeners();
   }
 
+  Future<void> stopAdhan({bool restorePrevious = false}) async {
+    await stop();
+  }
+
   Future<void> seek(Duration position) async {
-    // Stub implementation
+    await _engine.seek(position);
   }
 
   Future<void> setVolume(double volume) async {
-    // Stub implementation
+    await _engine.setVolume(volume);
   }
 
   Future<void> setSpeed(double speed) async {
-    // Stub implementation
+    await _engine.setPlaybackRate(speed);
   }
 
-  Duration getPosition() => Duration.zero;
-  Duration? getDuration() => null;
-
   Future<void> togglePlayPause() async {
-    if (_isPlaying) {
+    if (_playbackState == PlaybackState.playing) {
       await pause();
     } else if (_currentDescriptor != null) {
       await resume();
     }
+  }
+
+  Duration getPosition() => _position;
+  Duration? getDuration() => _duration;
+
+  @override
+  void dispose() {
+    _posSub?.cancel();
+    _durSub?.cancel();
+    _stateSub?.cancel();
+    _errorSub?.cancel();
+    super.dispose();
   }
 }

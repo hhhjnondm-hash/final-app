@@ -56,7 +56,7 @@ dependencies:
   cached_network_image: ^4.0.0
 
   # Audio — just_audio (stronger engine for Android)
-  just_audio: ^0.9.40
+  just_audio: ^0.10.6
   audio_session: ^0.2.2
 
   # Networking

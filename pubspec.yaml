@@ -58,11 +58,10 @@ dependencies:
   # Audio — just_audio (stronger engine for Android)
   just_audio: ^0.9.40
   audio_session: ^0.2.2
-  
+
   # Networking
   http: ^1.6.0
   connectivity_plus: ^7.3.1
-  http: ^1.6.0
   crypto: ^3.0.3
   
   # Internationalization

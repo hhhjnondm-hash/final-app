@@ -19,6 +19,9 @@ class ReciterProfile {
   final int surahCount;
   final ReciterCategory category;
   final String serverUrl;
+  final String? apiId;
+  final String? moshafId;
+  final List<int>? availableSurahs;
 
   const ReciterProfile({
     required this.id,
@@ -30,7 +33,34 @@ class ReciterProfile {
     this.surahCount = 114,
     this.category = ReciterCategory.popular,
     required this.serverUrl,
+    this.apiId,
+    this.moshafId,
+    this.availableSurahs,
   });
+
+  ReciterProfile copyWith({
+    String? photoUrl,
+    String? serverUrl,
+    String? apiId,
+    String? moshafId,
+    int? surahCount,
+    List<int>? availableSurahs,
+  }) {
+    return ReciterProfile(
+      id: id,
+      nameArabic: nameArabic,
+      nameEnglish: nameEnglish,
+      country: country,
+      style: style,
+      photoUrl: photoUrl ?? this.photoUrl,
+      surahCount: surahCount ?? this.surahCount,
+      category: category,
+      serverUrl: serverUrl ?? this.serverUrl,
+      apiId: apiId ?? this.apiId,
+      moshafId: moshafId ?? this.moshafId,
+      availableSurahs: availableSurahs ?? this.availableSurahs,
+    );
+  }
 }
 
 class AudioSurahTrack {

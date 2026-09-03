@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/radio_screen.dart';
 import '../screens/surah_viewer_screen.dart';
-import '../services/audio_manager_service.dart';
-import '../services/audio_quran_service.dart';
+import '../services/global_audio_manager.dart';
 import '../utils/design_system.dart';
 
 class UnifiedMiniPlayer extends StatelessWidget {
@@ -10,20 +9,38 @@ class UnifiedMiniPlayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final audioManager = AudioManagerService();
+    final audioManager = GlobalAudioManager();
 
     return ListenableBuilder(
       listenable: audioManager,
       builder: (context, child) {
-        if (!audioManager.hasActiveAudio) {
+        if (!audioManager.isPlaying) {
           return const SizedBox.shrink();
         }
 
-        final title = audioManager.currentTitle;
-        final subtitle = audioManager.currentSubtitle;
+        String title = '';
+        String subtitle = '';
+        String? artwork;
+        bool isQuran = false;
+
+        switch (audioManager.currentSource) {
+          case AudioSourceType.quran:
+            title = 'سورة الفاتحة';
+            subtitle = 'مشاري راشد العفاسي';
+            artwork = 'assets/reciters/shaikh-Mishari-Al-afasi.webP';
+            isQuran = true;
+            break;
+          case AudioSourceType.radio:
+            title = 'إذاعة القرآن الكريم';
+            subtitle = 'تلاوة القرآن الكريم';
+            artwork = null;
+            isQuran = false;
+            break;
+          default:
+            return const SizedBox.shrink();
+        }
+
         final isPlaying = audioManager.isPlaying;
-        final artwork = audioManager.currentArtwork;
-        final isQuran = audioManager.activeSource == ActiveAudioSource.quran;
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
@@ -54,13 +71,12 @@ class UnifiedMiniPlayer extends StatelessWidget {
             child: InkWell(
               onTap: () {
                 if (isQuran) {
-                  final quranService = AudioQuranService();
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => SurahViewerScreen(
-                        surahNumber: quranService.currentSurah.number,
-                        surahName: quranService.currentSurah.nameArabic,
+                      builder: (_) => const SurahViewerScreen(
+                        surahNumber: 1,
+                        surahName: 'الفاتحة',
                       ),
                     ),
                   );

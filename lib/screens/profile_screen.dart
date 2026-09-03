@@ -6,6 +6,7 @@ import 'azkar_screen.dart';
 import 'iqra_screen.dart';
 import 'notification_settings_screen.dart';
 import 'tasbih_screen.dart';
+import 'health_monitor_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -781,6 +782,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       {'title': 'المظهر والخلفية', 'icon': Icons.palette_outlined},
       {'title': 'الإشعارات والتنبيهات', 'icon': Icons.notifications_none_rounded},
       {'title': 'إعدادات خط القرآن', 'icon': Icons.format_size_rounded},
+      {'title': 'مراقبة صحة النظام', 'icon': Icons.health_and_safety},
       {'title': 'الخصوصية والأمان', 'icon': Icons.lock_outline_rounded},
     ];
 
@@ -810,6 +812,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const NotificationSettingsScreen()),
+                    );
+                  } else if (item['title'] == 'مراقبة صحة النظام') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HealthMonitorScreen()),
                     );
                   } else {
                     _showGeneralSettings(context);

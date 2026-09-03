@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/prayer_models.dart';
-import '../services/prayer_service.dart';
+import '../services/prayer_service_v2.dart';
 import '../services/athan_service.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
@@ -20,12 +20,19 @@ class PrayerTimesScreen extends StatefulWidget {
 }
 
 class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
-  final PrayerService _prayerService = PrayerService();
+  final PrayerServiceV2 _prayerService = PrayerServiceV2();
+  
+  List<PrayerTiming> _timings = [];
+  PrayerTiming? _currentPrayer;
+  PrayerTiming? _nextPrayer;
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
     _prayerService.addListener(_onUpdate);
+    _loadPrayerData();
   }
 
   @override
@@ -38,12 +45,86 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     if (mounted) setState(() {});
   }
 
+  Future<void> _loadPrayerData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final timings = await _prayerService.getPrayerTimingsForDate(_prayerService.selectedDate);
+      final currentPrayer = await _prayerService.getCurrentPrayer();
+      final nextPrayer = await _prayerService.getNextPrayer();
+
+      if (mounted) {
+        setState(() {
+          _timings = timings;
+          _currentPrayer = currentPrayer;
+          _nextPrayer = nextPrayer;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'فشل تحميل بيانات الصلاة: $e';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final timings = _prayerService.getPrayerTimingsForDate(_prayerService.selectedDate);
-    final currentPrayer = _prayerService.getCurrentPrayer();
-    final nextPrayer = _prayerService.getNextPrayer();
-    final location = _prayerService.currentLocation;
+    final location = _prayerService.currentLocation ?? const LocationProfile(
+      cityName: 'القاهرة',
+      countryName: 'مصر',
+      latitude: 30.0444,
+      longitude: 31.2357,
+      qiblaAngle: 136.0,
+    );
+
+    if (_isLoading) {
+      return SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(color: DesignSystem.goldLight),
+              const SizedBox(height: 16),
+              Text(
+                'جاري تحميل بيانات الصلاة...',
+                style: TextStyle(color: DesignSystem.textMuted),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              Text(
+                _errorMessage!,
+                style: TextStyle(color: DesignSystem.textWhite),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadPrayerData,
+                child: const Text('إعادة المحاولة'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return SafeArea(
       child: Center(
@@ -74,11 +155,13 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                   ),
                   child: PrayerHeroCard(
                     onAthanTap: () {
-                      showModalBottomSheet(
-                        context: context,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) => PrayerAlertSheet(timing: nextPrayer),
-                      );
+                      if (_nextPrayer != null) {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => PrayerAlertSheet(timing: _nextPrayer!),
+                        );
+                      }
                     },
                   ),
                 ),
@@ -145,9 +228,9 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                      final timing = timings[index];
-                      final isCurrent = timing.type == currentPrayer.type;
-                      final isNext = timing.type == nextPrayer.type;
+                      final timing = _timings[index];
+                      final isCurrent = _currentPrayer != null && timing.type == _currentPrayer?.type;
+                      final isNext = _nextPrayer != null && timing.type == _nextPrayer?.type;
 
                       return PrayerTimelineCard(
                         timing: timing,
@@ -158,7 +241,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                         },
                       );
                     },
-                    childCount: timings.length,
+                    childCount: _timings.length,
                   ),
                 ),
               ),
@@ -324,6 +407,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
               );
               if (picked != null) {
                 _prayerService.setSelectedDate(picked);
+                _loadPrayerData();
               }
             },
             child: Container(
@@ -565,18 +649,19 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                 ...cities.map((city) => InkWell(
                   onTap: () {
                     _prayerService.setLocation(city);
+                    _loadPrayerData();
                     Navigator.pop(context);
                   },
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
-                      color: _prayerService.currentLocation.cityName == city.cityName
+                      color: _prayerService.currentLocation?.cityName == city.cityName
                           ? DesignSystem.gold.withValues(alpha: 0.15)
                           : Colors.white.withValues(alpha: 0.03),
                       borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
                       border: Border.all(
-                        color: _prayerService.currentLocation.cityName == city.cityName
+                        color: _prayerService.currentLocation?.cityName == city.cityName
                             ? DesignSystem.gold
                             : Colors.white.withValues(alpha: 0.08),
                       ),
@@ -587,7 +672,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                         Text(
                           '${city.cityName}، ${city.countryName}',
                           style: TextStyle(
-                            color: _prayerService.currentLocation.cityName == city.cityName
+                            color: _prayerService.currentLocation?.cityName == city.cityName
                                 ? DesignSystem.goldLight
                                 : DesignSystem.textWhite,
                             fontWeight: FontWeight.bold,
@@ -605,170 +690,11 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       },
     );
   }
-}
+
   void _showAthanSettings(BuildContext context) {
-    final athanService = PrayerService().athanService;
-    
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => StatefulBuilder(
-        builder: (context, setModalState) {
-          return Container(
-            decoration: const BoxDecoration(
-              color: DesignSystem.bgDark,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: SafeArea(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(DesignSystem.spacingL),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          '??????? ??????',
-                          style: TextStyle(
-                            color: DesignSystem.textWhite,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: DesignSystem.textMuted),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SwitchListTile(
-                    title: const Text('????? ??????', style: TextStyle(color: DesignSystem.textWhite)),
-                    subtitle: const Text('????? ?????? ???????? ??? ?????? ??????', style: TextStyle(color: DesignSystem.textMuted, fontSize: 12)),
-                    value: athanService.settings.enabled,
-                    onChanged: (value) async {
-                      await athanService.updateSettings(athanService.settings.copyWith(enabled: value));
-                      setModalState(() {});
-                    },
-                    activeColor: DesignSystem.goldLight,
-                  ),
-                  ListTile(
-                    title: const Text('??? ??????', style: TextStyle(color: DesignSystem.textWhite)),
-                    subtitle: Text(_getAthanSoundName(athanService.settings.sound), style: const TextStyle(color: DesignSystem.textMuted, fontSize: 12)),
-                    trailing: const Icon(Icons.arrow_forward_ios, color: DesignSystem.textMuted, size: 16),
-                    onTap: () {
-                      _showAthanSoundSelector(context, athanService, setModalState);
-                    },
-                  ),
-                  ListTile(
-                    title: const Text('????? ?????', style: TextStyle(color: DesignSystem.textWhite)),
-                    subtitle: Slider(
-                      value: athanService.settings.volume,
-                      min: 0.0,
-                      max: 1.0,
-                      divisions: 10,
-                      activeColor: DesignSystem.goldLight,
-                      onChanged: (value) async {
-                        await athanService.updateSettings(athanService.settings.copyWith(volume: value));
-                        setModalState(() {});
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(DesignSystem.spacingL),
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        await athanService.testAthan();
-                      },
-                      icon: const Icon(Icons.play_circle_rounded),
-                      label: const Text('?????? ??????'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: DesignSystem.goldLight,
-                        foregroundColor: DesignSystem.bgDark,
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: DesignSystem.spacingM),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+    // Temporarily disabled - needs service integration
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('إعدادات الأذان قيد التطوير')),
     );
   }
-
-  void _showAthanSoundSelector(BuildContext context, AthanService athanService, StateSetter setModalState) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        decoration: const BoxDecoration(
-          color: DesignSystem.bgDark,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(DesignSystem.spacingL),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      '???? ??? ??????',
-                      style: TextStyle(
-                        color: DesignSystem.textWhite,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: DesignSystem.textMuted),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ),
-              ...AthanSound.values.map((sound) {
-                return ListTile(
-                  title: Text(_getAthanSoundName(sound), style: const TextStyle(color: DesignSystem.textWhite)),
-                  trailing: athanService.settings.sound == sound
-                      ? const Icon(Icons.check_circle, color: DesignSystem.goldLight)
-                      : null,
-                  onTap: () async {
-                    await athanService.updateSettings(athanService.settings.copyWith(sound: sound));
-                    setModalState(() {});
-                    Navigator.pop(context);
-                  },
-                );
-              }).toList(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _getAthanSoundName(AthanSound sound) {
-    switch (sound) {
-      case AthanSound.none:
-        return '???? ???';
-      case AthanSound.local:
-        return '???? ??? (????)';
-      case AthanSound.multiple:
-        return '???? ????? (????)';
-      case AthanSound.makkah:
-        return '???? ???';
-      case AthanSound.madinah:
-        return '???? ???????';
-      case AthanSound.cairo:
-        return '???? ???????';
-    }
-  }
+}

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/radio_data.dart';
 import '../models/radio_models.dart';
 import '../services/radio_service.dart';
+import '../adapters/radio_adapter.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/audio_diagnostic_dialog.dart';
@@ -19,6 +20,7 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
   RadioCategory _selectedCategory = RadioCategory.all;
   String _searchQuery = '';
   bool _isSearching = false;
+  bool _useRealApi = false; // Toggle for real API vs local data
   late AnimationController _waveController;
 
   @override
@@ -29,6 +31,21 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
+    _initializeRadios();
+  }
+
+  Future<void> _initializeRadios() async {
+    // Optionally fetch from real API
+    if (_useRealApi) {
+      try {
+        final apiRadios = await RadioAdapter.fetchRadioStations();
+        if (apiRadios.isNotEmpty) {
+          debugPrint('✅ Loaded ${apiRadios.length} radio stations from API');
+        }
+      } catch (e) {
+        debugPrint('⚠️ Failed to load from API, using local data: $e');
+      }
+    }
   }
 
   void _onServiceUpdate() {
@@ -418,6 +435,25 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
         ),
         Row(
           children: [
+            IconButton(
+              icon: Icon(
+                _useRealApi ? Icons.cloud_done : Icons.cloud_off,
+                color: _useRealApi ? Colors.green : DesignSystem.goldLight,
+                size: 22,
+              ),
+              onPressed: () {
+                setState(() {
+                  _useRealApi = !_useRealApi;
+                });
+                _initializeRadios();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(_useRealApi ? 'استخدام API الحقيقي' : 'استخدام البيانات المحلية'),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
             IconButton(
               icon: const Icon(Icons.search_rounded, color: DesignSystem.goldLight, size: 22),
               onPressed: () => setState(() => _isSearching = !_isSearching),

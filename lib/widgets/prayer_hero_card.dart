@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/prayer_models.dart';
-import '../services/prayer_service.dart';
+import '../services/prayer_service_v2.dart';
 import '../utils/design_system.dart';
 
-class PrayerHeroCard extends StatelessWidget {
+class PrayerHeroCard extends StatefulWidget {
   final VoidCallback? onAthanTap;
 
   const PrayerHeroCard({
@@ -12,12 +12,77 @@ class PrayerHeroCard extends StatelessWidget {
   });
 
   @override
+  State<PrayerHeroCard> createState() => _PrayerHeroCardState();
+}
+
+class _PrayerHeroCardState extends State<PrayerHeroCard> {
+  final PrayerServiceV2 _service = PrayerServiceV2();
+  
+  PrayerTiming? _nextPrayer;
+  PrayerTiming? _currentPrayer;
+  String _countdown = '00:00:00';
+  double _progress = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _service.addListener(_onUpdate);
+    _loadPrayerData();
+  }
+
+  @override
+  void dispose() {
+    _service.removeListener(_onUpdate);
+    super.dispose();
+  }
+
+  void _onUpdate() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _loadPrayerData() async {
+    try {
+      final nextPrayer = await _service.getNextPrayer();
+      final currentPrayer = await _service.getCurrentPrayer();
+      final countdown = await _service.getFormattedCountdown();
+      final progress = await _service.getRemainingProgress();
+
+      if (mounted) {
+        setState(() {
+          _nextPrayer = nextPrayer;
+          _currentPrayer = currentPrayer;
+          _countdown = countdown;
+          _progress = progress;
+        });
+      }
+    } catch (e) {
+      // Use fallback values if service fails
+      if (mounted) {
+        setState(() {
+          _countdown = '00:00:00';
+          _progress = 0.0;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final service = PrayerService();
-    final nextPrayer = service.getNextPrayer();
-    final currentPrayer = service.getCurrentPrayer();
-    final countdown = service.getFormattedCountdown();
-    final progress = service.getRemainingProgress();
+    final nextPrayer = _nextPrayer ?? PrayerTiming(
+      type: PrayerType.fajr,
+      nameArabic: 'الفجر',
+      nameEnglish: 'Fajr',
+      time: const TimeOfDay(hour: 4, minute: 0),
+      icon: Icons.nightlight_round,
+    );
+    
+    final currentPrayer = _currentPrayer ?? PrayerTiming(
+      type: PrayerType.fajr,
+      nameArabic: 'الفجر',
+      nameEnglish: 'Fajr',
+      time: const TimeOfDay(hour: 4, minute: 0),
+      icon: Icons.nightlight_round,
+    );
 
     return Container(
       height: 310,
@@ -117,9 +182,9 @@ class PrayerHeroCard extends StatelessWidget {
                       ),
                     ),
 
-                    if (onAthanTap != null)
+                    if (widget.onAthanTap != null)
                       InkWell(
-                        onTap: onAthanTap,
+                        onTap: widget.onAthanTap,
                         borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
                         child: Container(
                           padding: const EdgeInsets.all(8),
@@ -150,7 +215,7 @@ class PrayerHeroCard extends StatelessWidget {
                           width: 120,
                           height: 120,
                           child: CircularProgressIndicator(
-                            value: progress,
+                            value: _progress,
                             strokeWidth: 6,
                             backgroundColor: Colors.white.withValues(alpha: 0.08),
                             valueColor: const AlwaysStoppedAnimation<Color>(DesignSystem.gold),
@@ -168,7 +233,7 @@ class PrayerHeroCard extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              countdown,
+                              _countdown,
                               style: const TextStyle(
                                 color: DesignSystem.textWhite,
                                 fontSize: 18,

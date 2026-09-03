@@ -5,6 +5,7 @@ import '../models/audio_models.dart';
 import '../models/quran_models.dart';
 import '../services/audio_quran_service.dart';
 import '../services/robust_quran_audio_service.dart';
+import '../adapters/reciter_adapter.dart';
 import '../utils/design_system.dart';
 import '../widgets/audio_hero_player.dart';
 import '../widgets/audio_mini_player.dart';
@@ -22,11 +23,27 @@ class _AudioScreenState extends State<AudioScreen> {
   final AudioQuranService _audioService = AudioQuranService();
   String _searchQuery = '';
   ReciterCategory _selectedCategory = ReciterCategory.all;
+  bool _useRealApi = false; // Toggle for real API vs local data
 
   @override
   void initState() {
     super.initState();
     _audioService.addListener(_onServiceUpdate);
+    _initializeReciters();
+  }
+
+  Future<void> _initializeReciters() async {
+    // Optionally fetch from real API
+    if (_useRealApi) {
+      try {
+        final apiReciters = await ReciterAdapter.fetchReciterProfiles();
+        if (apiReciters.isNotEmpty) {
+          debugPrint('✅ Loaded ${apiReciters.length} reciters from API');
+        }
+      } catch (e) {
+        debugPrint('⚠️ Failed to load from API, using local data: $e');
+      }
+    }
   }
 
   @override
@@ -256,6 +273,22 @@ class _AudioScreenState extends State<AudioScreen> {
         ),
         Row(
           children: [
+            _buildHeaderCircleButton(
+              icon: Icons.cloud_download_outlined,
+              onTap: () {
+                setState(() {
+                  _useRealApi = !_useRealApi;
+                });
+                _initializeReciters();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(_useRealApi ? 'استخدام API الحقيقي' : 'استخدام البيانات المحلية'),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 8),
             _buildHeaderCircleButton(
               icon: Icons.format_list_bulleted_rounded,
               onTap: () => _showSurahSelectorModal(context),

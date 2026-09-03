@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../data/radio_data.dart';
 import '../models/radio_models.dart';
-import 'audio_player_engine.dart';
+import 'unified_audio_engine.dart';
+import 'global_audio_manager.dart';
 
 enum RadioPlaybackState {
   stopped,
@@ -19,7 +20,7 @@ class RadioService extends ChangeNotifier {
     _initAudioListeners();
   }
 
-  final UniversalAudioPlayer _audioPlayer = UniversalAudioPlayer();
+  final UnifiedAudioEngine _audioPlayer = UnifiedAudioEngine();
 
   RadioStation _currentStation = RadioData.stations.first;
   RadioPlaybackState _playbackState = RadioPlaybackState.stopped;
@@ -43,7 +44,7 @@ class RadioService extends ChangeNotifier {
   bool isFavorite(String id) => _favoriteStationIds.contains(id);
 
   void _initAudioListeners() {
-    _audioPlayer.onError.listen((err) {
+    _audioPlayer.errorStream.listen((err) {
       debugPrint('Radio Stream Error: $err');
       _playbackState = RadioPlaybackState.error;
       notifyListeners();
@@ -73,20 +74,17 @@ class RadioService extends ChangeNotifier {
 
     try {
       debugPrint('Attempting to play radio: ${_currentStation.streamUrl}');
-      await _audioPlayer.playUrl(_currentStation.streamUrl);
-      
+      await _audioPlayer.play(_currentStation.streamUrl);
+
       // Wait a moment to see if it starts successfully
       await Future.delayed(const Duration(seconds: 2));
-      
-      final state = await _audioPlayer.getPlayerState();
-      debugPrint('Radio player state: $state');
-      
-      if (state.contains('playing') || state.contains('ready')) {
+
+      if (_audioPlayer.isPlaying) {
         _playbackState = RadioPlaybackState.playing;
         debugPrint('Radio started successfully');
       } else {
         _playbackState = RadioPlaybackState.error;
-        debugPrint('Radio failed to start, state: $state');
+        debugPrint('Radio failed to start');
       }
       notifyListeners();
     } catch (e) {
@@ -100,6 +98,12 @@ class RadioService extends ChangeNotifier {
     _playbackState = RadioPlaybackState.paused;
     await _audioPlayer.pause();
     notifyListeners();
+  }
+
+  Future<void> resume() async {
+    if (_playbackState == RadioPlaybackState.paused) {
+      await play();
+    }
   }
 
   Future<void> stop() async {

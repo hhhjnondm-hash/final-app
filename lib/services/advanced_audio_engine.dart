@@ -133,110 +133,82 @@ class AdvancedAudioEngine {
     }
     _currentSourceIndex = 0;
     
+    debugPrint('🎵 AdvancedAudioEngine: Playing with ${_backupSources.length} backup sources');
+    
     // محاولة التشغيل مع إعادة المحاولة
     return await _playWithRetry(startPosition);
   }
-  
-  /// تشغيل مع نظام إعادة المحاولة
+
+  /// التشغيل مع إعادة المحاولة التلقائية
   Future<bool> _playWithRetry(Duration? startPosition) async {
-    if (_isRetryInProgress) return false;
-    _isRetryInProgress = true;
-    _currentRetryCount = 0;
-    
-    try {
-      final result = await _attemptPlay(startPosition);
+    while (_currentSourceIndex < _backupSources.length) {
+      final currentUrl = _backupSources[_currentSourceIndex];
+      debugPrint('🎵 Attempting source ${_currentSourceIndex + 1}/${_backupSources.length}: $currentUrl');
       
-      _isRetryInProgress = false;
-      return result;
-    } catch (e) {
-      _isRetryInProgress = false;
-      // إذا فشلت جميع المحاولات، جرب المصدر الاحتياطي التالي
-      if (_currentSourceIndex < _backupSources.length - 1) {
-        _currentSourceIndex++;
-        _statusController.add('trying_backup_$_currentSourceIndex');
-        debugPrint('AdvancedAudioEngine: Trying backup source $_currentSourceIndex');
-        return await _playWithRetry(startPosition);
-      } else {
-        _errorController.add('All sources failed: $e');
-        _statusController.add('all_sources_failed');
-        return false;
-      }
-    }
-  }
-  
-  /// محاولة تشغيل مصدر واحد
-  Future<bool> _attemptPlay(Duration? startPosition) async {
-    if (_currentSourceIndex >= _backupSources.length) {
-      return false;
-    }
-    
-    final url = _backupSources[_currentSourceIndex];
-    debugPrint('AdvancedAudioEngine: Attempting to play $url');
-    
-    try {
-      // إيقاف أي تشغيل حالي
-      await _player.stop();
-      
-      // التحقق إذا كان ملف محلي
-      if (url.startsWith('assets/')) {
-        await _player.play(AssetSource(url));
-      } else {
-        // التحقق من صحة الرابط
-        if (!await _validateUrl(url)) {
-          throw Exception('Invalid URL: $url');
+      try {
+        final source = UrlSource(currentUrl);
+        await _player.play(source);
+        
+        if (startPosition != null && startPosition > Duration.zero) {
+          await _player.seek(startPosition);
         }
         
-        // تشغيل الرابط
-        await _player.play(UrlSource(url));
-      }
-      
-      if (startPosition != null && startPosition > Duration.zero) {
-        await _player.seek(startPosition);
-      }
-      
-      _statusController.add('playing');
-      debugPrint('AdvancedAudioEngine: Successfully started playing');
-      return true;
-    } catch (e) {
-      debugPrint('AdvancedAudioEngine: Play attempt failed - $e');
-      
-      // إعادة المحاولة
-      if (_currentRetryCount < _maxRetries) {
+        _statusController.add('playing');
+        _currentRetryCount = 0;
+        return true;
+      } catch (e) {
+        debugPrint('❌ Failed to play source ${_currentSourceIndex + 1}: $e');
         _currentRetryCount++;
-        _statusController.add('retrying_$_currentRetryCount');
-        debugPrint('AdvancedAudioEngine: Retry attempt $_currentRetryCount');
-        await Future.delayed(Duration(seconds: _currentRetryCount));
-        return await _attemptPlay(startPosition);
+        
+        // الانتقال للمصدر التالي
+        _currentSourceIndex++;
+        
+        if (_currentSourceIndex >= _backupSources.length) {
+          _errorController.add('All audio sources failed: $e');
+          _statusController.add('failed');
+          return false;
+        }
+        
+        // إعادة المحاولة مع المصدر التالي
+        await Future.delayed(const Duration(milliseconds: 500));
       }
-      
-      return false;
     }
+    
+    return false;
   }
-  
-  /// التحقق من صحة الرابط
-  Future<bool> _validateUrl(String url) async {
-    try {
-      final uri = Uri.parse(url);
-      if (!uri.hasScheme || (uri.scheme != 'http' && uri.scheme != 'https')) {
+
+  /// تشغيل ملف محلي (بدون الحاجة للاتصال بالإنترنت)
+  Future<bool> playLocalFile(String localPath) async {
+    if (!_isInitialized) {
+      final initialized = await initialize();
+      if (!initialized) {
+        _errorController.add('Failed to initialize audio engine');
         return false;
       }
+    }
+
+    try {
+      final file = File(localPath);
+      if (!await file.exists()) {
+        _errorController.add('Local file does not exist: $localPath');
+        return false;
+      }
+
+      final fileUrl = file.uri.toString();
+      debugPrint('AdvancedAudioEngine: Playing local file: $fileUrl');
+
+      await _player.setSource(DeviceFileSource(localPath));
+      await _player.resume();
+
+      _statusController.add('playing');
+      _isPlayingController.add(true);
+
       return true;
     } catch (e) {
+      debugPrint('AdvancedAudioEngine: Failed to play local file: $e');
+      _errorController.add('Failed to play local file: $e');
+      _statusController.add('error');
       return false;
-    }
-  }
-  
-  /// معالجة الأخطاء
-  void _handleError(String error) {
-    debugPrint('AdvancedAudioEngine: Error - $error');
-    
-    // إذا كان الخطأ يتعلق بالاتصال، حاول مرة أخرى
-    if (error.contains('connection') || 
-        error.contains('network') || 
-        error.contains('socket')) {
-      if (!_isRetryInProgress && _currentRetryCount < _maxRetries) {
-        _playWithRetry(null);
-      }
     }
   }
   

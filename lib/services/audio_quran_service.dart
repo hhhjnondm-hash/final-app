@@ -5,15 +5,18 @@ import '../data/reciters_data.dart';
 import '../models/audio_models.dart';
 import '../models/quran_models.dart';
 import 'robust_quran_audio_service.dart';
+import 'quran_download_manager.dart';
 
 class AudioQuranService extends ChangeNotifier {
   static final AudioQuranService _instance = AudioQuranService._internal();
   factory AudioQuranService() => _instance;
   AudioQuranService._internal() {
     _initAudioListeners();
+    _downloadManager.initialize();
   }
 
   final RobustQuranAudioService _audioService = RobustQuranAudioService();
+  final QuranDownloadManager _downloadManager = QuranDownloadManager();
 
   ReciterProfile _currentReciter = RecitersData.reciters.first;
   SurahMeta _currentSurah = QuranMetadataProvider.getAllSurahs().first;
@@ -36,8 +39,10 @@ class AudioQuranService extends ChangeNotifier {
   Duration get totalDuration => _totalDuration;
   double get playbackSpeed => _playbackSpeed;
   Set<String> get favoriteReciterIds => _favoriteReciterIds;
+  QuranDownloadManager get downloadManager => _downloadManager;
 
   bool isFavorite(String id) => _favoriteReciterIds.contains(id);
+  bool isDownloaded(String reciterId, int surahId) => _downloadManager.isDownloaded(reciterId, surahId);
 
   String formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -98,12 +103,26 @@ class AudioQuranService extends ChangeNotifier {
 
   Future<void> _playCurrentSurah() async {
     debugPrint('AudioQuranService: Playing surah ${_currentSurah.number} with reciter ${_currentReciter.nameArabic}');
-    final success = await _audioService.playSurah(_currentReciter, _currentSurah.number);
     
-    if (!success) {
-      debugPrint('AudioQuranService: Failed to play surah');
-      _isPlaying = false;
-      notifyListeners();
+    // Check if downloaded first
+    final localPath = _downloadManager.getLocalPath(_currentReciter.id, _currentSurah.number);
+    if (localPath != null) {
+      debugPrint('AudioQuranService: Playing from local file: $localPath');
+      final success = await _audioService.playLocalFile(localPath);
+      
+      if (!success) {
+        debugPrint('AudioQuranService: Failed to play local file, falling back to stream');
+        await _audioService.playSurah(_currentReciter, _currentSurah.number);
+      }
+    } else {
+      // Stream from remote
+      final success = await _audioService.playSurah(_currentReciter, _currentSurah.number);
+      
+      if (!success) {
+        debugPrint('AudioQuranService: Failed to play surah');
+        _isPlaying = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -143,6 +162,22 @@ class AudioQuranService extends ChangeNotifier {
     _playbackSpeed = speed;
     await _audioService.setSpeed(speed);
     notifyListeners();
+  }
+
+  Future<DownloadRecord?> downloadCurrentSurah() async {
+    final audioUrl = _buildAudioUrl(_currentReciter, _currentSurah.number);
+    return await _downloadManager.downloadSurah(
+      reciter: _currentReciter,
+      surah: _currentSurah,
+      audioUrl: audioUrl,
+    );
+  }
+
+  String _buildAudioUrl(ReciterProfile reciter, int surahNumber) {
+    // This should be centralized in an AudioUrlResolver
+    // For now, use the existing pattern from RecitersData
+    final surahStr = surahNumber.toString().padLeft(3, '0');
+    return '${reciter.serverUrl}$surahStr.mp3';
   }
 
   @override

@@ -245,4 +245,36 @@ class StorageService {
   Map<String, dynamic>? getLastPlayed() {
     return getJson(_lastPlayedKey);
   }
+
+  // ==================== PRAYER CACHE STORAGE ====================
+  
+  static const String _prayerCachePrefix = 'prayer_cache_';
+  
+  Future<bool> savePrayerCache(String dateKey, Map<String, dynamic> prayerData) async {
+    return await setJson('$_prayerCachePrefix$dateKey', prayerData);
+  }
+
+  Map<String, dynamic>? getPrayerCache(String dateKey) {
+    return getJson('$_prayerCachePrefix$dateKey');
+  }
+
+  Future<bool> removePrayerCache(String dateKey) async {
+    return await clearKey('$_prayerCachePrefix$dateKey');
+  }
+
+  Future<bool> clearPrayerCache() async {
+    final keys = getPrayerCacheKeys();
+    for (final key in keys) {
+      await clearKey('$_prayerCachePrefix$key');
+    }
+    return true;
+  }
+
+  List<String> getPrayerCacheKeys() {
+    final allKeys = prefs.getKeys();
+    return allKeys
+        .where((key) => key.startsWith(_prayerCachePrefix))
+        .map((key) => key.substring(_prayerCachePrefix.length))
+        .toList();
+  }
 }

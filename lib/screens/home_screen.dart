@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/section_header.dart';
+import '../models/prayer_models.dart';
+import '../services/prayer_service_v2.dart';
 import 'ai_assistant_screen.dart';
 import 'azkar_screen.dart';
 import 'iqra_screen.dart';
@@ -9,8 +11,95 @@ import 'qibla_screen.dart';
 import 'radio_screen.dart';
 import 'surah_viewer_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final PrayerServiceV2 _prayerService = PrayerServiceV2();
+
+  PrayerTiming? _nextPrayer;
+  PrayerTiming? _currentPrayer;
+  String _countdown = '00:00:00';
+  List<PrayerTiming> _allPrayers = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _prayerService.addListener(_onUpdate);
+    _loadPrayerData();
+  }
+
+  @override
+  void dispose() {
+    _prayerService.removeListener(_onUpdate);
+    super.dispose();
+  }
+
+  void _onUpdate() async {
+    if (mounted) {
+      // Update countdown every second
+      final countdown = await _prayerService.getFormattedCountdown();
+      setState(() {
+        _countdown = countdown;
+      });
+    }
+  }
+
+  Future<void> _loadPrayerData() async {
+    try {
+      debugPrint('🔄 Loading prayer data...');
+      setState(() => _isLoading = true);
+      
+      // Preload 30 days of prayer data
+      await _prayerService.preloadPrayerData();
+      
+      final nextPrayer = await _prayerService.getNextPrayer();
+      final currentPrayer = await _prayerService.getCurrentPrayer();
+      final countdown = await _prayerService.getFormattedCountdown();
+      final allPrayers = await _prayerService.getPrayerTimingsForDate(DateTime.now());
+
+      debugPrint('✅ Next prayer: ${nextPrayer?.nameArabic} at ${nextPrayer?.formattedTimeArabic}');
+      debugPrint('✅ Current prayer: ${currentPrayer?.nameArabic} at ${currentPrayer?.formattedTimeArabic}');
+      debugPrint('✅ Countdown: $countdown');
+      debugPrint('✅ All prayers count: ${allPrayers.length}');
+      
+      // Validate prayer times are not all 00:00
+      final validPrayers = allPrayers.where((p) => 
+        p.time.hour != 0 || p.time.minute != 0
+      ).toList();
+      
+      debugPrint('✅ Valid prayers (not 00:00): ${validPrayers.length}/${allPrayers.length}');
+      
+      for (final prayer in allPrayers) {
+        final isValid = prayer.time.hour != 0 || prayer.time.minute != 0;
+        debugPrint('${isValid ? '✅' : '❌'} ${prayer.nameArabic}: ${prayer.formattedTimeArabic}');
+      }
+
+      if (mounted) {
+        setState(() {
+          _nextPrayer = nextPrayer;
+          _currentPrayer = currentPrayer;
+          _countdown = countdown;
+          _allPrayers = allPrayers;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading prayer data: $e');
+      debugPrint('❌ Stack trace: ${StackTrace.current}');
+      // Use fallback values if service fails
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -363,7 +452,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -374,7 +463,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'صلاة العصر',
+                        _nextPrayer?.nameArabic ?? 'صلاة العصر',
                         style: TextStyle(
                           color: DesignSystem.textWhite,
                           fontSize: 20,
@@ -388,8 +477,8 @@ class HomeScreen extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text(
-                    '٠٣:٣٠ م',
+                  Text(
+                    _nextPrayer != null ? _nextPrayer!.formattedTimeArabic : '٠٣:٣٠ م',
                     style: TextStyle(
                       color: DesignSystem.goldLight,
                       fontSize: 22,
@@ -402,8 +491,8 @@ class HomeScreen extends StatelessWidget {
                       color: DesignSystem.electricBlue.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
                     ),
-                    child: const Text(
-                      'متبقي ٠١:١٥:٢٠',
+                    child: Text(
+                      'متبقي $_countdown',
                       style: TextStyle(
                         color: DesignSystem.cyanAccent,
                         fontSize: 11,
@@ -418,14 +507,20 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildPrayerPill('الفجر', '٠٤:٣٠', false, true),
-              _buildPrayerPill('الشروق', '٠٥:٥٥', false, true),
-              _buildPrayerPill('الظهر', '١٢:١٥', false, true),
-              _buildPrayerPill('العصر', '٠٣:٣٠', true, false),
-              _buildPrayerPill('المغرب', '٠٦:٤٢', false, false),
-              _buildPrayerPill('العشاء', '٠٨:٠٥', false, false),
-            ],
+            children: _allPrayers.isNotEmpty
+                ? _allPrayers.map((prayer) {
+                    final isNext = _nextPrayer != null && prayer.type == _nextPrayer?.type;
+                    final isDone = _currentPrayer != null && prayer.type != _currentPrayer?.type;
+                    return _buildPrayerPill(prayer.nameArabic, prayer.formattedTimeArabic, isNext, isDone);
+                  }).toList()
+                : [
+                    _buildPrayerPill('الفجر', '٠٤:٣٠', false, true),
+                    _buildPrayerPill('الشروق', '٠٥:٥٥', false, true),
+                    _buildPrayerPill('الظهر', '١٢:١٥', false, true),
+                    _buildPrayerPill('العصر', '٠٣:٣٠', true, false),
+                    _buildPrayerPill('المغرب', '٠٦:٤٢', false, false),
+                    _buildPrayerPill('العشاء', '٠٨:٠٥', false, false),
+                  ],
           ),
         ],
       ),
@@ -437,17 +532,17 @@ class HomeScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: isNext
-            ? DesignSystem.gold.withOpacity(0.2)
+            ? DesignSystem.gold.withValues(alpha: 0.2)
             : (isDone
-                ? Colors.white.withOpacity(0.04)
-                : DesignSystem.bgCard.withOpacity(0.6)),
+                ? Colors.white.withValues(alpha: 0.04)
+                : DesignSystem.bgCard.withValues(alpha: 0.6)),
         borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
         border: Border.all(
           color: isNext
               ? DesignSystem.gold
               : (isDone
-                  ? Colors.white.withOpacity(0.1)
-                  : Colors.white.withOpacity(0.05)),
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.white.withValues(alpha: 0.05)),
           width: isNext ? 1.5 : 1,
         ),
       ),

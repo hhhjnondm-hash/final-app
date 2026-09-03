@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/prayer_models.dart';
 import 'athan_service.dart';
+import 'prayer_time_calculator.dart';
+import 'storage_service.dart';
 
 class PrayerService extends ChangeNotifier {
   static final PrayerService _instance = PrayerService._internal();
@@ -10,6 +12,9 @@ class PrayerService extends ChangeNotifier {
     _startTimer();
     _athanService = AthanService();
     _athanService.initialize();
+    _calculator = PrayerTimeCalculator();
+    _storage = StorageService();
+    _load30DayPrayerData();
   }
 
   Timer? _timer;
@@ -24,6 +29,11 @@ class PrayerService extends ChangeNotifier {
 
   PrayerCalculationSettings _settings = const PrayerCalculationSettings();
   late AthanService _athanService;
+  late PrayerTimeCalculator _calculator;
+  late StorageService _storage;
+  
+  // Cache for 30 days of prayer data
+  Map<DateTime, Map<PrayerType, DateTime>> _cachedPrayerData = {};
 
   Map<PrayerType, NotificationMode> _notificationSettings = {
     PrayerType.fajr: NotificationMode.athan,
@@ -62,6 +72,58 @@ class PrayerService extends ChangeNotifier {
   void setNotificationMode(PrayerType prayer, NotificationMode mode) {
     _notificationSettings[prayer] = mode;
     notifyListeners();
+  }
+
+  /// Load 30 days of prayer data from timesprayer.com
+  Future<void> _load30DayPrayerData() async {
+    try {
+      final now = DateTime.now();
+      final startDate = DateTime(now.year, now.month, now.day);
+      
+      debugPrint('📅 Loading 30 days of prayer data from timesprayer.com...');
+      
+      await _calculator.preloadPrayerData(
+        startDate: startDate,
+        days: 30,
+        latitude: _currentLocation.latitude,
+        longitude: _currentLocation.longitude,
+        calculationMethod: 5, // Egyptian General Authority
+        timezone: 'Africa/Cairo',
+      );
+      
+      // Cache the data
+      for (int i = 0; i < 30; i++) {
+        final date = startDate.add(Duration(days: i));
+        final finalTimes = await _calculator.getAllFinalPrayerTimes(
+          date: date,
+          latitude: _currentLocation.latitude,
+          longitude: _currentLocation.longitude,
+          calculationMethod: 5,
+          timezone: 'Africa/Cairo',
+        );
+        
+        if (finalTimes.isNotEmpty) {
+          _cachedPrayerData[date] = finalTimes;
+        }
+      }
+      
+      debugPrint('✅ Cached ${_cachedPrayerData.length} days of prayer data');
+      notifyListeners();
+    } catch (e) {
+      debugPrint('❌ Error loading 30-day prayer data: $e');
+    }
+  }
+
+  /// Get cached prayer data for a specific date
+  Map<PrayerType, DateTime>? getCachedPrayerData(DateTime date) {
+    final normalizedDate = DateTime(date.year, date.month, date.day);
+    return _cachedPrayerData[normalizedDate];
+  }
+
+  /// Refresh prayer data from timesprayer.com
+  Future<void> refreshPrayerData() async {
+    _cachedPrayerData.clear();
+    await _load30DayPrayerData();
   }
 
   int _activeListenersCount = 0;
@@ -103,17 +165,21 @@ class PrayerService extends ChangeNotifier {
     super.dispose();
   }
 
-  // Calculate Prayer Timings for a specific Date
+  // Calculate Prayer Timings for a specific Date using PrayerTimeCalculator
   List<PrayerTiming> getPrayerTimingsForDate(DateTime date) {
-    // Base times for Cairo (adjusted for manual adjustments in settings)
-    final baseTimes = <PrayerType, TimeOfDay>{
-      PrayerType.fajr: const TimeOfDay(hour: 4, minute: 14),
-      PrayerType.sunrise: const TimeOfDay(hour: 5, minute: 41),
-      PrayerType.dhuhr: const TimeOfDay(hour: 12, minute: 3),
-      PrayerType.asr: const TimeOfDay(hour: 15, minute: 37),
-      PrayerType.maghrib: const TimeOfDay(hour: 18, minute: 24),
-      PrayerType.isha: const TimeOfDay(hour: 19, minute: 46),
-    };
+    // Try to get from cache first (synchronous)
+    final cachedData = getCachedPrayerData(date);
+    Map<PrayerType, DateTime> prayerTimes;
+    
+    if (cachedData != null && cachedData.isNotEmpty) {
+      prayerTimes = cachedData;
+      debugPrint('✅ Using cached prayer data for $date');
+    } else {
+      // Use default times if not cached yet (will be updated async)
+      prayerTimes = _getDefaultPrayerTimesMap();
+      // Trigger async loading in background
+      _loadPrayerDataForDate(date);
+    }
 
     final icons = <PrayerType, IconData>{
       PrayerType.fajr: Icons.nightlight_round,
@@ -121,7 +187,7 @@ class PrayerService extends ChangeNotifier {
       PrayerType.dhuhr: Icons.wb_sunny_rounded,
       PrayerType.asr: Icons.cloud_queue_rounded,
       PrayerType.maghrib: Icons.wb_sunny_outlined,
-      PrayerType.isha: Icons.nights_stay_rounded,
+      PrayerType.isha: Icons.nights_stay,
     };
 
     final namesAr = <PrayerType, String>{
@@ -143,9 +209,14 @@ class PrayerService extends ChangeNotifier {
     };
 
     return PrayerType.values.map((type) {
-      final base = baseTimes[type]!;
+      final prayerTime = prayerTimes[type];
+      final timeOfDay = prayerTime != null 
+          ? TimeOfDay(hour: prayerTime.hour, minute: prayerTime.minute)
+          : const TimeOfDay(hour: 0, minute: 0);
+      
+      // Apply manual adjustments
       final adj = _settings.manualAdjustments[type] ?? 0;
-      final totalMinutes = (base.hour * 60 + base.minute + adj) % 1440;
+      final totalMinutes = (timeOfDay.hour * 60 + timeOfDay.minute + adj) % 1440;
       final adjustedTime = TimeOfDay(hour: totalMinutes ~/ 60, minute: totalMinutes % 60);
 
       return PrayerTiming(
@@ -157,6 +228,40 @@ class PrayerService extends ChangeNotifier {
         notificationMode: _notificationSettings[type] ?? NotificationMode.athan,
       );
     }).toList();
+  }
+
+  /// Load prayer data for a specific date asynchronously
+  Future<void> _loadPrayerDataForDate(DateTime date) async {
+    try {
+      final prayerTimes = await _calculator.getAllFinalPrayerTimes(
+        date: date,
+        latitude: _currentLocation.latitude,
+        longitude: _currentLocation.longitude,
+        calculationMethod: 5,
+        timezone: 'Africa/Cairo',
+      );
+      
+      if (prayerTimes.isNotEmpty) {
+        final normalizedDate = DateTime(date.year, date.month, date.day);
+        _cachedPrayerData[normalizedDate] = prayerTimes;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading prayer data for $date: $e');
+    }
+  }
+
+  /// Get default prayer times as DateTime map
+  Map<PrayerType, DateTime> _getDefaultPrayerTimesMap() {
+    final now = DateTime.now();
+    return {
+      PrayerType.fajr: DateTime(now.year, now.month, now.day, 5, 3),
+      PrayerType.sunrise: DateTime(now.year, now.month, now.day, 6, 33),
+      PrayerType.dhuhr: DateTime(now.year, now.month, now.day, 12, 54),
+      PrayerType.asr: DateTime(now.year, now.month, now.day, 16, 28),
+      PrayerType.maghrib: DateTime(now.year, now.month, now.day, 19, 15),
+      PrayerType.isha: DateTime(now.year, now.month, now.day, 20, 35),
+    };
   }
 
   // Get Next and Current Prayer

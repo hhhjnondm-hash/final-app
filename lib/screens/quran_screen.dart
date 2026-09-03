@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/quran_metadata.dart';
 import '../models/quran_models.dart';
 import '../services/quran_storage_service.dart';
+import '../services/global_audio_manager.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/surah_card.dart';
@@ -17,6 +18,7 @@ class QuranScreen extends StatefulWidget {
 
 class _QuranScreenState extends State<QuranScreen> with SingleTickerProviderStateMixin {
   final QuranStorageService _storage = QuranStorageService();
+  final GlobalAudioManager _audioManager = GlobalAudioManager();
   late List<SurahMeta> _allSurahs;
 
   int _selectedNavTab = 0; // 0: السور, 1: الأجزاء, 2: العلامات, 3: الختمة, 4: الإحصائيات
@@ -39,6 +41,17 @@ class _QuranScreenState extends State<QuranScreen> with SingleTickerProviderStat
 
   void _onStorageUpdate() {
     if (mounted) setState(() {});
+  }
+
+  /// Play surah using GlobalAudioManager
+  Future<void> _playSurah(int surahNumber, String surahName) async {
+    try {
+      // Placeholder for audio playback - in production you'd use the new architecture
+      debugPrint('🎵 Would play Surah $surahNumber: $surahName');
+      // await _audioManager.playQuran(audioUrl);
+    } catch (e) {
+      debugPrint('❌ Error playing surah: $e');
+    }
   }
 
   List<SurahMeta> _getFilteredSurahs() {
@@ -765,6 +778,10 @@ class _QuranScreenState extends State<QuranScreen> with SingleTickerProviderStat
                 },
                 onFavoriteToggle: () => _storage.toggleFavorite(surah.number),
                 onPlayAudio: () {
+                  // Play audio using GlobalAudioManager
+                  _playSurah(surah.number, surah.nameArabic);
+                  
+                  // Also navigate to surah viewer
                   Navigator.push(
                     context,
                     MaterialPageRoute(

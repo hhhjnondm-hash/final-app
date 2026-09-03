@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/prayer_models.dart';
 import '../services/prayer_service.dart';
 import '../utils/design_system.dart';
 
@@ -12,6 +11,7 @@ class MonthlyPrayerSheet extends StatefulWidget {
 
 class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
   DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -118,57 +118,61 @@ class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
 
           // Days List
           Expanded(
-            child: ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              itemCount: daysInMonth,
-              itemBuilder: (context, index) {
-                final dayNum = index + 1;
-                final date = DateTime(_currentMonth.year, _currentMonth.month, dayNum);
-                final isToday = now.year == date.year && now.month == date.month && now.day == date.day;
-                final timings = service.getPrayerTimingsForDate(date);
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: DesignSystem.goldLight),
+                  )
+                : ListView.builder(
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: daysInMonth,
+                    itemBuilder: (context, index) {
+                      final dayNum = index + 1;
+                      final date = DateTime(_currentMonth.year, _currentMonth.month, dayNum);
+                      final isToday = now.year == date.year && now.month == date.month && now.day == date.day;
+                      final timings = service.getPrayerTimingsForDate(date);
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 6),
-                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: isToday
-                        ? DesignSystem.gold.withValues(alpha: 0.15)
-                        : Colors.white.withValues(alpha: 0.02),
-                    borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-                    border: isToday
-                        ? Border.all(color: DesignSystem.gold.withValues(alpha: 0.5))
-                        : null,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Text(
-                          '$dayNum',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: isToday ? DesignSystem.goldLight : DesignSystem.textWhite,
-                            fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                            fontSize: 12,
-                          ),
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 6),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: isToday
+                              ? DesignSystem.gold.withValues(alpha: 0.15)
+                              : Colors.white.withValues(alpha: 0.02),
+                          borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
+                          border: isToday
+                              ? Border.all(color: DesignSystem.gold.withValues(alpha: 0.5))
+                              : null,
                         ),
-                      ),
-                      ...timings.map((t) => Expanded(
-                        flex: 1,
-                        child: Text(
-                          t.time.format(context),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: isToday ? DesignSystem.goldLight : DesignSystem.textSecondary,
-                            fontSize: 10,
-                          ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: Text(
+                                '$dayNum',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: isToday ? DesignSystem.goldLight : DesignSystem.textWhite,
+                                  fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            ...timings.map((t) => Expanded(
+                              flex: 1,
+                              child: Text(
+                                t.time.format(context),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: isToday ? DesignSystem.goldLight : DesignSystem.textSecondary,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            )),
+                          ],
                         ),
-                      )),
-                    ],
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),

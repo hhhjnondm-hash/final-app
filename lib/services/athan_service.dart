@@ -4,6 +4,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'adhan_asset_mapper.dart';
+import '../models/prayer_models.dart';
 
 enum AthanMethod {
   muslimWorldLeague,
@@ -283,10 +285,10 @@ class AthanService extends ChangeNotifier {
       
       switch (_settings.sound) {
         case AthanSound.local:
-          audioPath = 'assets/audio/athan/athan_general.mp3';
+          audioPath = AdhanAssetMapper.getAssetPath(PrayerType.fajr);
           break;
         case AthanSound.multiple:
-          audioPath = 'assets/audio/athan/athan_multiple.mp3';
+          audioPath = AdhanAssetMapper.getAssetPath(PrayerType.fajr, useSpecial: true);
           break;
         case AthanSound.makkah:
           audioPath = 'https://media.blubrry.com/muslim_central_quran/podcasts.quran-central.com/mishari-rashid-al-afasy/mishari-rashid-al-afasy-athan.mp3';

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../data/reciters_data.dart';
-import '../models/audio_models.dart';
 import '../models/quran_models.dart';
 import '../services/audio_quran_service.dart';
 import '../utils/design_system.dart';

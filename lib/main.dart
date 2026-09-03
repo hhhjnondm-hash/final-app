@@ -21,6 +21,8 @@ import 'services/notification_service.dart';
 import 'services/hive_database_service.dart';
 import 'services/error_handler.dart';
 import 'services/app_initializer.dart';
+import 'services/prayer_time_calculator.dart';
+import 'services/global_audio_manager.dart';
 import 'providers/user_preferences_provider.dart';
 import 'l10n/localization.dart';
 

@@ -1,17 +1,19 @@
 import 'dart:async';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import '../models/audio_playback.dart';
 import '../observability/dev_log.dart';
 
-/// Single canonical playback engine for Quran, Read, Radio, and Adhan.
-/// All screens must go through GlobalAudioManager — never construct another player.
+/// Single canonical playback engine using just_audio (stronger on Android)
+/// All screens must go through GlobalAudioManager — never construct another player
 class UnifiedAudioEngine {
   UnifiedAudioEngine._internal();
   static final UnifiedAudioEngine instance = UnifiedAudioEngine._internal();
   factory UnifiedAudioEngine() => instance;
 
   final AudioPlayer _player = AudioPlayer();
+  AudioSession? _session;
   bool _listenersReady = false;
   String? _currentSource;
   PlaybackState _state = PlaybackState.idle;
@@ -41,42 +43,56 @@ class UnifiedAudioEngine {
 
   Future<void> initialize() async {
     if (_listenersReady) return;
-    _player.onPlayerStateChanged.listen((state) {
-      switch (state) {
-        case PlayerState.playing:
-          _setState(PlaybackState.playing);
+    
+    // Setup audio session
+    _session = await AudioSession.instance;
+    await _session.configure(const AudioSessionConfiguration.music());
+    
+    _player.playerStateStream.listen((state) {
+      switch (state.processingState) {
+        case ProcessingState.idle:
+          _setState(PlaybackState.idle);
           break;
-        case PlayerState.paused:
-          _setState(PlaybackState.paused);
+        case ProcessingState.loading:
+          _setState(PlaybackState.loading);
           break;
-        case PlayerState.completed:
+        case ProcessingState.buffering:
+          _setState(PlaybackState.loading);
+          break;
+        case ProcessingState.ready:
+          if (state.playing) {
+            _setState(PlaybackState.playing);
+          } else {
+            _setState(PlaybackState.paused);
+          }
+          break;
+        case ProcessingState.completed:
           _setState(PlaybackState.completed);
           break;
-        case PlayerState.stopped:
-          _setState(PlaybackState.idle);
-          break;
-        case PlayerState.disposed:
-          _setState(PlaybackState.idle);
-          break;
       }
-      _isPlayingController.add(state == PlayerState.playing);
+      _isPlayingController.add(state.playing);
     });
-    _player.onPositionChanged.listen((pos) {
+    
+    _player.positionStream.listen((pos) {
       _position = pos;
       _positionController.add(pos);
     });
-    _player.onDurationChanged.listen((dur) {
-      if (dur.inMilliseconds > 0) {
+    
+    _player.durationStream.listen((dur) {
+      if (dur != null) {
         _duration = dur;
         _durationController.add(dur);
       }
     });
-    _player.onPlayerComplete.listen((_) {
-      _setState(PlaybackState.completed);
-      _isPlayingController.add(false);
+    
+    _player.playbackEventStream.listen((event) {
+      if (event.processingState == ProcessingState.completed) {
+        _setState(PlaybackState.completed);
+      }
     });
+    
     _listenersReady = true;
-    DevLog.audio(message: 'engine initialized', provider: 'audioplayers');
+    DevLog.audio(message: 'engine initialized', provider: 'just_audio');
   }
 
   void _setState(PlaybackState next) {
@@ -92,41 +108,37 @@ class UnifiedAudioEngine {
     await initialize();
     _setState(PlaybackState.loading);
     _currentSource = source;
+    
     try {
       await _player.stop();
-      if (isLiveStream) {
-        await _player.setReleaseMode(ReleaseMode.stop);
-      }
-
-      final src = _toSource(source);
+      
       DevLog.audio(
         message: 'play',
         origin: source.startsWith('http') ? 'remote' : 'local',
         host: _host(source),
         state: 'loading',
       );
-      await _player.play(src);
+      
+      if (source.startsWith('http://') || source.startsWith('https://')) {
+        final uri = Uri.parse(source);
+        await _player.setUrl(source);
+        await _player.play();
+      } else if (source.startsWith('assets/')) {
+        final path = source.substring('assets/'.length);
+        await _player.setAsset(path);
+        await _player.play();
+      } else {
+        await _player.setFilePath(source);
+        await _player.play();
+      }
+      
+      _setState(PlaybackState.playing);
     } catch (e) {
       _setState(PlaybackState.error);
       _errorController.add('$e');
       DevLog.audio(message: 'play failed', error: '$e', host: _host(source));
       rethrow;
     }
-  }
-
-  Source _toSource(String source) {
-    if (source.startsWith('http://') || source.startsWith('https://')) {
-      return UrlSource(source);
-    }
-    var path = source;
-    if (path.startsWith('assets/')) {
-      path = path.substring('assets/'.length);
-      return AssetSource(path);
-    }
-    if (!path.contains('/') && !path.contains('\\') || path.startsWith('audio/')) {
-      return AssetSource(path);
-    }
-    return DeviceFileSource(source);
   }
 
   String? _host(String source) {
@@ -141,7 +153,7 @@ class UnifiedAudioEngine {
   }
 
   Future<void> resume() async {
-    await _player.resume();
+    await _player.play();
   }
 
   Future<void> stop() async {
@@ -159,7 +171,7 @@ class UnifiedAudioEngine {
   }
 
   Future<void> setPlaybackRate(double rate) async {
-    await _player.setPlaybackRate(rate.clamp(0.5, 2.0));
+    await _player.setSpeed(rate.clamp(0.5, 2.0));
   }
 
   Future<void> duck() async {
@@ -170,9 +182,10 @@ class UnifiedAudioEngine {
     await _player.setVolume(1.0);
   }
 
-  /// Do not dispose the shared engine from feature services.
+  /// Do not dispose the shared engine from feature services
   Future<void> disposeEngine() async {
     await _player.dispose();
+    await _session?.dispose();
     await _isPlayingController.close();
     await _positionController.close();
     await _durationController.close();

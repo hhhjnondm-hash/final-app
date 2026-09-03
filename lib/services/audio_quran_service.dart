@@ -152,12 +152,19 @@ class AudioQuranService extends ChangeNotifier {
   }
 
   String _buildAudioUrl(ReciterProfile reciter, int surahNumber) {
+    // Use real MP3Quran server URL from reciter data
     final surahStr = surahNumber.toString().padLeft(3, '0');
     final baseUrl = reciter.serverUrl;
-    final cleanBaseUrl = baseUrl?.endsWith('/') == true 
-        ? baseUrl 
-        : '$baseUrl/';
-    return '$cleanBaseUrl$surahStr.mp3';
+    
+    if (baseUrl == null || baseUrl.isEmpty) {
+      // Fallback to a working server if reciter URL is missing
+      debugPrint('Warning: Reciter ${reciter.id} has no server URL, using fallback');
+      return 'https://server12.mp3quran.net/afs/$surahStr.mp3';
+    }
+    
+    // Clean and build URL
+    final cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    return '$cleanBaseUrl/$surahStr.mp3';
   }
 
   @override

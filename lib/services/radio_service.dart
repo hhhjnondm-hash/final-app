@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/radio_data.dart';
 import '../models/radio_models.dart';
 import '../models/canonical_identities.dart';
+import '../models/audio_playback.dart';
 import 'global_audio_manager.dart';
 
 enum RadioPlaybackState {
@@ -103,10 +104,12 @@ class RadioService extends ChangeNotifier {
       debugPrint('Attempting to play radio: ${_currentStation.streamUrl}');
       
       final descriptor = AudioSourceDescriptor(
+        id: _currentStation.id,
         type: AudioSourceType.radio,
-        url: _currentStation.streamUrl,
         title: _currentStation.name,
         subtitle: _currentStation.language,
+        provider: 'RadioService',
+        remoteUrl: _currentStation.streamUrl,
         metadata: {
           'stationId': _currentStation.id,
           'quality': _selectedQuality,

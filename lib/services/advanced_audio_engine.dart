@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 
@@ -34,11 +35,11 @@ class AdvancedAudioEngine {
   Stream<String> get errorStream => _errorController.stream;
   Stream<String> get statusStream => _statusController.stream;
   
-  bool get isPlaying => _state == PlayerState.playing;
+  bool get isPlaying => _state == PlaybackState.playing;
   Duration get position => _currentPosition;
   Duration? get duration => _currentDuration;
   
-  PlayerState _state = PlayerState.stopped;
+  PlaybackState _state = PlaybackState.idle;
   Duration _currentPosition = Duration.zero;
   Duration? _currentDuration;
   
@@ -48,32 +49,51 @@ class AdvancedAudioEngine {
   
   /// إعداد مستمعي المشغل
   void _setupPlayerListeners() {
-    _player.onPlayerStateChanged.listen((state) {
-      _state = state;
-      _isPlayingController.add(state == PlayerState.playing);
-      _statusController.add(state.name);
-      debugPrint('AdvancedAudioEngine: Player state changed to ${state.name}');
+    _player.playerStateStream.listen((state) {
+      switch (state.processingState) {
+        case ProcessingState.idle:
+          _state = PlaybackState.idle;
+          break;
+        case ProcessingState.loading:
+          _state = PlaybackState.loading;
+          break;
+        case ProcessingState.buffering:
+          _state = PlaybackState.loading;
+          break;
+        case ProcessingState.ready:
+          if (state.playing) {
+            _state = PlaybackState.playing;
+          } else {
+            _state = PlaybackState.paused;
+          }
+          break;
+        case ProcessingState.completed:
+          _state = PlaybackState.completed;
+          break;
+      }
+      _isPlayingController.add(state.playing);
+      _statusController.add(state.processingState.name);
+      debugPrint('AdvancedAudioEngine: Player state changed to ${state.processingState.name}');
     });
     
-    _player.onPositionChanged.listen((pos) {
+    _player.positionStream.listen((pos) {
       _currentPosition = pos;
       _positionController.add(pos);
     });
     
-    _player.onDurationChanged.listen((dur) {
+    _player.durationStream.listen((dur) {
       if (dur != null && dur.inMilliseconds > 0) {
         _currentDuration = dur;
         _durationController.add(dur);
       }
     });
     
-    _player.onPlayerComplete.listen((_) {
-      _statusController.add('completed');
-      debugPrint('AdvancedAudioEngine: Playback completed');
+    _player.playbackEventStream.listen((event) {
+      if (event.processingState == ProcessingState.completed) {
+        _statusController.add('completed');
+        debugPrint('AdvancedAudioEngine: Playback completed');
+      }
     });
-    
-    // audioplayers doesn't have onPlayerError, errors are thrown in play methods
-    // We'll handle errors in the try-catch blocks of play methods
   }
   
   /// تهيئة المحرك الصوتي
@@ -146,8 +166,8 @@ class AdvancedAudioEngine {
       debugPrint('🎵 Attempting source ${_currentSourceIndex + 1}/${_backupSources.length}: $currentUrl');
       
       try {
-        final source = UrlSource(currentUrl);
-        await _player.play(source);
+        await _player.setUrl(currentUrl);
+        await _player.play();
         
         if (startPosition != null && startPosition > Duration.zero) {
           await _player.seek(startPosition);
@@ -197,8 +217,8 @@ class AdvancedAudioEngine {
       final fileUrl = file.uri.toString();
       debugPrint('AdvancedAudioEngine: Playing local file: $fileUrl');
 
-      await _player.setSource(DeviceFileSource(localPath));
-      await _player.resume();
+      await _player.setFilePath(localPath);
+      await _player.play();
 
       _statusController.add('playing');
       _isPlayingController.add(true);
@@ -265,9 +285,9 @@ class AdvancedAudioEngine {
   Future<void> setLoopMode(LoopMode mode) async {
     try {
       if (mode == LoopMode.one) {
-        await _player.setReleaseMode(ReleaseMode.loop);
+        await _player.setLoopMode(LoopMode.one);
       } else {
-        await _player.setReleaseMode(ReleaseMode.release);
+        await _player.setLoopMode(LoopMode.off);
       }
     } catch (e) {
       _errorController.add('Set loop mode failed: $e');

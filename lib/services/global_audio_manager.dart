@@ -33,6 +33,7 @@ class GlobalAudioManager extends ChangeNotifier {
   PlaybackState get playbackState => _playbackState;
   bool get isPlaying => _playbackState == PlaybackState.playing;
   bool get isPaused => _playbackState == PlaybackState.paused;
+  bool get isStopped => _playbackState == PlaybackState.idle;
   bool isPlayingOrBuffering => _playbackState == PlaybackState.playing || _playbackState == PlaybackState.loading;
   Duration get position => _position;
   Duration? get duration => _duration;
@@ -79,13 +80,13 @@ class GlobalAudioManager extends ChangeNotifier {
     
     _currentSource = source.type;
     _currentDescriptor = source;
-    _currentUrl = source.url;
+    _currentUrl = source.effectiveSource;
     _playbackState = PlaybackState.loading;
     notifyListeners();
 
     try {
       await _engine.play(
-        source.url,
+        _currentUrl!,
         isLiveStream: source.type == AudioSourceType.radio,
       );
       _playbackState = PlaybackState.playing;

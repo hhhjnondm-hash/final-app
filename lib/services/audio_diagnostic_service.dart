@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 class AudioDiagnosticService {
@@ -54,14 +54,14 @@ class AudioDiagnosticService {
     try {
       // Test with a known working MP3 file
       final testUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-      await _testPlayer.setSourceUrl(testUrl);
-      await _testPlayer.resume();
+      await _testPlayer.setUrl(testUrl);
+      await _testPlayer.play();
       await Future.delayed(const Duration(seconds: 2));
       
-      final state = _testPlayer.state;
+      final state = _testPlayer.playerState;
       await _testPlayer.stop();
       
-      return state == PlayerState.playing || state == PlayerState.paused;
+      return state.playing;
     } catch (e) {
       debugPrint('Known URL test failed: $e');
       return false;
@@ -72,14 +72,14 @@ class AudioDiagnosticService {
     try {
       // Test with a Quran API URL
       final testUrl = 'https://server8.mp3quran.net/afs/001.mp3';
-      await _testPlayer.setSourceUrl(testUrl);
-      await _testPlayer.resume();
+      await _testPlayer.setUrl(testUrl);
+      await _testPlayer.play();
       await Future.delayed(const Duration(seconds: 3));
       
-      final state = _testPlayer.state;
+      final state = _testPlayer.playerState;
       await _testPlayer.stop();
       
-      return state == PlayerState.playing || state == PlayerState.paused;
+      return state.playing;
     } catch (e) {
       debugPrint('Quran API URL test failed: $e');
       return false;
@@ -90,14 +90,14 @@ class AudioDiagnosticService {
     try {
       // Test with a radio stream URL
       final testUrl = 'https://stream.radiojar.com/8s5u5tpdtwzuv';
-      await _testPlayer.setSourceUrl(testUrl);
-      await _testPlayer.resume();
+      await _testPlayer.setUrl(testUrl);
+      await _testPlayer.play();
       await Future.delayed(const Duration(seconds: 3));
       
-      final state = _testPlayer.state;
+      final state = _testPlayer.playerState;
       await _testPlayer.stop();
       
-      return state == PlayerState.playing || state == PlayerState.paused;
+      return state.playing;
     } catch (e) {
       debugPrint('Radio stream URL test failed: $e');
       return false;

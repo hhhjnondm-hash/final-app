@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -306,16 +307,20 @@ class AthanService extends ChangeNotifier {
       await _audioPlayer.setVolume(_settings.volume);
       
       if (audioPath.startsWith('http')) {
-        await _audioPlayer.play(UrlSource(audioPath));
+        await _audioPlayer.setUrl(audioPath);
       } else {
-        await _audioPlayer.play(AssetSource(audioPath));
+        await _audioPlayer.setAsset(audioPath);
       }
+      
+      await _audioPlayer.play();
 
       debugPrint('🎵 Playing athan for $prayer: $audioPath');
       
       // Handle completion
-      _audioPlayer.onPlayerComplete.listen((_) {
-        debugPrint('✅ Athan completed for $prayer');
+      _audioPlayer.playerStateStream.listen((state) {
+        if (state.processingState == ProcessingState.completed) {
+          debugPrint('✅ Athan completed for $prayer');
+        }
       });
     } catch (e) {
       debugPrint('❌ Error playing athan: $e');

@@ -3,6 +3,7 @@ import '../data/quran_metadata.dart';
 import '../models/quran_models.dart';
 import '../services/quran_storage_service.dart';
 import '../services/global_audio_manager.dart';
+import '../services/audio_quran_service.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/surah_card.dart';
@@ -46,11 +47,20 @@ class _QuranScreenState extends State<QuranScreen> with SingleTickerProviderStat
   /// Play surah using GlobalAudioManager
   Future<void> _playSurah(int surahNumber, String surahName) async {
     try {
-      // Placeholder for audio playback - in production you'd use the new architecture
-      debugPrint('🎵 Would play Surah $surahNumber: $surahName');
-      // await _audioManager.playQuran(audioUrl);
+      // Use AudioQuranService for Quran playback
+      final audioQuranService = AudioQuranService();
+      await audioQuranService.playSurah(surahNumber);
+      
+      debugPrint('🎵 Playing Surah $surahNumber: $surahName');
     } catch (e) {
       debugPrint('❌ Error playing surah: $e');
+      
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('فشل تشغيل السورة: $e')),
+        );
+      }
     }
   }
 

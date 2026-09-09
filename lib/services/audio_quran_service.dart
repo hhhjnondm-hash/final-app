@@ -88,6 +88,15 @@ class AudioQuranService extends ChangeNotifier {
     await _playCurrentSurah();
   }
 
+  Future<void> playSurah(int surahNumber) async {
+    final surah = QuranMetadataProvider.getAllSurah().firstWhere(
+      (s) => s.number == surahNumber,
+      orElse: () => QuranMetadataProvider.getAllSurah().first,
+    );
+    _currentSurah = surah;
+    await _playCurrentSurah();
+  }
+
   Future<void> _playCurrentSurah() async {
     debugPrint('AudioQuranService: Playing surah ${_currentSurah.number} with reciter ${_currentReciter.nameArabic}');
     
@@ -96,10 +105,13 @@ class AudioQuranService extends ChangeNotifier {
     final audioUrl = localPath ?? _buildAudioUrl(_currentReciter, _currentSurah.number);
     
     final descriptor = AudioSourceDescriptor(
+      id: '${_currentReciter.id}_${_currentSurah.number}',
       type: AudioSourceType.quran,
-      url: audioUrl,
       title: _currentSurah.nameArabic,
       subtitle: _currentReciter.nameArabic,
+      provider: 'AudioQuranService',
+      remoteUrl: localPath == null ? audioUrl : null,
+      localPath: localPath,
       metadata: {
         'reciterId': _currentReciter.id,
         'surahNumber': _currentSurah.number,

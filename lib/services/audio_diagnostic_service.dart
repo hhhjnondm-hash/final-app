@@ -42,7 +42,7 @@ class AudioDiagnosticService {
 
   Future<bool> _testAudioPlayerInit() async {
     try {
-      await _testPlayer.release();
+      await _testPlayer.stop();
       return true;
     } catch (e) {
       debugPrint('Audio player init failed: $e');
@@ -105,7 +105,7 @@ class AudioDiagnosticService {
   }
 
   Future<void> release() async {
-    await _testPlayer.release();
+    await _testPlayer.dispose();
   }
 
   static String getDiagnosticMessage(Map<String, dynamic> results) {

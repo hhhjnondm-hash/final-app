@@ -34,7 +34,7 @@ class GlobalAudioManager extends ChangeNotifier {
   bool get isPlaying => _playbackState == PlaybackState.playing;
   bool get isPaused => _playbackState == PlaybackState.paused;
   bool get isStopped => _playbackState == PlaybackState.idle;
-  bool isPlayingOrBuffering => _playbackState == PlaybackState.playing || _playbackState == PlaybackState.loading;
+  bool get isPlayingOrBuffering => _playbackState == PlaybackState.playing || _playbackState == PlaybackState.loading;
   Duration get position => _position;
   Duration? get duration => _duration;
   String? get currentUrl => _currentUrl;

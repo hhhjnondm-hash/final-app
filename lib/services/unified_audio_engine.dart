@@ -46,7 +46,9 @@ class UnifiedAudioEngine {
     
     // Setup audio session
     _session = await AudioSession.instance;
-    await _session.configure(const AudioSessionConfiguration.music());
+    if (_session != null) {
+      await _session!.configure(const AudioSessionConfiguration.music());
+    }
     
     _player.playerStateStream.listen((state) {
       switch (state.processingState) {
@@ -185,7 +187,6 @@ class UnifiedAudioEngine {
   /// Do not dispose the shared engine from feature services
   Future<void> disposeEngine() async {
     await _player.dispose();
-    await _session?.dispose();
     await _isPlayingController.close();
     await _positionController.close();
     await _durationController.close();

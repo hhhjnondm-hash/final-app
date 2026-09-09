@@ -4,6 +4,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
+import '../models/audio_playback.dart';
 
 /// محرك صوتي متقدم مع نظام إعادة المحاولة التلقائي
 /// ومعالجة أخطاء شاملة ودعم مصادر متعددة
@@ -275,7 +276,7 @@ class AdvancedAudioEngine {
   /// ضبط السرعة
   Future<void> setSpeed(double speed) async {
     try {
-      await _player.setPlaybackRate(speed.clamp(0.5, 2.0));
+      await _player.setSpeed(speed.clamp(0.5, 2.0));
     } catch (e) {
       _errorController.add('Set speed failed: $e');
     }
@@ -284,11 +285,7 @@ class AdvancedAudioEngine {
   /// التكرار
   Future<void> setLoopMode(LoopMode mode) async {
     try {
-      if (mode == LoopMode.one) {
-        await _player.setLoopMode(LoopMode.one);
-      } else {
-        await _player.setLoopMode(LoopMode.off);
-      }
+      await _player.setLoopMode(mode);
     } catch (e) {
       _errorController.add('Set loop mode failed: $e');
     }

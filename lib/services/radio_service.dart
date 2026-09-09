@@ -107,7 +107,7 @@ class RadioService extends ChangeNotifier {
         id: _currentStation.id,
         type: AudioSourceType.radio,
         title: _currentStation.name,
-        subtitle: _currentStation.language,
+        subtitle: _currentStation.origin,
         provider: 'RadioService',
         remoteUrl: _currentStation.streamUrl,
         metadata: {

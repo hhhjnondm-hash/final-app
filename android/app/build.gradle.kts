@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -22,12 +24,16 @@ android {
         isCoreLibraryDesugaringEnabled = true
     }
 
+    val hasKeyProperties = keystorePropertiesFile.exists() && keystoreProperties.containsKey("storeFile") && keystoreProperties["storeFile"] != null && file(keystoreProperties["storeFile"] as String).exists()
+
     signingConfigs {
-        create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String?
-            keyPassword = keystoreProperties["keyPassword"] as String?
-            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
-            storePassword = keystoreProperties["storePassword"] as String?
+        if (hasKeyProperties) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String?
+                keyPassword = keystoreProperties["keyPassword"] as String?
+                storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+                storePassword = keystoreProperties["storePassword"] as String?
+            }
         }
     }
 
@@ -48,8 +54,8 @@ android {
 
     buildTypes {
         release {
-            // Use release signing config if available, otherwise fallback to debug
-            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+            // Use release signing config if available and keystore exists, otherwise fallback to debug signing
+            signingConfig = if (hasKeyProperties) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
             
             // Enable code shrinking and obfuscation
             isMinifyEnabled = true

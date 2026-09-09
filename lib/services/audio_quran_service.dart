@@ -49,38 +49,15 @@ class AudioQuranService extends ChangeNotifier {
   }
 
   void _initAudioListeners() {
-    _posSub = _audioManager.positionStream.listen((pos) {
-      notifyListeners();
-    });
-
-    _durSub = _audioManager.durationStream.listen((dur) {
-      notifyListeners();
-    });
-
-    _stateSub = _audioManager.playbackStateStream.listen((state) {
-      notifyListeners();
-    });
-
-    _errorSub = _audioManager.errorStream.listen((error) {
-      debugPrint('AudioQuranService Error: $error');
-    });
-  }
-
-  void toggleFavorite(String id) {
-    if (_favoriteReciterIds.contains(id)) {
-      _favoriteReciterIds.remove(id);
-    } else {
-      _favoriteReciterIds.add(id);
-    }
-    notifyListeners();
+    _posSub = _audioManager.positionStream.listen((_) => notifyListeners());
+    _durSub = _audioManager.durationStream.listen((_) => notifyListeners());
+    _stateSub = _audioManager.playbackStateStream.listen((_) => notifyListeners());
+    _errorSub = _audioManager.errorStream.listen((_) => notifyListeners());
   }
 
   Future<void> selectReciter(ReciterProfile reciter) async {
     _currentReciter = reciter;
     notifyListeners();
-    if (_audioManager.isPlaying) {
-      await _playCurrentSurah();
-    }
   }
 
   Future<void> selectSurah(SurahMeta surah) async {
@@ -89,10 +66,7 @@ class AudioQuranService extends ChangeNotifier {
   }
 
   Future<void> playSurah(int surahNumber) async {
-    final surah = QuranMetadataProvider.getAllSurah().firstWhere(
-      (s) => s.number == surahNumber,
-      orElse: () => QuranMetadataProvider.getAllSurah().first,
-    );
+    final surah = QuranMetadataProvider.getSurah(surahNumber);
     _currentSurah = surah;
     await _playCurrentSurah();
   }
@@ -122,8 +96,32 @@ class AudioQuranService extends ChangeNotifier {
     await _audioManager.play(descriptor);
   }
 
+  String _buildAudioUrl(ReciterProfile reciter, int surahNumber) {
+    // Use real MP3Quran server URL from reciter data
+    final surahStr = surahNumber.toString().padLeft(3, '0');
+    final baseUrl = reciter.serverUrl;
+    
+    if (baseUrl == null || baseUrl.isEmpty) {
+      // Fallback to a working server if reciter URL is missing
+      debugPrint('Warning: Reciter ${reciter.id} has no server URL, using fallback');
+      return 'https://server12.mp3quran.net/afs/$surahStr.mp3';
+    }
+    
+    // Clean and build URL
+    final cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    return '$cleanBaseUrl/$surahStr.mp3';
+  }
+
   Future<void> pause() async {
     await _audioManager.pause();
+  }
+
+  Future<void> resume() async {
+    await _audioManager.resume();
+  }
+
+  Future<void> stop() async {
+    await _audioManager.stop();
   }
 
   Future<void> togglePlayPause() async {
@@ -154,29 +152,13 @@ class AudioQuranService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<DownloadRecord?> downloadCurrentSurah() async {
-    final audioUrl = _buildAudioUrl(_currentReciter, _currentSurah.number);
-    return await _downloadManager.downloadSurah(
-      reciter: _currentReciter,
-      surah: _currentSurah,
-      audioUrl: audioUrl,
-    );
-  }
-
-  String _buildAudioUrl(ReciterProfile reciter, int surahNumber) {
-    // Use real MP3Quran server URL from reciter data
-    final surahStr = surahNumber.toString().padLeft(3, '0');
-    final baseUrl = reciter.serverUrl;
-    
-    if (baseUrl == null || baseUrl.isEmpty) {
-      // Fallback to a working server if reciter URL is missing
-      debugPrint('Warning: Reciter ${reciter.id} has no server URL, using fallback');
-      return 'https://server12.mp3quran.net/afs/$surahStr.mp3';
+  void toggleFavorite(String id) {
+    if (_favoriteReciterIds.contains(id)) {
+      _favoriteReciterIds.remove(id);
+    } else {
+      _favoriteReciterIds.add(id);
     }
-    
-    // Clean and build URL
-    final cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
-    return '$cleanBaseUrl/$surahStr.mp3';
+    notifyListeners();
   }
 
   @override

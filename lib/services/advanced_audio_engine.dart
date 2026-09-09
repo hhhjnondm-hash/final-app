@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:just_audio/just_audio.dart';
+import 'package:just_audio/just_audio.dart' as audio;
 import 'package:audio_session/audio_session.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
@@ -9,7 +9,7 @@ import '../models/audio_playback.dart';
 /// محرك صوتي متقدم مع نظام إعادة المحاولة التلقائي
 /// ومعالجة أخطاء شاملة ودعم مصادر متعددة
 class AdvancedAudioEngine {
-  final AudioPlayer _player = AudioPlayer();
+  final audio.AudioPlayer _player = audio.AudioPlayer();
   final Connectivity _connectivity = Connectivity();
   
   // حالة المشغل
@@ -52,23 +52,23 @@ class AdvancedAudioEngine {
   void _setupPlayerListeners() {
     _player.playerStateStream.listen((state) {
       switch (state.processingState) {
-        case ProcessingState.idle:
+        case audio.ProcessingState.idle:
           _state = PlaybackState.idle;
           break;
-        case ProcessingState.loading:
+        case audio.ProcessingState.loading:
           _state = PlaybackState.loading;
           break;
-        case ProcessingState.buffering:
+        case audio.ProcessingState.buffering:
           _state = PlaybackState.loading;
           break;
-        case ProcessingState.ready:
+        case audio.ProcessingState.ready:
           if (state.playing) {
             _state = PlaybackState.playing;
           } else {
             _state = PlaybackState.paused;
           }
           break;
-        case ProcessingState.completed:
+        case audio.ProcessingState.completed:
           _state = PlaybackState.completed;
           break;
       }
@@ -90,7 +90,7 @@ class AdvancedAudioEngine {
     });
     
     _player.playbackEventStream.listen((event) {
-      if (event.processingState == ProcessingState.completed) {
+      if (event.processingState == audio.ProcessingState.completed) {
         _statusController.add('completed');
         debugPrint('AdvancedAudioEngine: Playback completed');
       }
@@ -287,8 +287,8 @@ class AdvancedAudioEngine {
     try {
       // Convert custom LoopMode to just_audio LoopMode
       final justAudioMode = (mode == LoopMode.one) 
-          ? just_audio.LoopMode.one 
-          : just_audio.LoopMode.off;
+          ? audio.LoopMode.one 
+          : audio.LoopMode.off;
       await _player.setLoopMode(justAudioMode);
     } catch (e) {
       _errorController.add('Set loop mode failed: $e');

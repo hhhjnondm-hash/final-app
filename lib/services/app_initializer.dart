@@ -1,6 +1,7 @@
 import 'app_security_service.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'ai_assistant_service.dart';
 import 'islamic_notification_service.dart';
 import 'mp3quran_api_service_v2.dart';
@@ -206,12 +207,17 @@ class AppInitializer {
 
   static Future<void> _runBackgroundInitializations() async {
     try {
-      // Health monitor & Integrity
+      // 1. Synchronize Dynamic Launcher Icon based on Device Local Time
+      // 6:00 AM - 5:59 PM: lightapp.png (Day)
+      // 6:00 PM - 5:59 AM: darkapp.png (Night)
+      await syncDynamicLauncherIconByTime();
+
+      // 2. Health monitor & Integrity
       HealthMonitor().startMonitoring();
       DownloadIntegrityVerifier();
       ErrorHandler();
       
-      // Async preload of prayer times for offline cache
+      // 3. Async preload of prayer times for offline cache
       final calculator = PrayerTimeCalculator();
       await calculator.preloadPrayerData(
         startDate: DateTime.now(),
@@ -223,6 +229,21 @@ class AppInitializer {
       );
     } catch (e) {
       debugPrint('Background init non-fatal error: $e');
+    }
+  }
+
+  /// Communicates with Android MainActivity to switch the active launcher icon alias
+  static Future<String?> syncDynamicLauncherIconByTime() async {
+    if (kIsWeb) return null;
+    try {
+      const platform = MethodChannel('com.islamyat.islamyat_app/dynamic_icon');
+      final currentHour = DateTime.now().hour;
+      final mode = await platform.invokeMethod<String>('updateIconByTime', {'hour': currentHour});
+      debugPrint('🎨 Launcher Icon synced for hour $currentHour -> Mode: $mode');
+      return mode;
+    } catch (e) {
+      debugPrint('Dynamic icon sync non-fatal error: $e');
+      return null;
     }
   }
 }

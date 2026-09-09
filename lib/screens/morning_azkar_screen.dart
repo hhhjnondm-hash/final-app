@@ -207,7 +207,11 @@ class _MorningAzkarScreenState extends State<MorningAzkarScreen> {
           Expanded(
             child: Container(
               decoration: currentIndex > 0
-                  ? DesignSystem.glassButton()
+                  ? BoxDecoration(
+                      color: DesignSystem.gold.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
+                      border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.3)),
+                    )
                   : BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.02),
                       borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
@@ -252,7 +256,7 @@ class _MorningAzkarScreenState extends State<MorningAzkarScreen> {
                 decoration: BoxDecoration(
                   gradient: DesignSystem.primaryGradient,
                   borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-                  boxShadow: DesignSystem.blueGlow,
+                  boxShadow: DesignSystem.softCardShadow,
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: DesignSystem.spacingM),
@@ -287,7 +291,11 @@ class _MorningAzkarScreenState extends State<MorningAzkarScreen> {
           Expanded(
             child: Container(
               decoration: currentIndex < morningAzkarData.length - 1
-                  ? DesignSystem.glassButton()
+                  ? BoxDecoration(
+                      color: DesignSystem.gold.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
+                      border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.3)),
+                    )
                   : BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.02),
                       borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
@@ -381,7 +389,7 @@ class _MorningAzkarScreenState extends State<MorningAzkarScreen> {
                     decoration: BoxDecoration(
                       gradient: DesignSystem.primaryGradient,
                       borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                      boxShadow: DesignSystem.blueGlow,
+                      boxShadow: DesignSystem.softCardShadow,
                     ),
                     child: const Text(
                       'البداية من جديد',

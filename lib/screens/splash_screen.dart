@@ -106,10 +106,10 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       },
     );
 
-    // Ensure minimum cinematic exposure of 2.2 seconds for spiritual luxury feel (skip if in test)
+    // Ensure smooth cinematic exposure of ~1.2s for spiritual logo reveal
     final isTest = WidgetsBinding.instance is! WidgetsFlutterBinding;
     final elapsed = DateTime.now().difference(startTime).inMilliseconds;
-    final remaining = isTest ? 0 : math.max(0, 2200 - elapsed);
+    final remaining = isTest ? 0 : math.max(0, 1200 - elapsed);
     if (remaining > 0) {
       await Future.delayed(Duration(milliseconds: remaining));
     }

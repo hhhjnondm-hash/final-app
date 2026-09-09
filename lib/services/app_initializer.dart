@@ -154,95 +154,43 @@ class AppInitializer {
 
     try {
       // Step 0: Initialize Security Shield
-      onProgress(0.05, 'تفعيل درع الحماية والأمان...');
+      onProgress(0.10, 'تفعيل درع الحماية والأمان...');
       await AppSecurityService().initialize();
 
       // Step 1: Initialize local storage & user preferences
-      onProgress(0.10, 'تحميل التفضيلات والإعدادات المحلية...');
+      onProgress(0.25, 'تحميل التفضيلات والإعدادات المحلية...');
       final storageService = StorageService();
       await storageService.init();
       QuranStorageService();
-      await Future.delayed(const Duration(milliseconds: 100));
 
-      // Step 2: Initialize Hive Database
-      onProgress(0.15, 'تحميل قاعدة البيانات المحلية...');
-      final hiveService = HiveDatabaseService();
-      await hiveService.initialize();
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      // Step 3: Initialize User Preferences
-      onProgress(0.20, 'تحميل تفضيلات المستخدم...');
-      final preferencesProvider = UserPreferencesProvider();
-      await preferencesProvider.initialize();
-      await Future.delayed(const Duration(milliseconds: 100));
+      // Step 2 & 3: Initialize Hive Database & User Preferences concurrently
+      onProgress(0.40, 'تحميل قاعدة البيانات المحلية...');
+      await Future.wait([
+        HiveDatabaseService().initialize(),
+        UserPreferencesProvider().initialize(),
+      ]);
 
       // Step 4: Initialize Quran data cache
-      onProgress(0.35, 'تحميل المصحف الشريف والبيانات القرآنية...');
+      onProgress(0.60, 'تحميل المصحف الشريف والبيانات القرآنية...');
       await QuranService.loadQuranData();
-      await Future.delayed(const Duration(milliseconds: 150));
 
-      // Step 5: Initialize Prayer Times & Local Adhan Calculation
-      onProgress(0.45, 'حساب المواقيت الدقيقة للصلوات الخمس...');
+      // Step 5 & 6: Initialize Core Services concurrently
+      onProgress(0.80, 'تجهيز الخدمات والمنظومة الإيمانية...');
       PrayerService();
       PrayerTimeCalculator();
       LocationService();
-      await Future.delayed(const Duration(milliseconds: 150));
-
-      // Step 6: Initialize Notification Service
-      onProgress(0.55, 'تجهيز نظام الإشعارات...');
-      final notificationService = NotificationService();
-      await notificationService.initialize();
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      // Step 7: Initialize Notifications & Smart Rotation Datasets
-      onProgress(0.65, 'تجهيز منظومة التذكير الإيماني...');
+      await NotificationService().initialize();
       IslamicNotificationService();
-      await Future.delayed(const Duration(milliseconds: 150));
-
-      // Step 8: Initialize AI Knowledge Base & Audio Systems
-      onProgress(0.80, 'تحضير المساعد الذكي والمشغلات الصوتية...');
       AiAssistantService();
       Mp3QuranApiServiceV2();
       GlobalAudioManager();
-      await Future.delayed(const Duration(milliseconds: 200));
 
-      // Step 9: Initialize Health Monitoring
-      onProgress(0.85, 'تحضير نظام مراقبة الصحة...');
-      final healthMonitor = HealthMonitor();
-      healthMonitor.startMonitoring();
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      // Step 10: Initialize Reciter Image Registry
-      onProgress(0.88, 'تحضير سجل صور القراء...');
-      final imageRegistry = ReciterImageRegistry();
-      await imageRegistry.validateAssets();
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      // Step 11: Initialize Download Integrity Verifier
-      onProgress(0.90, 'تحضير نظام التحقق من سلامة التنزيلات...');
-      DownloadIntegrityVerifier();
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      // Step 12: Initialize Error Handler
-      onProgress(0.92, 'تجهيز نظام معالجة الأخطاء...');
-      ErrorHandler();
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      // Step 13: Preload Prayer Data (30 days) using timesprayer.com
-      onProgress(0.95, 'تحميل بيانات الصلاة لمدة 30 يوماً من timesprayer.com...');
-      final calculator = PrayerTimeCalculator();
-      await calculator.preloadPrayerData(
-        startDate: DateTime.now(),
-        days: 30,
-        latitude: 30.0444, // Cairo default
-        longitude: 31.2357,
-        calculationMethod: 5, // Egyptian General Authority
-        timezone: 'Africa/Cairo',
-      );
-      await Future.delayed(const Duration(milliseconds: 100));
-
+      // Step 7: Background non-blocking initializations
       onProgress(1.0, 'اكتمل التحضير بنجاح');
       _isInitialized = true;
+
+      // Run remaining heavy background jobs asynchronously without delaying app launch
+      unawaited(_runBackgroundInitializations());
     } catch (e, stackTrace) {
       debugPrint('Graceful app initialization fallback: $e');
       ErrorHandler().handleError(
@@ -253,6 +201,28 @@ class AppInitializer {
       );
       onProgress(1.0, 'اكتمل التحضير بنجاح');
       _isInitialized = true;
+    }
+  }
+
+  static Future<void> _runBackgroundInitializations() async {
+    try {
+      // Health monitor & Integrity
+      HealthMonitor().startMonitoring();
+      DownloadIntegrityVerifier();
+      ErrorHandler();
+      
+      // Async preload of prayer times for offline cache
+      final calculator = PrayerTimeCalculator();
+      await calculator.preloadPrayerData(
+        startDate: DateTime.now(),
+        days: 30,
+        latitude: 30.0444, // Cairo default
+        longitude: 31.2357,
+        calculationMethod: 5, // Egyptian General Authority
+        timezone: 'Africa/Cairo',
+      );
+    } catch (e) {
+      debugPrint('Background init non-fatal error: $e');
     }
   }
 }

@@ -22,10 +22,7 @@ import 'l10n/localization.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize services
-  await AppInitializer.initializeServices();
-  
-  // Initialize localization
+  // Fast lightweight initializations
   await AppLocalization.initialize();
   
   await SystemChrome.setPreferredOrientations([

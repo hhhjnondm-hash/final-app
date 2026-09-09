@@ -19,19 +19,6 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
-subprojects {
-    afterEvaluate {
-        if (plugins.hasPlugin("com.android.library") || plugins.hasPlugin("com.android.application")) {
-            val androidExt = extensions.findByName("android")
-            if (androidExt is com.android.build.gradle.BaseExtension) {
-                if (androidExt.namespace == null) {
-                    androidExt.namespace = group.toString().ifEmpty { "com.example.${project.name}" }
-                }
-            }
-        }
-    }
-}
-
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }

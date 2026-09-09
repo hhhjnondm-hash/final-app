@@ -1,8 +1,8 @@
-﻿import 'package:crypto/crypto.dart';
+import 'dart:io';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
 
 /// App Security & Anti-Tamper Service
 /// Provides strong defenses against tampering, MITM attacks, data sniffing, and unsafe inputs.
@@ -42,38 +42,74 @@ class AppSecurityService {
     debugPrint('🛡️ App Security Service initialized. System protected.');
   }
 
-  /// Check basic environment integrity and root/jailbreak detection
+  /// Check basic environment integrity and root detection
   Future<void> _validateEnvironment() async {
     try {
-      // Check for jailbreak/root
-      final isJailbroken = await FlutterJailbreakDetection.jailbroken;
-      final isDevelopmentMode = await FlutterJailbreakDetection.developerMode;
-      
-      if (isJailbroken) {
-        debugPrint('⚠️ Security Warning: Device is jailbroken/rooted');
+      final isCompromised = await _checkIsRootedOrCompromised();
+      if (isCompromised) {
+        debugPrint('⚠️ Security Warning: Device or environment might be rooted/compromised');
         _isSecureEnvironment = false;
+      } else {
+        _isSecureEnvironment = true;
       }
-      
-      if (isDevelopmentMode) {
-        debugPrint('⚠️ Security Warning: Device is in developer mode');
-      }
-      
-      _isSecureEnvironment = !isJailbroken;
     } catch (e) {
-      debugPrint('Security: Jailbreak detection error - $e');
-      _isSecureEnvironment = true; // Assume secure if detection fails
+      debugPrint('Security: Environment validation error - $e');
+      _isSecureEnvironment = true;
     }
   }
 
-  /// Check if device is secure (not rooted/jailbroken)
+  /// Check if device is secure (not rooted)
   Future<bool> isDeviceSecure() async {
     try {
-      final isJailbroken = await FlutterJailbreakDetection.jailbroken;
-      return !isJailbroken;
+      final isCompromised = await _checkIsRootedOrCompromised();
+      return !isCompromised;
     } catch (e) {
       debugPrint('Security: Device security check error - $e');
-      return true; // Assume secure if check fails
+      return true;
     }
+  }
+
+  /// Native root & tamper detection without obsolete dependencies
+  static Future<bool> _checkIsRootedOrCompromised() async {
+    if (kIsWeb) return false;
+    try {
+      if (Platform.isAndroid) {
+        const paths = [
+          '/system/app/Superuser.apk',
+          '/sbin/su',
+          '/system/bin/su',
+          '/system/xbin/su',
+          '/data/local/xbin/su',
+          '/data/local/bin/su',
+          '/system/sd/xbin/su',
+          '/system/bin/failsafe/su',
+          '/data/local/su',
+          '/su/bin/su',
+        ];
+        for (final path in paths) {
+          if (File(path).existsSync()) {
+            return true;
+          }
+        }
+      } else if (Platform.isIOS) {
+        const paths = [
+          '/Applications/Cydia.app',
+          '/Library/MobileSubstrate/MobileSubstrate.dylib',
+          '/bin/bash',
+          '/usr/sbin/sshd',
+          '/etc/apt',
+          '/private/var/lib/apt/',
+        ];
+        for (final path in paths) {
+          if (File(path).existsSync()) {
+            return true;
+          }
+        }
+      }
+    } catch (_) {
+      // Ignored for platform permission limits
+    }
+    return false;
   }
 
   /// 1. AES-256 Encryption for sensitive data

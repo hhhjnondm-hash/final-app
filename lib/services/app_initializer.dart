@@ -39,9 +39,14 @@ class AppInitializer {
     try {
       debugPrint('🚀 Starting AppInitializer...');
 
-      // Step 0: Initialize Security Shield
+      // Step 0: Initialize Security Shield (with jailbreak detection)
       debugPrint('🛡️ Initializing App Security Shield...');
-      await AppSecurityService().initialize();
+      final securityService = AppSecurityService();
+      await securityService.initialize();
+      final isSecure = await securityService.isDeviceSecure();
+      if (!isSecure) {
+        debugPrint('⚠️ Security Warning: Device may be rooted/jailbroken');
+      }
       debugPrint('✅ Security Shield active');
 
       // Step 1: Initialize Storage Service

@@ -43,6 +43,10 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   package_info_plus: ^10.2.1
+  flutter_secure_storage: ^8.1.0
+  
+  # Encryption
+  encrypt: ^5.0.3
   
   # Location Services
   geolocator: ^14.0.3
@@ -70,6 +74,9 @@ dependencies:
   
   # Error Handling
   sentry_flutter: ^9.28.0
+  
+  # Security
+  flutter_jailbreak_detection: ^1.1.0
 
 dev_dependencies:
   flutter_test:

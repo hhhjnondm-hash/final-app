@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../screens/radio_screen.dart';
-import '../screens/surah_viewer_screen.dart';
 import '../services/global_audio_manager.dart';
 import '../utils/design_system.dart';
 
@@ -22,7 +20,6 @@ class UnifiedMiniPlayer extends StatelessWidget {
         final descriptor = audioManager.currentDescriptor;
         final title = descriptor?.title ?? (audioManager.currentSource == AudioSourceType.quran ? 'سورة البقرة' : 'الإذاعة المباشرة');
         final subtitle = descriptor?.subtitle ?? (audioManager.currentSource == AudioSourceType.quran ? 'الشيخ عبد الرحمن السديس' : 'بث مباشر');
-        final isQuran = audioManager.currentSource == AudioSourceType.quran;
         final isPlaying = audioManager.isPlaying;
 
         return Padding(

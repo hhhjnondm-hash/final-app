@@ -67,7 +67,7 @@ void main() {
         qiblaAngle: 136.0,
       );
 
-      final location = storageService.getLocation();
+      final location = await storageService.getLocation();
 
       expect(location, isNotNull);
       expect(location!['cityName'], equals('القاهرة'));
@@ -85,7 +85,7 @@ void main() {
       };
 
       await storageService.saveNotificationSettings(testSettings);
-      final retrievedSettings = storageService.getNotificationSettings();
+      final retrievedSettings = await storageService.getNotificationSettings();
 
       expect(retrievedSettings, equals(testSettings));
     });
@@ -113,12 +113,12 @@ void main() {
       const testItemType = 'surah';
 
       await storageService.addFavorite(testItemId, testItemType);
-      final isFavorite = storageService.isFavorite(testItemId);
+      final isFavorite = await storageService.isFavorite(testItemId);
 
       expect(isFavorite, isTrue);
 
       await storageService.removeFavorite(testItemId);
-      final isNotFavorite = storageService.isFavorite(testItemId);
+      final isNotFavorite = await storageService.isFavorite(testItemId);
 
       expect(isNotFavorite, isFalse);
     });
@@ -134,6 +134,21 @@ void main() {
       final retrievedAdjustments = storageService.getPrayerAdjustments();
 
       expect(retrievedAdjustments, equals(testAdjustments));
+    });
+
+    test('should save and retrieve audio settings', () async {
+      await storageService.saveAudioSettings(
+        volume: 0.8,
+        playbackRate: 1.0,
+        autoPlay: true,
+      );
+
+      final audioSettings = await storageService.getAudioSettings();
+
+      expect(audioSettings, isNotNull);
+      expect(audioSettings!['volume'], equals(0.8));
+      expect(audioSettings['playbackRate'], equals(1.0));
+      expect(audioSettings['autoPlay'], equals(true));
     });
 
     test('should clear specific key', () async {

@@ -2,7 +2,7 @@ import '../models/radio_models.dart';
 
 class RadioData {
   static const List<RadioStation> stations = [
-    // 1. Cairo Quran
+    // 1. إذاعة القرآن الكريم من القاهرة
     RadioStation(
       id: 'cairo_quran',
       name: 'إذاعة القرآن الكريم من القاهرة',
@@ -10,21 +10,10 @@ class RadioData {
       description: 'أعرق وأشهر إذاعة للقرآن الكريم في العالم، تبث على مدار الساعة تلاوات نادرة وبرامج التفسير والفقه.',
       streamUrl: 'https://stream.radiojar.com/8s5u5tpdtwzuv',
       category: RadioCategory.quran,
-      listenersCount: '٧٨.٤K مستمع',
+      listenersCount: '١٢٥.٤K مستمع',
       currentProgram: 'المصحف المرتل — كبار قراء العصر الذهبي',
     ),
-    // 2. Makkah Quran
-    RadioStation(
-      id: 'makkah_quran',
-      name: 'إذاعة القرآن الكريم من مكة المكرمة',
-      origin: 'المملكة العربية السعودية · مباشر',
-      description: 'بث مباشر من الحرم المكي الشريف، تلاوات من كبار القراء السعوديين والعالميين.',
-      streamUrl: 'https://stream.radiojar.com/4wqre23fytzuv',
-      category: RadioCategory.quran,
-      listenersCount: '١٢٥.٢K مستمع',
-      currentProgram: 'تلاوة من الحرم المكي',
-    ),
-    // 2. Makkah Quran
+    // 2. إذاعة القرآن الكريم من مكة المكرمة
     RadioStation(
       id: 'makkah_quran',
       name: 'إذاعة القرآن الكريم من مكة المكرمة',
@@ -32,57 +21,22 @@ class RadioData {
       description: 'بث حي ومباشر لتلاوات القرآن الكريم والصلوات المفروضة والتراويح من رحاب المسجد الحرام.',
       streamUrl: 'https://stream.radiojar.com/4wqre23fytzuv',
       category: RadioCategory.quran,
-      listenersCount: '٦٢.١K مستمع',
+      listenersCount: '٩٨.١K مستمع',
       currentProgram: 'تلاوات أئمة الحرم المكي الشريف',
     ),
-    // 3. Zayed Quran UAE
-    RadioStation(
-      id: 'zayed_quran',
-      name: 'إذاعة القرآن الكريم من أبوظبي',
-      origin: 'دولة الإمارات العربية المتحدة · مباشر',
-      description: 'إذاعة القرآن الكريم - شبكة أبوظبي للإعلام، تلاوات خاشعة وبرامج إيمانية متنوعة.',
-      streamUrl: 'https://admdn4.cdn.mangomolo.com/qurankareem/smil:qurankareem.smil/playlist.m3u8',
-      category: RadioCategory.quran,
-      listenersCount: '٣٤.٩K مستمع',
-      currentProgram: 'تلاوات المساء العطرة',
-    ),
-    // 4. Sharjah Quran
-    RadioStation(
-      id: 'sharjah_quran',
-      name: 'إذاعة القرآن الكريم من الشارقة',
-      origin: 'دولة الإمارات العربية المتحدة · مباشر',
-      description: 'هيئة الشارقة للإذاعة والتلفزيون، ختمات قرآنية كاملة وبرامج تدبر الآيات.',
-      streamUrl: 'https://monsterradio.org:8000/sharjahquran',
-      category: RadioCategory.quran,
-      listenersCount: '٢٩.٥K مستمع',
-      currentProgram: 'ختمة التلاوة والتدبر',
-    ),
-    // 5. Nablus Quran Palestine
-    RadioStation(
-      id: 'nablus_quran',
-      name: 'إذاعة القرآن الكريم من نابلس (فلسطين)',
-      origin: 'فلسطين المباركة · مباشر',
-      description: 'إذاعة القرآن الكريم الأولى في فلسطين، تلاوات ندية ودعاء لأهل بيت المقدس.',
-      streamUrl: 'https://stream.zeno.fm/q0y84w16738uv',
-      category: RadioCategory.quran,
-      listenersCount: '٢١.٨K مستمع',
-      currentProgram: 'نفحات من بيت المقدس',
-    ),
-
-    // --- إذاعات أعلام وقراء العصر الذهبي القدماء ---
-    // 6. Abdulbasit Murattal
+    // 3. إذاعة الشيخ عبد الباسط عبد الصمد (مرتل)
     RadioStation(
       id: 'abdulbaset_radio',
       name: 'إذاعة الشيخ عبد الباسط عبد الصمد (مرتل)',
       origin: 'مصر · تلاوات مرتلة نادرة',
-      description: 'إذاعة مخصصة للمصحف المرتل برواية حفص عن عاصم بصوت الشيخ عبد الباسط عبد الصمد.',
+      description: 'المصحف المرتل برواية حفص عن عاصم بصوت الشيخ عبد الباسط عبد الصمد.',
       streamUrl: 'https://backup.qurango.net/radio/abdulbasit_abdulsamad_mojawwad',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Abdulbasit-Abdulsamad.webP',
-      listenersCount: '٥٤.٣K مستمع',
+      photoUrl: 'assets/reciters/shaikh-Abdul-Basit-Abdul-Samad.webP',
+      listenersCount: '٧٤.٣K مستمع',
       currentProgram: 'المصحف المرتل الكامل',
     ),
-    // 7. Abdulbasit Mujawwad
+    // 4. إذاعة الشيخ عبد الباسط عبد الصمد (مجود)
     RadioStation(
       id: 'abdulbaset_mujawwad_radio',
       name: 'إذاعة الشيخ عبد الباسط عبد الصمد (مجود)',
@@ -90,11 +44,11 @@ class RadioData {
       description: 'أروع التلاوات المجودة والمحافل الخارجية التاريخية من المسجد الأقصى والجامع الأموي.',
       streamUrl: 'https://backup.qurango.net/radio/abdulbasit_abdulsamad_mojawwad',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Abdulbasit-Abdulsamad-Mjawad.webP',
-      listenersCount: '٤٨.٦K مستمع',
+      photoUrl: 'assets/reciters/shaikh-Abdul-Basit-Abdul-Samad.webP',
+      listenersCount: '٦٨.٦K مستمع',
       currentProgram: 'روائع التلاوات الخالدة من سورة مريم والرحمن',
     ),
-    // 8. Minshawi Murattal
+    // 5. إذاعة الشيخ محمد صديق المنشاوي (مرتل)
     RadioStation(
       id: 'minshawi_radio',
       name: 'إذاعة الشيخ محمد صديق المنشاوي (مرتل)',
@@ -102,11 +56,11 @@ class RadioData {
       description: 'المصحف المرتل الكامل برواية حفص عن عاصم بصوت القارئ الباكي الشيخ المنشاوي.',
       streamUrl: 'https://backup.qurango.net/radio/mohammed_siddiq_alminshawi',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Mohamed-Siddiq-Al-Minshawi.webP',
-      listenersCount: '٥١.٢K مستمع',
+      photoUrl: 'assets/reciters/shaikh-Muhammad-Siddiq_Al-Minshawi.webP',
+      listenersCount: '٧١.٢K مستمع',
       currentProgram: 'ترتيل خاشع ومؤثر',
     ),
-    // 9. Minshawi Mujawwad
+    // 6. إذاعة الشيخ محمد صديق المنشاوي (مجود)
     RadioStation(
       id: 'minshawi_mujawwad_radio',
       name: 'إذاعة الشيخ محمد صديق المنشاوي (مجود)',
@@ -114,11 +68,11 @@ class RadioData {
       description: 'تلاوات مجودة تأخذ القلوب بسكينة القرآن وعظمة كلماته.',
       streamUrl: 'https://backup.qurango.net/radio/mohammed_siddiq_alminshawi_mojawwad',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Mohamed-Siddiq-Al-Minshawi-Mjawad.webP',
-      listenersCount: '٤٢.٧K مستمع',
+      photoUrl: 'assets/reciters/shaikh-Muhammad-Siddiq_Al-Minshawi.webP',
+      listenersCount: '٥٢.٧K مستمع',
       currentProgram: 'تجويد سورة يوسف وقصار السور',
     ),
-    // 10. Hussary Murattal
+    // 7. إذاعة الشيخ محمود خليل الحصري (مرتل)
     RadioStation(
       id: 'hussary_radio',
       name: 'إذاعة الشيخ محمود خليل الحصري (مرتل)',
@@ -126,11 +80,11 @@ class RadioData {
       description: 'أدق تلاوة وأضبط أداء للأحكام ومخارج الحروف بصوت الشيخ الحصري.',
       streamUrl: 'https://backup.qurango.net/radio/mahmoud_khalil_alhussary',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Mahmoud-Khalil-Al-Hosary.webP',
-      listenersCount: '٤٥.١K مستمع',
+      photoUrl: 'assets/reciters/shaikh-Mahmoud-Khalil-Al-Hosary.webP',
+      listenersCount: '٥٥.١K مستمع',
       currentProgram: 'المصحف المرتل برواية حفص',
     ),
-    // 11. Hussary Mujawwad
+    // 8. إذاعة الشيخ محمود خليل الحصري (مجود)
     RadioStation(
       id: 'hussary_mujawwad_radio',
       name: 'إذاعة الشيخ محمود خليل الحصري (مجود)',
@@ -138,11 +92,11 @@ class RadioData {
       description: 'تجويد بديع ومتقن مع تدبر آيات التنزيل الحكيم.',
       streamUrl: 'https://backup.qurango.net/radio/mahmoud_khalil_alhussary_mojawwad',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Mahmoud-Khalil-Al-Hosary-Mjawad.webP',
-      listenersCount: '٣١.٤K مستمع',
+      photoUrl: 'assets/reciters/shaikh-Mahmoud-Khalil-Al-Hosary.webP',
+      listenersCount: '٤١.٤K مستمع',
       currentProgram: 'المصحف المجود للشيخ الحصري',
     ),
-    // 12. Mustafa Ismail
+    // 9. إذاعة الشيخ مصطفى إسماعيل
     RadioStation(
       id: 'mustafa_ismail_radio',
       name: 'إذاعة الشيخ مصطفى إسماعيل',
@@ -150,11 +104,10 @@ class RadioData {
       description: 'عبقري التلاوة والوقف والابتداء الشيخ مصطفى إسماعيل في تسجيلاته النادرة.',
       streamUrl: 'https://backup.qurango.net/radio/mustafa_ismail',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Mustafa-Ismail.webP',
-      listenersCount: '٣٩.٨K مستمع',
+      listenersCount: '٤٩.٨K مستمع',
       currentProgram: 'نوادر التلاوات التاريخية',
     ),
-    // 13. Mahmoud Ali Al-Banna
+    // 10. إذاعة الشيخ محمود علي البنا
     RadioStation(
       id: 'banna_radio',
       name: 'إذاعة الشيخ محمود علي البنا',
@@ -162,11 +115,11 @@ class RadioData {
       description: 'تلاوات الشيخ محمود علي البنا المرتلة والمجودة المليئة بالوقار.',
       streamUrl: 'https://backup.qurango.net/radio/mahmoud_ali__albanna',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Mahmoud-Ali-Al-Banna.webP',
-      listenersCount: '٢٧.٩K مستمع',
+      photoUrl: 'assets/reciters/shaikh-Mahmoud-Ali_Al-Banna.webP',
+      listenersCount: '٣٧.٩K مستمع',
       currentProgram: 'مصحف الشيخ محمود علي البنا',
     ),
-    // 14. Tablawi Radio
+    // 11. إذاعة الشيخ محمد محمود الطبلاوي
     RadioStation(
       id: 'tablawi_radio',
       name: 'إذاعة الشيخ محمد محمود الطبلاوي',
@@ -174,11 +127,11 @@ class RadioData {
       description: 'أشهر تسجيلات وتلاوات الشيخ محمد محمود الطبلاوي نقيب القراء الأسبق.',
       streamUrl: 'https://backup.qurango.net/radio/mohammad_altablaway',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Mohamed-Mahmoud-Al-Tablawi.webP',
-      listenersCount: '٣٣.٢K مستمع',
+      photoUrl: 'assets/reciters/shaikh-Muhammad-Al-Tablawi.webP',
+      listenersCount: '٤٣.٢K مستمع',
       currentProgram: 'تلاوات سورة الحج والأنبياء',
     ),
-    // 15. Ali Jaber Radio
+    // 12. إذاعة الشيخ علي عبد الله جابر
     RadioStation(
       id: 'ali_jaber_radio',
       name: 'إذاعة الشيخ علي عبد الله جابر',
@@ -186,11 +139,10 @@ class RadioData {
       description: 'تسجيلات الحرم المكي الخالدة في الثمانينات بصوت الشيخ علي جابر رحمه الله.',
       streamUrl: 'https://backup.qurango.net/radio/ali_jaber',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Ali-Jaber.webP',
-      listenersCount: '٣٦.٥K مستمع',
+      listenersCount: '٤٦.٥K مستمع',
       currentProgram: 'تراويح الحرم المكي لعام ١٤٠٧ هـ',
     ),
-    // 16. Muhammad Ayyub Radio
+    // 13. إذاعة الشيخ محمد أيوب
     RadioStation(
       id: 'muhammad_ayyoub_radio',
       name: 'إذاعة الشيخ محمد أيوب',
@@ -198,13 +150,11 @@ class RadioData {
       description: 'تلاوات الحجاز العذبة الرقيقة بصوت إمام المسجد النبوي الشيخ محمد أيوب.',
       streamUrl: 'https://backup.qurango.net/radio/mohammed_ayyub',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Muhammad-Ayyub.webP',
-      listenersCount: '٣٠.٧K مستمع',
+      photoUrl: 'assets/reciters/shaikh-Mohamed-Ayoub.webP',
+      listenersCount: '٤٠.٧K مستمع',
       currentProgram: 'تلاوة حجازية ندية من سورة آل عمران',
     ),
-
-    // --- إذاعات أشهر القراء المعاصرين ---
-    // 17. Hassan Saleh Radio
+    // 14. إذاعة الشيخ حسن صالح
     RadioStation(
       id: 'hassan_saleh_radio',
       name: 'إذاعة الشيخ حسن صالح',
@@ -212,11 +162,11 @@ class RadioData {
       description: 'تلاوات عطرة ومؤثرة تفيض خشوعاً بصوت الشيخ حسن صالح.',
       streamUrl: 'https://backup.qurango.net/radio/hassan_saleh',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Hasan-Saleh.webP',
-      listenersCount: '٣٨.٤K مستمع',
+      photoUrl: 'assets/reciters/shaikh-Hassan-Saleh.webP',
+      listenersCount: '٥٨.٤K مستمع',
       currentProgram: 'تلاوة سورة النمل والقصص',
     ),
-    // 18. Mishary Alafasy Radio
+    // 15. إذاعة الشيخ مشاري بن راشد العفاسي
     RadioStation(
       id: 'afasy_radio',
       name: 'إذاعة الشيخ مشاري بن راشد العفاسي',
@@ -224,11 +174,11 @@ class RadioData {
       description: 'المصحف المرتل والتلاوات الخاشعة للشيخ مشاري راشد العفاسي.',
       streamUrl: 'https://backup.qurango.net/radio/mishary_alafasi',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Mishari-Al-afasi.webP',
-      listenersCount: '٦٨.٢K مستمع',
+      photoUrl: 'assets/reciters/shaikh-Mishari-Al-afasi.webP',
+      listenersCount: '٨٨.٢K مستمع',
       currentProgram: 'ختمة الترتيل الشاملة',
     ),
-    // 19. Maher Al-Muaiqly Radio
+    // 16. إذاعة الشيخ ماهر المعيقلي
     RadioStation(
       id: 'maher_radio',
       name: 'إذاعة الشيخ ماهر المعيقلي',
@@ -236,11 +186,11 @@ class RadioData {
       description: 'بث متواصل لتلاوات الشيخ ماهر المعيقلي في الصلوات والتسجيلات الخاصة.',
       streamUrl: 'https://backup.qurango.net/radio/maher_al_muaiqly',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Maher-Almaikula.webP',
-      listenersCount: '٦١.٩K مستمع',
+      photoUrl: 'assets/reciters/shaikh-Maher-Almaikula.webP',
+      listenersCount: '٨١.٩K مستمع',
       currentProgram: 'تلاوات الحرم المكي اليومية',
     ),
-    // 20. Yasser Al-Dosary Radio
+    // 17. إذاعة الشيخ ياسر الدوسري
     RadioStation(
       id: 'dosari_radio',
       name: 'إذاعة الشيخ ياسر الدوسري',
@@ -248,11 +198,11 @@ class RadioData {
       description: 'تلاوات حماسية وخاشعة تأسر الألباب بصوت الشيخ د. ياسر الدوسري.',
       streamUrl: 'https://backup.qurango.net/radio/yasser_al_dosari',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Yasser-Al-Dosary.webP',
-      listenersCount: '٥٨.٤K مستمع',
+      photoUrl: 'assets/reciters/shaikh-Yasser-Al-Dosary.webP',
+      listenersCount: '٧٨.٤K مستمع',
       currentProgram: 'تلاوة خاشعة من سورة طه والأنبياء',
     ),
-    // 21. Saad Al-Ghamdi Radio
+    // 18. إذاعة الشيخ سعد الغامدي
     RadioStation(
       id: 'ghamdi_radio',
       name: 'إذاعة الشيخ سعد الغامدي',
@@ -260,11 +210,11 @@ class RadioData {
       description: 'تلاوات عذبة هادئة بصوت القارئ الشيخ سعد الغامدي على مدار اليوم.',
       streamUrl: 'https://backup.qurango.net/radio/saad_alghamdi',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-saad-el-3amde.webP',
-      listenersCount: '٤١.٥K مستمع',
+      photoUrl: 'assets/reciters/shaikh-saad-el-3amde.webP',
+      listenersCount: '٦١.٥K مستمع',
       currentProgram: 'المصحف المرتل كاملاً',
     ),
-    // 22. Saud Al-Shuraim Radio
+    // 19. إذاعة الشيخ سعود الشريم
     RadioStation(
       id: 'shuraim_radio',
       name: 'إذاعة الشيخ سعود الشريم',
@@ -272,23 +222,22 @@ class RadioData {
       description: 'التلاوات الحجازية المتميزة والصلوات الخاشعة بصوت الشيخ سعود الشريم.',
       streamUrl: 'https://backup.qurango.net/radio/saud_alshuraim',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-saood-el-shoram.webP',
-      listenersCount: '٣٥.٢K مستمع',
+      photoUrl: 'assets/reciters/shaikh-saood-el-shoram.webP',
+      listenersCount: '٥٥.٢K مستمع',
       currentProgram: 'تراويح وصلوات الحرم المكي',
     ),
-    // 23. Abdul Rahman Al-Sudais Radio
+    // 20. إذاعة الشيخ عبد الرحمن السديس
     RadioStation(
       id: 'sudais_radio',
       name: 'إذاعة الشيخ عبد الرحمن السديس',
-      origin: 'السعودية · إمام الحرم ورئيس الشؤون الدينية',
+      origin: 'السعودية · إمام الحرم المكي',
       description: 'تلاوات وأدعية ختم القرآن المباركة للشيخ عبد الرحمن السديس.',
       streamUrl: 'https://backup.qurango.net/radio/abdulrahman_alsudaes',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Abdul-Rahman-Al-Sudais.webP',
-      listenersCount: '٤٧.٨K مستمع',
+      listenersCount: '٦٧.٨K مستمع',
       currentProgram: 'دعاء ختم القرآن وسور الحرم',
     ),
-    // 24. Ahmed Al-Ajmy Radio
+    // 21. إذاعة الشيخ أحمد بن علي العجمي
     RadioStation(
       id: 'ajmy_radio',
       name: 'إذاعة الشيخ أحمد بن علي العجمي',
@@ -296,11 +245,11 @@ class RadioData {
       description: 'المصحف المرتل بصوت القارئ الشيخ أحمد العجمي.',
       streamUrl: 'https://backup.qurango.net/radio/ahmed_alajmy',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-ben-ali-elagme.webP',
-      listenersCount: '٤٣.٦K مستمع',
+      photoUrl: 'assets/reciters/shaikh-ben-ali-elagme.webP',
+      listenersCount: '٦٣.٦K مستمع',
       currentProgram: 'المصحف المرتل برواية حفص',
     ),
-    // 25. Fares Abbad Radio
+    // 22. إذاعة الشيخ فارس عباد
     RadioStation(
       id: 'fares_abbad_radio',
       name: 'إذاعة الشيخ فارس عباد',
@@ -308,11 +257,11 @@ class RadioData {
       description: 'تلاوات الشيخ فارس عباد المؤثرة التي تسكب السكينة في القلوب.',
       streamUrl: 'https://backup.qurango.net/radio/fares_abbad',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-fares-3abad.webP',
-      listenersCount: '٣٩.١K مستمع',
+      photoUrl: 'assets/reciters/shaikh-Fares-Abbad.webP',
+      listenersCount: '٥٩.١K مستمع',
       currentProgram: 'تلاوة سورة البقرة والكهف',
     ),
-    // 26. Nasser Al-Qatami Radio
+    // 23. إذاعة الشيخ ناصر القطامي
     RadioStation(
       id: 'qatami_radio',
       name: 'إذاعة الشيخ ناصر القطامي',
@@ -320,11 +269,11 @@ class RadioData {
       description: 'تلاوات قيام الليل والتراويح بصوت الشيخ ناصر القطامي.',
       streamUrl: 'https://backup.qurango.net/radio/nasser_alqatami',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Nasser-Al-Qatami.webP',
-      listenersCount: '٣٦.٩K مستمع',
+      photoUrl: 'assets/reciters/shaikh-Naser-Al-Katamy.webP',
+      listenersCount: '٥٦.٩K مستمع',
       currentProgram: 'تراويح وقيام رمضان المبارك',
     ),
-    // 27. Idrees Abkar Radio
+    // 24. إذاعة الشيخ إدريس أبكر
     RadioStation(
       id: 'idrees_abkar_radio',
       name: 'إذاعة الشيخ إدريس أبكر',
@@ -332,11 +281,10 @@ class RadioData {
       description: 'تلاوات خاشعة وأدعية قنوت الوتر بصوت الشيخ إدريس أبكر.',
       streamUrl: 'https://backup.qurango.net/radio/idrees_abkar',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Idris-Abkar.webP',
-      listenersCount: '٣٧.٥K مستمع',
+      listenersCount: '٥٧.٥K مستمع',
       currentProgram: 'دعاء القنوت وتلاوات تهجد',
     ),
-    // 28. Khaled Al-Jalil Radio
+    // 25. إذاعة الشيخ خالد الجليل
     RadioStation(
       id: 'jileel_radio',
       name: 'إذاعة الشيخ خالد الجليل',
@@ -344,11 +292,11 @@ class RadioData {
       description: 'تلاوات خاشعة مؤثرة جداً وشهيرة من سورة يوسف والشعراء.',
       streamUrl: 'https://backup.qurango.net/radio/khalid_aljileel',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Khaled-Al-Jalil.webP',
-      listenersCount: '٤٢.٣K مستمع',
+      photoUrl: 'assets/reciters/shaikh-khaled-galel.webP',
+      listenersCount: '٦٢.٣K مستمع',
       currentProgram: 'تلاوة سورة يوسف وقال فرعون ذروني أقتل موسى',
     ),
-    // 29. Abu Bakr Al-Shatri Radio
+    // 26. إذاعة الشيخ أبو بكر الشاطري
     RadioStation(
       id: 'shatri_radio',
       name: 'إذاعة الشيخ أبو بكر الشاطري',
@@ -356,11 +304,11 @@ class RadioData {
       description: 'المصحف المرتل برواية حفص عن عاصم بصوت الشيخ أبو بكر الشاطري.',
       streamUrl: 'https://backup.qurango.net/radio/abu_bakr_alshatri',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Abu-Bakr-Al-Shatri.webP',
-      listenersCount: '٣١.٨K مستمع',
+      photoUrl: 'assets/reciters/shaikh-abubakr-as-shatery.webP',
+      listenersCount: '٥١.٨K مستمع',
       currentProgram: 'المصحف المرتل كاملاً',
     ),
-    // 30. Islam Sobhi Radio
+    // 27. إذاعة القارئ إسلام صبحي
     RadioStation(
       id: 'islam_sobhi_radio',
       name: 'إذاعة القارئ إسلام صبحي',
@@ -368,11 +316,10 @@ class RadioData {
       description: 'تلاوات هادئة مريحة للأعصاب بصوت القارئ الشاب إسلام صبحي.',
       streamUrl: 'https://backup.qurango.net/radio/islam_sobhi',
       category: RadioCategory.quran,
-      photoUrl: 'reciters/shaikh-Islam-Sobhi.webP',
-      listenersCount: '٤٩.٧K مستمع',
+      listenersCount: '٦٩.٧K مستمع',
       currentProgram: 'تلاوات هادئة مريحة للقلب',
     ),
-    // 31. Ruqyah Shariah Radio
+    // 28. إذاعة الرقية الشرعية
     RadioStation(
       id: 'ruqyah_radio',
       name: 'إذاعة الرقية الشرعية الشاملة',
@@ -380,19 +327,52 @@ class RadioData {
       description: 'بث متواصل للرقية الشرعية بأصوات كبار المشايخ والقراء للتحصين والسكينة.',
       streamUrl: 'https://backup.qurango.net/radio/roqiah',
       category: RadioCategory.adhkar,
-      listenersCount: '٥٦.٢K مستمع',
+      listenersCount: '٧٦.٢K مستمع',
       currentProgram: 'الرقية الشرعية الشاملة من الكتاب والسنة',
     ),
-    // 32. Tafsir Radio (Ibn Kathir)
+    // 29. إذاعة تفسير القرآن الكريم
     RadioStation(
       id: 'tafsir_radio',
-      name: 'إذاعة تفسير القرآن الكريم (ابن عثيمين والشعراوي)',
+      name: 'إذاعة تفسير القرآن الكريم',
       origin: 'العالم الإسلامي · خواطر إيمانية',
       description: 'شرح وتدبر آيات القرآن الكريم للشيخ محمد متولي الشعراوي والشيخ ابن عثيمين.',
       streamUrl: 'https://backup.qurango.net/radio/tafseer',
       category: RadioCategory.tafsir,
-      listenersCount: '٢٨.٧K مستمع',
-      currentProgram: 'خواطر وتفسير سورة البقرة',
+      listenersCount: '٤٨.٧K مستمع',
+      currentProgram: 'خواطر وتفسير القرآن العظيم',
+    ),
+    // 30. إذاعة سورة البقرة
+    RadioStation(
+      id: 'baqarah_radio',
+      name: 'إذاعة سورة البقرة طوال اليوم',
+      origin: 'العالم الإسلامي · بركة وطمأنينة',
+      description: 'تلاوات متواصلة لسورة البقرة بأعذب أصوات كبار القراء لطرد الشياطين وجلب البركة للبيت.',
+      streamUrl: 'https://backup.qurango.net/radio/albaqarah',
+      category: RadioCategory.quran,
+      listenersCount: '٨٤.١K مستمع',
+      currentProgram: 'تلاوة سورة البقرة المباركة',
+    ),
+    // 31. إذاعة أذكار الصباح والمساء
+    RadioStation(
+      id: 'adhkar_radio',
+      name: 'إذاعة أذكار الصباح والمساء واليوم والليلة',
+      origin: 'العالم الإسلامي · حصن المسلم',
+      description: 'أذكار الصباح والمساء والأدعية النبوية المأثورة مكررة على مدار الساعة.',
+      streamUrl: 'https://backup.qurango.net/radio/athkar_sabah_masa',
+      category: RadioCategory.adhkar,
+      listenersCount: '٥٣.٩K مستمع',
+      currentProgram: 'أذكار الصباح والمساء المأثورة',
+    ),
+    // 32. إذاعة القرآن الكريم من أبوظبي
+    RadioStation(
+      id: 'zayed_quran',
+      name: 'إذاعة القرآن الكريم من أبوظبي',
+      origin: 'دولة الإمارات العربية المتحدة · مباشر',
+      description: 'إذاعة القرآن الكريم - شبكة أبوظبي للإعلام، تلاوات خاشعة وبرامج إيمانية متنوعة.',
+      streamUrl: 'https://admdn4.cdn.mangomolo.com/qurankareem/smil:qurankareem.smil/playlist.m3u8',
+      category: RadioCategory.quran,
+      listenersCount: '٤٤.٩K مستمع',
+      currentProgram: 'تلاوات المساء العطرة',
     ),
   ];
 }

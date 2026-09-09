@@ -29,22 +29,19 @@ class _IqraScreenState extends State<IqraScreen> {
   bool _isLoading = true;
   int _activeAyahNumber = 1;
   double _fontSize = 24.0;
-  String _readingTheme = 'dark'; // dark, cream, blue
-  Timer? _ayahSyncTimer;
+  String _readingTheme = 'cream'; // light theme friendly default
 
   @override
   void initState() {
     super.initState();
-    _currentSurah = QuranMetadataProvider.getAllSurahs().first;
+    _currentSurah = _audio.currentSurah;
     _audio.addListener(_onAudioUpdate);
     _loadSurah(_currentSurah);
-    _startLiveAyahTracker();
   }
 
   @override
   void dispose() {
     _audio.removeListener(_onAudioUpdate);
-    _ayahSyncTimer?.cancel();
     super.dispose();
   }
 
@@ -53,23 +50,22 @@ class _IqraScreenState extends State<IqraScreen> {
       if (_currentSurah.number != _audio.currentSurah.number) {
         _loadSurah(_audio.currentSurah);
       }
+      
+      // Calculate approximate active Ayah based on position & total duration
+      if (_audio.isPlaying && _ayahs.isNotEmpty) {
+        final posMs = _audio.currentPosition.inMilliseconds;
+        final totalMs = _audio.totalDuration.inMilliseconds;
+        if (totalMs > 0 && posMs > 0) {
+          final fraction = (posMs / totalMs).clamp(0.0, 0.999);
+          final calculatedAyah = (fraction * _ayahs.length).floor() + 1;
+          if (calculatedAyah != _activeAyahNumber && calculatedAyah <= _ayahs.length) {
+            _activeAyahNumber = calculatedAyah;
+          }
+        }
+      }
+
       setState(() {});
     }
-  }
-
-  void _startLiveAyahTracker() {
-    _ayahSyncTimer?.cancel();
-    _ayahSyncTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      if (_audio.isPlaying && _ayahs.isNotEmpty) {
-        setState(() {
-          _activeAyahNumber = (_activeAyahNumber % _ayahs.length) + 1;
-        });
-      }
-    });
   }
 
   Future<void> _loadSurah(SurahMeta surah) async {
@@ -83,7 +79,7 @@ class _IqraScreenState extends State<IqraScreen> {
         _activeAyahNumber = 1;
         _isLoading = false;
       });
-      _storage.updateProgress(
+      _storage.updateReadingProgress(
         surahNumber: surah.number,
         surahName: surah.nameArabic,
         ayahNumber: 1,
@@ -133,7 +129,7 @@ class _IqraScreenState extends State<IqraScreen> {
                   ),
                 ),
 
-                // 4. Continuous Mushaf Reader with Live Ayah Highlight
+                // 3. Continuous Mushaf Reader with Live Ayah Highlight
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -221,11 +217,12 @@ class _IqraScreenState extends State<IqraScreen> {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: DesignSystem.bgCard.withValues(alpha: 0.8),
+          color: DesignSystem.bgCard,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          border: Border.all(color: const Color(0xFFDCE3EC)),
+          boxShadow: DesignSystem.softCardShadow,
         ),
-        child: Icon(icon, color: DesignSystem.goldLight, size: 20),
+        child: Icon(icon, color: DesignSystem.textWhite, size: 20),
       ),
     );
   }
@@ -240,16 +237,17 @@ class _IqraScreenState extends State<IqraScreen> {
         return Container(
           padding: const EdgeInsets.all(DesignSystem.spacingL),
           decoration: BoxDecoration(
-            color: DesignSystem.bgDarkest,
+            color: DesignSystem.bgCard,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(DesignSystem.radiusLarge)),
             border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.4)),
+            boxShadow: DesignSystem.softCardShadow,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'الآية رقم $ayahNumber من سورة ${_currentSurah.nameArabic}',
-                style: const TextStyle(color: DesignSystem.goldLight, fontWeight: FontWeight.bold),
+                style: const TextStyle(color: DesignSystem.textWhite, fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 16),
               Row(
@@ -257,9 +255,9 @@ class _IqraScreenState extends State<IqraScreen> {
                 children: [
                   _buildAyahActionBtn(
                     icon: Icons.play_arrow_rounded,
-                    label: 'تشغيل من هنا',
+                    label: 'تشغيل السورة',
                     onTap: () {
-                      _audio.togglePlayPause();
+                      _audio.selectSurah(_currentSurah);
                       Navigator.pop(context);
                     },
                   ),
@@ -293,7 +291,7 @@ class _IqraScreenState extends State<IqraScreen> {
                       );
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('تمت إضافة العلامة المرجعية'), backgroundColor: Color(0xFF064E3B)),
+                        const SnackBar(content: Text('تمت إضافة العلامة المرجعية بنجاح'), backgroundColor: Color(0xFF0F6B78)),
                       );
                     },
                   ),
@@ -318,13 +316,13 @@ class _IqraScreenState extends State<IqraScreen> {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: DesignSystem.bgCard,
+                color: DesignSystem.bgDarkest,
                 border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.3)),
               ),
               child: Icon(icon, color: DesignSystem.goldLight, size: 20),
             ),
             const SizedBox(height: 6),
-            Text(label, style: const TextStyle(color: DesignSystem.textWhite, fontSize: 11)),
+            Text(label, style: const TextStyle(color: DesignSystem.textWhite, fontSize: 11, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -341,16 +339,17 @@ class _IqraScreenState extends State<IqraScreen> {
           height: MediaQuery.of(context).size.height * 0.75,
           padding: const EdgeInsets.all(DesignSystem.spacingL),
           decoration: BoxDecoration(
-            color: DesignSystem.bgDarkest,
+            color: DesignSystem.bgCard,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(DesignSystem.radiusLarge)),
             border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.4)),
+            boxShadow: DesignSystem.softCardShadow,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
                 'اختر سورة للقراءة والاستماع',
-                style: TextStyle(color: DesignSystem.goldLight, fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(color: DesignSystem.textWhite, fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               Expanded(
@@ -396,9 +395,10 @@ class _IqraScreenState extends State<IqraScreen> {
         return Container(
           padding: const EdgeInsets.all(DesignSystem.spacingL),
           decoration: BoxDecoration(
-            color: DesignSystem.bgDarkest,
+            color: DesignSystem.bgCard,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(DesignSystem.radiusLarge)),
             border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.4)),
+            boxShadow: DesignSystem.softCardShadow,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -406,16 +406,16 @@ class _IqraScreenState extends State<IqraScreen> {
             children: [
               const Text(
                 'اختر القارئ المفضل',
-                style: TextStyle(color: DesignSystem.goldLight, fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(color: DesignSystem.textWhite, fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              ...RecitersData.reciters.take(6).map((reciter) {
+              ...RecitersData.reciters.take(8).map((reciter) {
                 final isCurrent = _audio.currentReciter.id == reciter.id;
                 return ListTile(
                   leading: CircleAvatar(
                     backgroundImage: reciter.photoUrl.startsWith('assets/')
                         ? AssetImage(reciter.photoUrl)
-                        : NetworkImage(reciter.photoUrl),
+                        : NetworkImage(reciter.photoUrl) as ImageProvider,
                   ),
                   title: Text(
                     reciter.nameArabic,
@@ -427,7 +427,7 @@ class _IqraScreenState extends State<IqraScreen> {
                   subtitle: Text(reciter.country, style: const TextStyle(color: DesignSystem.textMuted, fontSize: 11)),
                   trailing: isCurrent ? const Icon(Icons.check_circle_rounded, color: DesignSystem.gold) : null,
                   onTap: () {
-                    _audio.selectReciter(reciter);
+                    _audio.selectReciter(reciter, autoPlay: true);
                     Navigator.pop(context);
                   },
                 );

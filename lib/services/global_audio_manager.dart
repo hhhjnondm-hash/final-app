@@ -9,7 +9,9 @@ export '../models/canonical_identities.dart' show AudioSourceType;
 /// Unified global audio manager - ONE canonical audio engine
 /// All screens must use this manager - never create another AudioPlayer
 class GlobalAudioManager extends ChangeNotifier {
-  GlobalAudioManager._internal();
+  GlobalAudioManager._internal() {
+    _initListeners();
+  }
 
   static final GlobalAudioManager _instance = GlobalAudioManager._internal();
   factory GlobalAudioManager() => _instance;
@@ -48,10 +50,6 @@ class GlobalAudioManager extends ChangeNotifier {
   Stream<Duration?> get durationStream => _engine.durationStream;
   Stream<String> get errorStream => _engine.errorStream;
   Stream<PlaybackState> get playbackStateStream => _engine.playbackStateStream;
-
-  GlobalAudioManager() {
-    _initListeners();
-  }
 
   void _initListeners() {
     _posSub = _engine.positionStream.listen((pos) {

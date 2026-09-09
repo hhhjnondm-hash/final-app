@@ -1,18 +1,22 @@
 import 'dart:async';
-import 'package:just_audio/just_audio.dart';
-import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
+import 'package:audioplayers/audioplayers.dart' as ap;
+import 'package:just_audio/just_audio.dart' as ja;
+import 'package:audio_session/audio_session.dart';
 import '../models/audio_playback.dart';
 import '../observability/dev_log.dart';
 
-/// Single canonical playback engine using just_audio (stronger on Android)
-/// All screens must go through GlobalAudioManager — never construct another player
 class UnifiedAudioEngine {
   UnifiedAudioEngine._internal();
   static final UnifiedAudioEngine instance = UnifiedAudioEngine._internal();
   factory UnifiedAudioEngine() => instance;
 
-  final AudioPlayer _player = AudioPlayer();
+  // Web engine: audioplayers (HTML5 Audio, supports mp3, m3u8, streaming without CORS issues)
+  ap.AudioPlayer? _webPlayer;
+
+  // Native engine: just_audio
+  ja.AudioPlayer? _nativePlayer;
+
   AudioSession? _session;
   bool _listenersReady = false;
   String? _currentSource;
@@ -43,58 +47,94 @@ class UnifiedAudioEngine {
 
   Future<void> initialize() async {
     if (_listenersReady) return;
-    
-    // Setup audio session
-    _session = await AudioSession.instance;
-    if (_session != null) {
-      await _session!.configure(const AudioSessionConfiguration.music());
-    }
-    
-    _player.playerStateStream.listen((state) {
-      switch (state.processingState) {
-        case ProcessingState.idle:
-          _setState(PlaybackState.idle);
-          break;
-        case ProcessingState.loading:
-          _setState(PlaybackState.loading);
-          break;
-        case ProcessingState.buffering:
-          _setState(PlaybackState.loading);
-          break;
-        case ProcessingState.ready:
-          if (state.playing) {
+
+    if (kIsWeb) {
+      _webPlayer = ap.AudioPlayer();
+      _webPlayer!.setReleaseMode(ap.ReleaseMode.stop);
+
+      _webPlayer!.onPlayerStateChanged.listen((state) {
+        switch (state) {
+          case ap.PlayerState.playing:
             _setState(PlaybackState.playing);
-          } else {
+            _isPlayingController.add(true);
+            break;
+          case ap.PlayerState.paused:
             _setState(PlaybackState.paused);
-          }
-          break;
-        case ProcessingState.completed:
-          _setState(PlaybackState.completed);
-          break;
-      }
-      _isPlayingController.add(state.playing);
-    });
-    
-    _player.positionStream.listen((pos) {
-      _position = pos;
-      _positionController.add(pos);
-    });
-    
-    _player.durationStream.listen((dur) {
-      if (dur != null) {
+            _isPlayingController.add(false);
+            break;
+          case ap.PlayerState.stopped:
+            _setState(PlaybackState.idle);
+            _isPlayingController.add(false);
+            break;
+          case ap.PlayerState.completed:
+            _setState(PlaybackState.completed);
+            _isPlayingController.add(false);
+            break;
+          case ap.PlayerState.disposed:
+            _setState(PlaybackState.idle);
+            _isPlayingController.add(false);
+            break;
+        }
+      });
+
+      _webPlayer!.onPositionChanged.listen((pos) {
+        _position = pos;
+        _positionController.add(pos);
+      });
+
+      _webPlayer!.onDurationChanged.listen((dur) {
         _duration = dur;
         _durationController.add(dur);
+      });
+
+      _webPlayer!.onLog.listen((msg) {
+        debugPrint('[AudioPlayerWeb] Log: $msg');
+      });
+    } else {
+      _nativePlayer = ja.AudioPlayer();
+      _session = await AudioSession.instance;
+      if (_session != null) {
+        await _session!.configure(const AudioSessionConfiguration.music());
       }
-    });
-    
-    _player.playbackEventStream.listen((event) {
-      if (event.processingState == ProcessingState.completed) {
-        _setState(PlaybackState.completed);
-      }
-    });
-    
+
+      _nativePlayer!.playerStateStream.listen((state) {
+        switch (state.processingState) {
+          case ja.ProcessingState.idle:
+            _setState(PlaybackState.idle);
+            break;
+          case ja.ProcessingState.loading:
+          case ja.ProcessingState.buffering:
+            _setState(PlaybackState.loading);
+            break;
+          case ja.ProcessingState.ready:
+            if (state.playing) {
+              _setState(PlaybackState.playing);
+            } else {
+              _setState(PlaybackState.paused);
+            }
+            break;
+          case ja.ProcessingState.completed:
+            _setState(PlaybackState.completed);
+            break;
+        }
+        _isPlayingController.add(state.playing);
+      });
+
+      _nativePlayer!.positionStream.listen((pos) {
+        _position = pos;
+        _positionController.add(pos);
+      });
+
+      _nativePlayer!.durationStream.listen((dur) {
+        if (dur != null) {
+          _duration = dur;
+          _durationController.add(dur);
+        }
+      });
+    }
+
     _listenersReady = true;
-    DevLog.audio(message: 'engine initialized', provider: 'just_audio');
+    DevLog.audio(message: 'engine initialized', provider: kIsWeb ? 'audioplayers' : 'just_audio');
   }
 
   void _setState(PlaybackState next) {
@@ -110,32 +150,43 @@ class UnifiedAudioEngine {
     await initialize();
     _setState(PlaybackState.loading);
     _currentSource = source;
-    
+
     try {
-      await _player.stop();
-      
       DevLog.audio(
         message: 'play',
         origin: source.startsWith('http') ? 'remote' : 'local',
         host: _host(source),
         state: 'loading',
       );
-      
-      if (source.startsWith('http://') || source.startsWith('https://')) {
-        final uri = Uri.parse(source);
-        await _player.setUrl(source);
-        await _player.play();
-      } else if (source.startsWith('assets/')) {
-        final path = source.substring('assets/'.length);
-        await _player.setAsset(path);
-        await _player.play();
+
+      if (kIsWeb) {
+        await _webPlayer!.stop();
+        if (source.startsWith('http://') || source.startsWith('https://')) {
+          await _webPlayer!.play(ap.UrlSource(source));
+        } else if (source.startsWith('assets/')) {
+          final assetPath = source.substring('assets/'.length);
+          await _webPlayer!.play(ap.AssetSource(assetPath));
+        } else {
+          await _webPlayer!.play(ap.DeviceFileSource(source));
+        }
       } else {
-        await _player.setFilePath(source);
-        await _player.play();
+        await _nativePlayer!.stop();
+        if (source.startsWith('http://') || source.startsWith('https://')) {
+          await _nativePlayer!.setUrl(source);
+          await _nativePlayer!.play();
+        } else if (source.startsWith('assets/')) {
+          final path = source.substring('assets/'.length);
+          await _nativePlayer!.setAsset(path);
+          await _nativePlayer!.play();
+        } else {
+          await _nativePlayer!.setFilePath(source);
+          await _nativePlayer!.play();
+        }
       }
-      
+
       _setState(PlaybackState.playing);
     } catch (e) {
+      debugPrint('UnifiedAudioEngine error: $e');
       _setState(PlaybackState.error);
       _errorController.add('$e');
       DevLog.audio(message: 'play failed', error: '$e', host: _host(source));
@@ -151,42 +202,71 @@ class UnifiedAudioEngine {
   }
 
   Future<void> pause() async {
-    await _player.pause();
+    if (kIsWeb) {
+      await _webPlayer?.pause();
+    } else {
+      await _nativePlayer?.pause();
+    }
   }
 
   Future<void> resume() async {
-    await _player.play();
+    if (kIsWeb) {
+      await _webPlayer?.resume();
+    } else {
+      await _nativePlayer?.play();
+    }
   }
 
   Future<void> stop() async {
-    await _player.stop();
+    if (kIsWeb) {
+      await _webPlayer?.stop();
+    } else {
+      await _nativePlayer?.stop();
+    }
     _currentSource = null;
     _setState(PlaybackState.idle);
   }
 
   Future<void> seek(Duration position) async {
-    await _player.seek(position);
+    if (kIsWeb) {
+      await _webPlayer?.seek(position);
+    } else {
+      await _nativePlayer?.seek(position);
+    }
   }
 
   Future<void> setVolume(double volume) async {
-    await _player.setVolume(volume.clamp(0.0, 1.0));
+    final v = volume.clamp(0.0, 1.0);
+    if (kIsWeb) {
+      await _webPlayer?.setVolume(v);
+    } else {
+      await _nativePlayer?.setVolume(v);
+    }
   }
 
   Future<void> setPlaybackRate(double rate) async {
-    await _player.setSpeed(rate.clamp(0.5, 2.0));
+    final r = rate.clamp(0.5, 2.0);
+    if (kIsWeb) {
+      await _webPlayer?.setPlaybackRate(r);
+    } else {
+      await _nativePlayer?.setSpeed(r);
+    }
   }
 
   Future<void> duck() async {
-    await _player.setVolume(0.15);
+    await setVolume(0.15);
   }
 
   Future<void> unduck() async {
-    await _player.setVolume(1.0);
+    await setVolume(1.0);
   }
 
-  /// Do not dispose the shared engine from feature services
   Future<void> disposeEngine() async {
-    await _player.dispose();
+    if (kIsWeb) {
+      await _webPlayer?.dispose();
+    } else {
+      await _nativePlayer?.dispose();
+    }
     await _isPlayingController.close();
     await _positionController.close();
     await _durationController.close();

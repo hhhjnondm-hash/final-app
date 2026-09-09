@@ -210,8 +210,7 @@ class _AudioScreenState extends State<AudioScreen> {
                             return ReciterCard(
                               reciter: reciter,
                               onPlayTap: () {
-                                _audioService.selectReciter(reciter);
-                                _audioService.togglePlayPause();
+                                _audioService.selectReciter(reciter, autoPlay: true);
                               },
                             );
                           },
@@ -414,8 +413,7 @@ class _AudioScreenState extends State<AudioScreen> {
 
     return InkWell(
       onTap: () {
-        _audioService.selectReciter(reciter);
-        _audioService.togglePlayPause();
+        _audioService.selectReciter(reciter, autoPlay: true);
       },
       borderRadius: BorderRadius.circular(20),
       child: Container(

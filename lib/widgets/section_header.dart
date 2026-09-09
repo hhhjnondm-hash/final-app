@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../utils/design_system.dart';
 
 class SectionHeader extends StatelessWidget {
@@ -19,6 +19,8 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: DesignSystem.spacingL,
@@ -33,16 +35,25 @@ class SectionHeader extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(DesignSystem.spacingS),
                   decoration: BoxDecoration(
-                    color: DesignSystem.gold.withOpacity(0.12),
+                    color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF111722),
                     borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
                     border: Border.all(
-                      color: DesignSystem.gold.withOpacity(0.3),
+                      color: const Color(0xFFC89B3C).withOpacity(isLight ? 0.4 : 0.6),
                       width: 1,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isLight
+                            ? const Color(0xFF102A43).withOpacity(0.04)
+                            : const Color(0xFFC89B3C).withOpacity(0.12),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Icon(
                     icon,
-                    color: DesignSystem.gold,
+                    color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFE8D29A),
                     size: 18,
                   ),
                 ),
@@ -53,8 +64,8 @@ class SectionHeader extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: DesignSystem.textWhite,
+                    style: TextStyle(
+                      color: isLight ? const Color(0xFF172033) : const Color(0xFFF6F8FA),
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.3,
@@ -64,9 +75,10 @@ class SectionHeader extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: const TextStyle(
-                        color: DesignSystem.textMuted,
+                      style: TextStyle(
+                        color: isLight ? const Color(0xFF667085) : const Color(0xFF94A3B8),
                         fontSize: 12,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -76,30 +88,17 @@ class SectionHeader extends StatelessWidget {
           ),
           if (actionText != null && onActionTap != null)
             InkWell(
-              borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
               onTap: onActionTap,
+              borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: DesignSystem.spacingM,
-                  vertical: DesignSystem.spacingXS,
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      actionText!,
-                      style: const TextStyle(
-                        color: DesignSystem.goldLight,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: DesignSystem.goldLight,
-                      size: 11,
-                    ),
-                  ],
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Text(
+                  actionText!,
+                  style: TextStyle(
+                    color: isLight ? const Color(0xFF0F6B78) : const Color(0xFFE8D29A),
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),

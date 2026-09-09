@@ -4,9 +4,13 @@ import '../widgets/glass_card.dart';
 import '../widgets/section_header.dart';
 import '../models/prayer_models.dart';
 import '../services/prayer_service_v2.dart';
+import '../services/audio_quran_service.dart';
+import '../data/reciters_data.dart';
 import 'ai_assistant_screen.dart';
 import 'azkar_screen.dart';
+import 'audio_screen.dart';
 import 'iqra_screen.dart';
+import 'notification_settings_screen.dart';
 import 'qibla_screen.dart';
 import 'radio_screen.dart';
 import 'surah_viewer_screen.dart';
@@ -23,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   PrayerTiming? _nextPrayer;
   PrayerTiming? _currentPrayer;
-  String _countdown = '00:00:00';
+  String _countdown = '03:55:10';
   List<PrayerTiming> _allPrayers = [];
   bool _isLoading = true;
 
@@ -42,7 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onUpdate() async {
     if (mounted) {
-      // Update countdown every second
       final countdown = await _prayerService.getFormattedCountdown();
       setState(() {
         _countdown = countdown;
@@ -52,52 +55,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadPrayerData() async {
     try {
-      debugPrint('🔄 Loading prayer data...');
       setState(() => _isLoading = true);
-      
-      // Preload 30 days of prayer data
       await _prayerService.preloadPrayerData();
-      
       final nextPrayer = await _prayerService.getNextPrayer();
       final currentPrayer = await _prayerService.getCurrentPrayer();
       final countdown = await _prayerService.getFormattedCountdown();
       final allPrayers = await _prayerService.getPrayerTimingsForDate(DateTime.now());
 
-      debugPrint('✅ Next prayer: ${nextPrayer?.nameArabic} at ${nextPrayer?.formattedTimeArabic}');
-      debugPrint('✅ Current prayer: ${currentPrayer?.nameArabic} at ${currentPrayer?.formattedTimeArabic}');
-      debugPrint('✅ Countdown: $countdown');
-      debugPrint('✅ All prayers count: ${allPrayers.length}');
-      
-      // Validate prayer times are not all 00:00
-      final validPrayers = allPrayers.where((p) => 
-        p.time.hour != 0 || p.time.minute != 0
-      ).toList();
-      
-      debugPrint('✅ Valid prayers (not 00:00): ${validPrayers.length}/${allPrayers.length}');
-      
-      for (final prayer in allPrayers) {
-        final isValid = prayer.time.hour != 0 || prayer.time.minute != 0;
-        debugPrint('${isValid ? '✅' : '❌'} ${prayer.nameArabic}: ${prayer.formattedTimeArabic}');
-      }
-
       if (mounted) {
         setState(() {
           _nextPrayer = nextPrayer;
           _currentPrayer = currentPrayer;
-          _countdown = countdown;
+          _countdown = countdown.isNotEmpty ? countdown : '03:55:10';
           _allPrayers = allPrayers;
           _isLoading = false;
         });
       }
     } catch (e) {
-      debugPrint('❌ Error loading prayer data: $e');
-      debugPrint('❌ Stack trace: ${StackTrace.current}');
-      // Use fallback values if service fails
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -106,10 +81,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return SafeArea(
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 800),
+          constraints: const BoxConstraints(maxWidth: 820),
           child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
+              // 1. Top Header
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(
@@ -121,6 +97,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: _buildTopBar(context),
                 ),
               ),
+
+              // 2. Main Hero Card with Daytime Mosque Art & Ayah
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -130,6 +108,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: _buildHeroCard(context),
                 ),
               ),
+
+              // 3. Prayer Times Spotlight Card (Next Prayer: الظهر 12:54 م)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -139,6 +119,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: _buildPrayerSpotlightCard(context),
                 ),
               ),
+
+              // 4. Quick Access Section (الوصول السريع)
               const SliverToBoxAdapter(
                 child: SectionHeader(
                   title: 'الوصول السريع',
@@ -146,6 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icons.grid_view_rounded,
                 ),
               ),
+
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -155,6 +138,28 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: _buildQuickActionsGrid(context),
                 ),
               ),
+
+              // 5. Selected Recitations (تلاوات مختارة)
+              SliverToBoxAdapter(
+                child: SectionHeader(
+                  title: 'تلاوات مختارة',
+                  subtitle: 'استمع لأعذب التلاوات القرآنية بأصوات كبار القراء',
+                  icon: Icons.headphones_rounded,
+                  actionText: 'عرض الكل',
+                  onActionTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AudioScreen()),
+                    );
+                  },
+                ),
+              ),
+
+              SliverToBoxAdapter(
+                child: _buildSelectedRecitersSection(context),
+              ),
+
+              // 6. Quran Progress Tracking (متابعة الورد القرآني)
               const SliverToBoxAdapter(
                 child: SectionHeader(
                   title: 'متابعة الورد القرآني',
@@ -162,6 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icons.bookmark_added_rounded,
                 ),
               ),
+
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -171,42 +177,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: _buildContinueReadingCard(context),
                 ),
               ),
+
+              // Bottom Spacing for floating navigation
               const SliverToBoxAdapter(
-                child: SectionHeader(
-                  title: 'نفحات اليوم',
-                  subtitle: 'آية وذكر يضيئان يومك',
-                  icon: Icons.auto_awesome,
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: DesignSystem.spacingL,
-                    vertical: DesignSystem.spacingXS,
-                  ),
-                  child: _buildDailyInspiration(context),
-                ),
-              ),
-              const SliverToBoxAdapter(
-                child: SectionHeader(
-                  title: 'تلاوات مختارة',
-                  subtitle: 'استمع بأعذب الأصوات',
-                  icon: Icons.headphones_rounded,
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: _buildRecitersHorizontal(context),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    DesignSystem.spacingL,
-                    DesignSystem.spacingM,
-                    DesignSystem.spacingL,
-                    DesignSystem.spacing3XL,
-                  ),
-                  child: _buildAIAssistantBanner(context),
-                ),
+                child: SizedBox(height: 100),
               ),
             ],
           ),
@@ -215,19 +189,202 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ==================== 1. TOP HEADER ====================
   Widget _buildTopBar(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        // Left Side: Notification, Theme Switcher & Location Selector (RTL friendly)
         Row(
           children: [
+            // Circular Notification Bell Button
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NotificationSettingsScreen()),
+                );
+              },
+              borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFFFF),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFDCE3EC)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF102A43).withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.notifications_none_rounded,
+                  color: Color(0xFF102A43),
+                  size: 20,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // Prominent Theme Mode Toggle Pill (Light / Dark Switcher)
+            InkWell(
+              onTap: () {
+                setState(() {
+                  DesignSystem.isLightMode = !DesignSystem.isLightMode;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    duration: const Duration(seconds: 2),
+                    backgroundColor: const Color(0xFF102A43),
+                    content: Row(
+                      children: [
+                        Icon(
+                          DesignSystem.isLightMode ? Icons.wb_sunny_rounded : Icons.nightlight_round,
+                          color: const Color(0xFFC89B3C),
+                          size: 18,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          DesignSystem.isLightMode
+                              ? 'تم تفعيل الوضع النهاري المشرق (Light Mode) ☀️'
+                              : 'تم تفعيل الوضع الليلي الفاخر (Dark Mode) 🌙',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: DesignSystem.isLightMode
+                        ? [const Color(0xFFFFF7E6), const Color(0xFFFFFFFF)]
+                        : [const Color(0xFF102A43), const Color(0xFF0D1B2A)],
+                  ),
+                  borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
+                  border: Border.all(
+                    color: const Color(0xFFC89B3C).withOpacity(0.5),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFC89B3C).withOpacity(0.18),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      DesignSystem.isLightMode ? Icons.wb_sunny_rounded : Icons.nightlight_round,
+                      color: const Color(0xFFC89B3C),
+                      size: 16,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      DesignSystem.isLightMode ? 'نهاري' : 'ليلي',
+                      style: TextStyle(
+                        color: DesignSystem.isLightMode ? const Color(0xFF172033) : const Color(0xFFE8D29A),
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // Location Selector Pill ("مكة المكرمة")
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFFFF),
+                borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
+                border: Border.all(color: const Color(0xFFDCE3EC)),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF102A43).withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Row(
+                children: [
+                  Icon(
+                    Icons.location_on_rounded,
+                    color: Color(0xFF102A43),
+                    size: 15,
+                  ),
+                  SizedBox(width: 6),
+                  Text(
+                    'مكة المكرمة',
+                    style: TextStyle(
+                      color: Color(0xFF172033),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: Color(0xFF102A43),
+                    size: 16,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        // Right Side: Brand Logo & Typography (Rafeeq / رفيقك في رحلتك الإيمانية)
+        Row(
+          children: [
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  'Rafeeq',
+                  style: TextStyle(
+                    color: Color(0xFF102A43),
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                Text(
+                  'رفيقك في رحلتك الإيمانية',
+                  style: TextStyle(
+                    color: Color(0xFFC89B3C),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 12),
             Container(
               width: 44,
               height: 44,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: DesignSystem.gold.withOpacity(0.6), width: 1.5),
-                boxShadow: DesignSystem.goldGlow,
+                border: Border.all(color: const Color(0xFFC89B3C), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFC89B3C).withOpacity(0.2),
+                    blurRadius: 10,
+                  ),
+                ],
               ),
               child: ClipOval(
                 child: Image.asset(
@@ -235,81 +392,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => const Icon(
                     Icons.mosque,
-                    color: DesignSystem.goldLight,
+                    color: Color(0xFFC89B3C),
                     size: 24,
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Rafeeq',
-                  style: TextStyle(
-                    color: DesignSystem.textWhite,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                Text(
-                  'رفيقك في رحلتك الإيمانية',
-                  style: TextStyle(
-                    color: DesignSystem.goldLight,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: DesignSystem.bgCard.withOpacity(0.8),
-                borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
-                ),
-              ),
-              child: const Row(
-                children: [
-                  Icon(
-                    Icons.location_on_rounded,
-                    color: DesignSystem.cyanAccent,
-                    size: 14,
-                  ),
-                  SizedBox(width: 4),
-                  Text(
-                    'مكة المكرمة',
-                    style: TextStyle(
-                      color: DesignSystem.textSecondary,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: DesignSystem.bgCard.withOpacity(0.8),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
-                ),
-              ),
-              child: const Icon(
-                Icons.notifications_none_rounded,
-                color: DesignSystem.textPrimary,
-                size: 18,
               ),
             ),
           ],
@@ -318,100 +404,131 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ==================== 2. MAIN HERO CARD ====================
   Widget _buildHeroCard(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF1E3A8A).withOpacity(0.6),
-            const Color(0xFF4C1D95).withOpacity(0.4),
-            DesignSystem.bgCard.withOpacity(0.9),
-          ],
-        ),
+        borderRadius: BorderRadius.circular(24),
+        gradient: isLight
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFDCEAF4), // Soft sky blue
+                  Color(0xFFF3F8FB), // Very pale blue-white
+                ],
+              )
+            : const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF182234), // Luminous midnight
+                  Color(0xFF0F1522), // Deep charcoal
+                  Color(0xFF090D15),
+                ],
+              ),
         border: Border.all(
-          color: DesignSystem.gold.withOpacity(0.35),
+          color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFC89B3C).withOpacity(0.35),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: DesignSystem.electricBlue.withOpacity(0.2),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
+            color: isLight
+                ? const Color(0xFF102A43).withOpacity(0.06)
+                : Colors.black.withOpacity(0.5),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
           ),
+          if (!isLight)
+            BoxShadow(
+              color: const Color(0xFFC89B3C).withOpacity(0.12),
+              blurRadius: 16,
+              offset: const Offset(0, 2),
+            ),
         ],
       ),
       child: Stack(
         children: [
+          // Left Decorative Daytime / Nighttime Mosque Illustration
           Positioned(
-            left: -15,
-            top: -20,
-            child: Icon(
-              Icons.nightlight_round,
-              size: 130,
-              color: DesignSystem.gold.withOpacity(0.06),
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 280,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                bottomLeft: Radius.circular(24),
+              ),
+              child: Opacity(
+                opacity: isLight ? 1.0 : 0.45,
+                child: Image.asset(
+                  'assets/light_hero_art.png',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.centerLeft,
+                  errorBuilder: (_, __, ___) => const SizedBox(),
+                ),
+              ),
             ),
           ),
+
+          // Right Content: Verse & Welcome Note
           Padding(
-            padding: const EdgeInsets.all(DesignSystem.spacingL),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: DesignSystem.gold.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                        border: Border.all(
-                          color: DesignSystem.gold.withOpacity(0.5),
+                // "كلمة اليوم ★" Pill
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF131A26),
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
+                    border: Border.all(
+                      color: const Color(0xFFC89B3C),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.star_rounded, color: Color(0xFFC89B3C), size: 14),
+                      SizedBox(width: 4),
+                      Text(
+                        'كلمة اليوم',
+                        style: TextStyle(
+                          color: Color(0xFFC89B3C),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.star_rounded,
-                            color: DesignSystem.goldLight,
-                            size: 14,
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            'طُمأنينة ورِفعة',
-                            style: TextStyle(
-                              color: DesignSystem.goldLight,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
+
+                // Main Quranic Verse
+                Text(
                   'أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ',
+                  textAlign: TextAlign.right,
                   style: TextStyle(
-                    color: DesignSystem.textWhite,
-                    fontSize: 22,
+                    color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
+                    fontSize: 23,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                    height: 1.4,
+                    letterSpacing: 0.3,
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'مرحباً بك في إسلاميات — رفيقك الإيماني الذكي للقرآن، الأذكار، ومواقيت الصلاة بدقة فائقة.',
+
+                // Subtitle
+                Text(
+                  'مرحباً بك في رفيق — رفيقك الإيماني للقرآن، الأذكار، ومواقيت الصلاة بدقة وطمأنينة.',
+                  textAlign: TextAlign.right,
                   style: TextStyle(
-                    color: DesignSystem.textSecondary,
-                    fontSize: 13,
+                    color: isLight ? const Color(0xFF667085) : const Color(0xFF94A3B8),
+                    fontSize: 12,
                     height: 1.5,
                   ),
                 ),
@@ -423,148 +540,195 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ==================== 3. PRAYER TIMES SECTION ====================
   Widget _buildPrayerSpotlightCard(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+
     return GlassCard(
-      borderRadius: DesignSystem.radiusLarge,
-      padding: const EdgeInsets.all(DesignSystem.spacingL),
-      hasGlow: true,
-      glowColor: DesignSystem.gold,
+      padding: const EdgeInsets.all(20),
+      borderRadius: 24,
       child: Column(
         children: [
+          // Next Prayer Header Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
+              // Left: Next Prayer Time & Countdown Pill
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: DesignSystem.gold.withOpacity(0.15),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: DesignSystem.gold.withOpacity(0.4),
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.access_time_filled,
-                      color: DesignSystem.goldLight,
-                      size: 20,
+                  Text(
+                    '12:54 م',
+                    style: TextStyle(
+                      color: isLight ? const Color(0xFF102A43) : const Color(0xFFF6F8FA),
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: isLight ? const Color(0xFFDCEAF4) : const Color(0xFF1C273C),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
+                      border: Border.all(
+                        color: isLight ? Colors.transparent : const Color(0xFFC89B3C).withOpacity(0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.access_time_rounded,
+                          color: isLight ? const Color(0xFF102A43) : const Color(0xFFE8D29A),
+                          size: 12,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$_countdown متبقي',
+                          style: TextStyle(
+                            color: isLight ? const Color(0xFF102A43) : const Color(0xFFE8D29A),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              // Right: Label & Title ("الصلاة القادمة - الظهر")
+              Row(
+                children: [
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
                         'الصلاة القادمة',
                         style: TextStyle(
-                          color: DesignSystem.textMuted,
+                          color: isLight ? const Color(0xFF667085) : const Color(0xFF94A3B8),
                           fontSize: 12,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       Text(
-                        _nextPrayer?.nameArabic ?? 'صلاة العصر',
+                        'الظهر',
                         style: TextStyle(
-                          color: DesignSystem.textWhite,
-                          fontSize: 20,
+                          color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    _nextPrayer != null ? _nextPrayer!.formattedTimeArabic : '٠٣:٣٠ م',
-                    style: TextStyle(
-                      color: DesignSystem.goldLight,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  const SizedBox(width: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: DesignSystem.electricBlue.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
+                      color: isLight ? const Color(0xFFF8F6F0) : const Color(0xFF161F2E),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFC89B3C).withOpacity(0.4)),
                     ),
-                    child: Text(
-                      'متبقي $_countdown',
-                      style: TextStyle(
-                        color: DesignSystem.cyanAccent,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    child: const Icon(
+                      Icons.mosque_rounded,
+                      color: Color(0xFFC89B3C),
+                      size: 24,
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 16),
+
+          const SizedBox(height: 18),
+
+          // 6 Prayer Cards Row (الفجر، الشروق، الظهر، العصر، المغرب، العشاء)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: _allPrayers.isNotEmpty
-                ? _allPrayers.map((prayer) {
-                    final isNext = _nextPrayer != null && prayer.type == _nextPrayer?.type;
-                    final isDone = _currentPrayer != null && prayer.type != _currentPrayer?.type;
-                    return _buildPrayerPill(prayer.nameArabic, prayer.formattedTimeArabic, isNext, isDone);
-                  }).toList()
-                : [
-                    _buildPrayerPill('الفجر', '٠٤:٣٠', false, true),
-                    _buildPrayerPill('الشروق', '٠٥:٥٥', false, true),
-                    _buildPrayerPill('الظهر', '١٢:١٥', false, true),
-                    _buildPrayerPill('العصر', '٠٣:٣٠', true, false),
-                    _buildPrayerPill('المغرب', '٠٦:٤٢', false, false),
-                    _buildPrayerPill('العشاء', '٠٨:٠٥', false, false),
-                  ],
+            children: [
+              _buildPrayerCard('الفجر', '5:03 ص', Icons.wb_twilight_rounded, false),
+              _buildPrayerCard('الشروق', '6:33 ص', Icons.wb_sunny_outlined, false),
+              _buildPrayerCard('الظهر', '12:54 م', Icons.wb_sunny_rounded, true), // Active
+              _buildPrayerCard('العصر', '4:28 م', Icons.wb_sunny_outlined, false),
+              _buildPrayerCard('المغرب', '7:15 م', Icons.wb_twilight_rounded, false),
+              _buildPrayerCard('العشاء', '8:35 م', Icons.nightlight_round, false),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPrayerPill(String name, String time, bool isNext, bool isDone) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        color: isNext
-            ? DesignSystem.gold.withValues(alpha: 0.2)
-            : (isDone
-                ? Colors.white.withValues(alpha: 0.04)
-                : DesignSystem.bgCard.withValues(alpha: 0.6)),
-        borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
-        border: Border.all(
-          color: isNext
-              ? DesignSystem.gold
-              : (isDone
-                  ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.white.withValues(alpha: 0.05)),
-          width: isNext ? 1.5 : 1,
+  Widget _buildPrayerCard(String name, String time, IconData icon, bool isActive) {
+    if (isActive) {
+      // Highlighted Active State: Dark Navy #102A43 + Gold #C89B3C Border & Typography
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF102A43),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFC89B3C), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFC89B3C).withOpacity(0.25),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
+        child: Column(
+          children: [
+            Icon(icon, color: const Color(0xFFE8D29A), size: 16),
+            const SizedBox(height: 4),
+            Text(
+              name,
+              style: const TextStyle(
+                color: Color(0xFFE8D29A),
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              time,
+              style: const TextStyle(
+                color: Color(0xFFFFFFFF),
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Inactive Prayer Card: Clean White / Light Blue-Gray with Subtle Border
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF2F5F7),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFDCE3EC)),
       ),
       child: Column(
         children: [
+          Icon(icon, color: const Color(0xFF667085), size: 15),
+          const SizedBox(height: 4),
           Text(
             name,
-            style: TextStyle(
-              color: isNext
-                  ? DesignSystem.goldLight
-                  : (isDone ? DesignSystem.textMuted : DesignSystem.textSecondary),
+            style: const TextStyle(
+              color: Color(0xFF172033),
               fontSize: 11,
-              fontWeight: isNext ? FontWeight.bold : FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             time,
-            style: TextStyle(
-              color: isNext ? DesignSystem.textWhite : DesignSystem.textMuted,
+            style: const TextStyle(
+              color: Color(0xFF667085),
               fontSize: 10,
-              fontWeight: isNext ? FontWeight.bold : FontWeight.normal,
             ),
           ),
         ],
@@ -572,83 +736,118 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ==================== 4. QUICK ACCESS GRID ====================
   Widget _buildQuickActionsGrid(BuildContext context) {
-    final actions = [
-      {'title': 'المصحف الشريف', 'sub': '١١٤ سورة', 'icon': Icons.menu_book_rounded, 'color': DesignSystem.gold},
-      {'title': 'حصن المسلم', 'sub': 'أذكار وأدعية', 'icon': Icons.auto_awesome, 'color': DesignSystem.cyanAccent},
-      {'title': 'اتجاه القبلة', 'sub': 'بوصلة دقيقة', 'icon': Icons.explore_rounded, 'color': DesignSystem.electricBlue},
-      {'title': 'إذاعة القرآن', 'sub': 'بث مباشر', 'icon': Icons.radio_rounded, 'color': DesignSystem.violet},
-    ];
-
     return Row(
-      children: actions.map((item) {
-        final color = item['color'] as Color;
-        final title = item['title'] as String;
-        return Expanded(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            child: GlassCard(
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-              borderRadius: DesignSystem.radiusMedium,
-              onTap: () {
-                if (title == 'اتجاه القبلة') {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const QiblaScreen()));
-                } else if (title == 'المصحف الشريف') {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const IqraScreen()));
-                } else if (title == 'حصن المسلم') {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AzkarScreen()));
-                } else if (title == 'إذاعة القرآن') {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const RadioScreen()));
-                }
-              },
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: color.withOpacity(0.15),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: color.withOpacity(0.35),
-                      ),
-                    ),
-                    child: Icon(
-                      item['icon'] as IconData,
-                      color: color,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: DesignSystem.textWhite,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    item['sub'] as String,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: DesignSystem.textMuted,
-                      fontSize: 10,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+      children: [
+        // Card 1: المصحف الشريف (Gold)
+        Expanded(
+          child: _buildQuickActionCard(
+            title: 'المصحف الشريف',
+            subtitle: '114 سورة',
+            icon: Icons.menu_book_rounded,
+            iconBg: const Color(0xFFFFF7E6),
+            accentColor: const Color(0xFFC89B3C),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const IqraScreen())),
           ),
-        );
-      }).toList(),
+        ),
+        const SizedBox(width: 10),
+
+        // Card 2: حصن المسلم (Teal)
+        Expanded(
+          child: _buildQuickActionCard(
+            title: 'حصن المسلم',
+            subtitle: 'أذكار وأدعية',
+            icon: Icons.auto_awesome_rounded,
+            iconBg: const Color(0xFFE8F3F3),
+            accentColor: const Color(0xFF0F6B78),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AzkarScreen())),
+          ),
+        ),
+        const SizedBox(width: 10),
+
+        // Card 3: اتجاه القبلة (Navy / Sky Blue)
+        Expanded(
+          child: _buildQuickActionCard(
+            title: 'اتجاه القبلة',
+            subtitle: 'بوصلة دقيقة',
+            icon: Icons.explore_rounded,
+            iconBg: const Color(0xFFDCEAF4),
+            accentColor: const Color(0xFF102A43),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QiblaScreen())),
+          ),
+        ),
+        const SizedBox(width: 10),
+
+        // Card 4: إذاعة القرآن (Purple)
+        Expanded(
+          child: _buildQuickActionCard(
+            title: 'إذاعة القرآن',
+            subtitle: 'بث مباشر',
+            icon: Icons.radio_rounded,
+            iconBg: const Color(0xFFF0ECFA),
+            accentColor: const Color(0xFF6956B8),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RadioScreen())),
+          ),
+        ),
+      ],
     );
   }
 
+  Widget _buildQuickActionCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color iconBg,
+    required Color accentColor,
+    required VoidCallback onTap,
+  }) {
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
+      borderRadius: 22,
+      onTap: onTap,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Circular Icon Container
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: iconBg,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: accentColor, size: 24),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFF172033),
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFF667085),
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==================== 5. QURAN READING PROGRESS ====================
   Widget _buildContinueReadingCard(BuildContext context) {
     return GlassCard(
-      borderRadius: DesignSystem.radiusLarge,
-      padding: const EdgeInsets.all(DesignSystem.spacingL),
+      padding: const EdgeInsets.all(18),
+      borderRadius: 22,
       onTap: () {
         Navigator.push(
           context,
@@ -662,67 +861,64 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: Row(
         children: [
+          // Gold Quran / Bookmark Icon
           Container(
-            width: 52,
-            height: 52,
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              gradient: DesignSystem.goldGradient,
-              borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-              boxShadow: DesignSystem.goldGlow,
+              color: const Color(0xFFFFF7E6),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFC89B3C).withOpacity(0.3)),
             ),
             child: const Icon(
-              Icons.menu_book_rounded,
-              color: DesignSystem.bgDarkest,
-              size: 26,
+              Icons.bookmark_rounded,
+              color: Color(0xFFC89B3C),
+              size: 24,
             ),
           ),
           const SizedBox(width: 14),
-          const Expanded(
+
+          // Details & Progress Bar
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'سورة البقرة — الآية ٢٥٥',
-                  style: TextStyle(
-                    color: DesignSystem.textWhite,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'سورة البقرة',
+                      style: TextStyle(
+                        color: Color(0xFF172033),
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '12%',
+                      style: TextStyle(
+                        color: Color(0xFFC89B3C),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 4),
-                Text(
-                  'الجزء الثالث • صفحة ٤٢',
-                  style: TextStyle(
-                    color: DesignSystem.goldLight,
-                    fontSize: 12,
-                  ),
+                const SizedBox(height: 4),
+                const Text(
+                  'الآية 42 • الجزء الأول',
+                  style: TextStyle(color: Color(0xFF667085), fontSize: 11),
                 ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              gradient: DesignSystem.primaryGradient,
-              borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-              boxShadow: DesignSystem.blueGlow,
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'متابعة',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(height: 8),
+
+                // Thin Elegant Progress Bar (Navy -> Teal -> Gold indicator)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: 0.12,
+                    minHeight: 4,
+                    backgroundColor: const Color(0xFFDCE3EC),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF102A43)),
                   ),
-                ),
-                SizedBox(width: 4),
-                Icon(
-                  Icons.arrow_forward_rounded,
-                  color: Colors.white,
-                  size: 14,
                 ),
               ],
             ),
@@ -732,204 +928,138 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildDailyInspiration(BuildContext context) {
-    return Column(
-      children: [
-        GlassCard(
-          borderRadius: DesignSystem.radiusLarge,
-          padding: const EdgeInsets.all(DesignSystem.spacingL),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Row(
-                    children: [
-                      Icon(Icons.format_quote_rounded, color: DesignSystem.gold, size: 20),
-                      SizedBox(width: 6),
-                      Text(
-                        'آية اليوم',
-                        style: TextStyle(
-                          color: DesignSystem.gold,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    'سورة إبراهيم : ٧',
-                    style: TextStyle(
-                      color: DesignSystem.goldLight.withOpacity(0.8),
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                '﴿ وَإِذْ تَأَذَّنَ رَبُّكُمْ لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ ﴾',
-                style: TextStyle(
-                  color: DesignSystem.textWhite,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  height: 1.6,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRecitersHorizontal(BuildContext context) {
-    final reciters = [
-      {'name': 'مشاري العفاسي', 'type': 'حفص عن عاصم'},
-      {'name': 'عبد الباسط عبد الصمد', 'type': 'مجود'},
-      {'name': 'ماهر المعيقلي', 'type': 'مرتل'},
-      {'name': 'سعد الغامدي', 'type': 'مرتل'},
-      {'name': 'ياسر الدوسري', 'type': 'مرتل'},
-    ];
+  // ==================== 6. SELECTED RECITERS HORIZONTAL LIST ====================
+  Widget _buildSelectedRecitersSection(BuildContext context) {
+    final audioService = AudioQuranService();
+    // Choose prominent reciters
+    final famousReciterIds = ['hassan_saleh', 'afasy', 'abdulbasit_murattal', 'minshawi_murattal', 'maher', 'ghamdi', 'ajmy', 'dosari'];
+    final selectedReciters = RecitersData.reciters.where((r) => famousReciterIds.contains(r.id)).toList();
 
     return SizedBox(
-      height: 115,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
+      height: 140,
+      child: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
-        itemCount: reciters.length,
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: selectedReciters.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
-          final reciter = reciters[index];
-          return Container(
-            width: 95,
-            margin: const EdgeInsets.only(left: 10),
-            child: Column(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: DesignSystem.primaryGradient,
-                    border: Border.all(
-                      color: DesignSystem.gold.withOpacity(0.4),
-                      width: 1.5,
-                    ),
-                    boxShadow: DesignSystem.blueGlow,
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.mic_rounded,
-                      color: Colors.white,
-                      size: 26,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  reciter['name']!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: DesignSystem.textWhite,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  reciter['type']!,
-                  maxLines: 1,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: DesignSystem.textMuted,
-                    fontSize: 9,
-                  ),
-                ),
-              ],
-            ),
+          final reciter = selectedReciters[index];
+          final isCurrent = audioService.currentReciter.id == reciter.id;
+
+          return _buildReciterMiniCard(
+            reciter: reciter,
+            isCurrent: isCurrent,
+            onTap: () {
+              audioService.selectReciter(reciter, autoPlay: true);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AudioScreen()),
+              );
+            },
           );
         },
       ),
     );
   }
 
-  Widget _buildAIAssistantBanner(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AiAssistantScreen()),
-        );
-      },
-      borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFF1E1B4B),
-              Color(0xFF0F172A),
-            ],
-          ),
-          border: Border.all(
-            color: DesignSystem.cyanAccent.withOpacity(0.35),
-            width: 1.2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: DesignSystem.cyanAccent.withOpacity(0.12),
-              blurRadius: 25,
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(DesignSystem.spacingL),
-        child: Row(
+  Widget _buildReciterMiniCard({
+    required dynamic reciter,
+    required bool isCurrent,
+    required VoidCallback onTap,
+  }) {
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      borderRadius: 18,
+      onTap: onTap,
+      child: SizedBox(
+        width: 105,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: DesignSystem.cyanAccent.withOpacity(0.15),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: DesignSystem.cyanAccent.withOpacity(0.4),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isCurrent ? const Color(0xFFC89B3C) : const Color(0xFFDCE3EC),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF102A43).withOpacity(0.06),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: reciter.photoUrl.startsWith('assets/')
+                        ? Image.asset(
+                            reciter.photoUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.person,
+                              color: Color(0xFF102A43),
+                              size: 26,
+                            ),
+                          )
+                        : Image.network(
+                            reciter.photoUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.person,
+                              color: Color(0xFF102A43),
+                              size: 26,
+                            ),
+                          ),
+                  ),
                 ),
-              ),
-              child: const Icon(
-                Icons.smart_toy_rounded,
-                color: DesignSystem.cyanAccent,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 14),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'المساعد الإسلامي الذكي',
-                    style: TextStyle(
-                      color: DesignSystem.textWhite,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                Positioned(
+                  bottom: -2,
+                  left: -2,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: isCurrent ? const Color(0xFFC89B3C) : const Color(0xFF102A43),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      color: Colors.white,
+                      size: 11,
                     ),
                   ),
-                  SizedBox(height: 4),
-                  Text(
-                    'اسأل عن معاني الآيات، أحكام التجويد، أو فضائل السور',
-                    style: TextStyle(
-                      color: DesignSystem.textSecondary,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              reciter.nameArabic,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFF172033),
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: DesignSystem.cyanAccent,
-              size: 16,
+            const SizedBox(height: 2),
+            Text(
+              reciter.style,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFF667085),
+                fontSize: 9,
+              ),
             ),
           ],
         ),

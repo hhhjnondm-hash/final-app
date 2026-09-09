@@ -31,7 +31,7 @@ class AudioQuranService extends ChangeNotifier {
 
   ReciterProfile get currentReciter => _currentReciter;
   SurahMeta get currentSurah => _currentSurah;
-  bool get isPlaying => _audioManager.isPlaying;
+  bool get isPlaying => _audioManager.isPlaying && _audioManager.currentSource == AudioSourceType.quran;
   Duration get currentPosition => _audioManager.position;
   Duration get totalDuration => _audioManager.duration ?? Duration.zero;
   double get playbackSpeed => _playbackSpeed;
@@ -55,9 +55,14 @@ class AudioQuranService extends ChangeNotifier {
     _errorSub = _audioManager.errorStream.listen((_) => notifyListeners());
   }
 
-  Future<void> selectReciter(ReciterProfile reciter) async {
+  Future<void> selectReciter(ReciterProfile reciter, {bool autoPlay = false}) async {
+    final reciterChanged = _currentReciter.id != reciter.id;
     _currentReciter = reciter;
     notifyListeners();
+    
+    if (autoPlay || (_audioManager.isPlaying && reciterChanged)) {
+      await _playCurrentSurah();
+    }
   }
 
   Future<void> selectSurah(SurahMeta surah) async {
@@ -74,14 +79,13 @@ class AudioQuranService extends ChangeNotifier {
   Future<void> _playCurrentSurah() async {
     debugPrint('AudioQuranService: Playing surah ${_currentSurah.number} with reciter ${_currentReciter.nameArabic}');
     
-    // Check if downloaded first
     final localPath = _downloadManager.getLocalPath(_currentReciter.id, _currentSurah.number);
     final audioUrl = localPath ?? _buildAudioUrl(_currentReciter, _currentSurah.number);
     
     final descriptor = AudioSourceDescriptor(
       id: '${_currentReciter.id}_${_currentSurah.number}',
       type: AudioSourceType.quran,
-      title: _currentSurah.nameArabic,
+      title: 'سورة ${_currentSurah.nameArabic}',
       subtitle: _currentReciter.nameArabic,
       provider: 'AudioQuranService',
       remoteUrl: localPath == null ? audioUrl : null,
@@ -90,6 +94,7 @@ class AudioQuranService extends ChangeNotifier {
         'reciterId': _currentReciter.id,
         'surahNumber': _currentSurah.number,
         'isLocal': localPath != null,
+        'artwork': _currentReciter.photoUrl,
       },
     );
 
@@ -97,17 +102,13 @@ class AudioQuranService extends ChangeNotifier {
   }
 
   String _buildAudioUrl(ReciterProfile reciter, int surahNumber) {
-    // Use real MP3Quran server URL from reciter data
     final surahStr = surahNumber.toString().padLeft(3, '0');
     final baseUrl = reciter.serverUrl;
     
     if (baseUrl == null || baseUrl.isEmpty) {
-      // Fallback to a working server if reciter URL is missing
-      debugPrint('Warning: Reciter ${reciter.id} has no server URL, using fallback');
-      return 'https://server12.mp3quran.net/afs/$surahStr.mp3';
+      return 'https://server8.mp3quran.net/afs/$surahStr.mp3';
     }
     
-    // Clean and build URL
     final cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
     return '$cleanBaseUrl/$surahStr.mp3';
   }
@@ -125,7 +126,11 @@ class AudioQuranService extends ChangeNotifier {
   }
 
   Future<void> togglePlayPause() async {
-    await _audioManager.togglePlayPause();
+    if (_audioManager.currentDescriptor == null || _audioManager.currentSource != AudioSourceType.quran) {
+      await _playCurrentSurah();
+    } else {
+      await _audioManager.togglePlayPause();
+    }
   }
 
   Future<void> seekTo(Duration position) async {

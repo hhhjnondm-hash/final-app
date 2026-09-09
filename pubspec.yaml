@@ -112,6 +112,7 @@ flutter:
     - assets/tasbih_icon.png
     - assets/app_logo.png
     - assets/splash_hero.jpg
+    - assets/light_hero_art.png
     - assets/reciters/
     - assets/data/notifications/
     - assets/data/

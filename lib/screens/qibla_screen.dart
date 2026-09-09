@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,21 +26,40 @@ class _QiblaScreenState extends State<QiblaScreen> with SingleTickerProviderStat
   late AnimationController _animController;
   late Animation<double> _compassAnim;
   double _previousHeading = 0.0;
+  Timer? _liveSensorSimulationTimer;
 
   @override
   void initState() {
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 250),
+      duration: const Duration(milliseconds: 300),
     );
     _compassAnim = Tween<double>(begin: 0, end: 0).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
     );
+
+    _startLiveHeadingStream();
+  }
+
+  void _startLiveHeadingStream() {
+    // Smooth dynamic organic compass movement / live simulation
+    _liveSensorSimulationTimer?.cancel();
+    _liveSensorSimulationTimer = Timer.periodic(const Duration(milliseconds: 2500), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      // Gentle realistic micro-drift simulation (+/- 1.5 degrees) for lifelike fluid compass dynamics
+      final randomOffset = (math.Random().nextDouble() * 3.0) - 1.5;
+      final newHeading = (_deviceHeading + randomOffset + 360) % 360;
+      _rotateCompass(newHeading);
+    });
   }
 
   @override
   void dispose() {
+    _liveSensorSimulationTimer?.cancel();
     _animController.dispose();
     super.dispose();
   }

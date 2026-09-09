@@ -14,32 +14,15 @@ class UnifiedMiniPlayer extends StatelessWidget {
     return ListenableBuilder(
       listenable: audioManager,
       builder: (context, child) {
-        if (!audioManager.isPlaying) {
+        if (!audioManager.isPlaying && audioManager.currentDescriptor == null) {
           return const SizedBox.shrink();
         }
 
-        String title = '';
-        String subtitle = '';
-        String? artwork;
-        bool isQuran = false;
-
-        switch (audioManager.currentSource) {
-          case AudioSourceType.quran:
-            title = 'سورة الفاتحة';
-            subtitle = 'مشاري راشد العفاسي';
-            artwork = 'assets/reciters/shaikh-Mishari-Al-afasi.webP';
-            isQuran = true;
-            break;
-          case AudioSourceType.radio:
-            title = 'إذاعة القرآن الكريم';
-            subtitle = 'تلاوة القرآن الكريم';
-            artwork = null;
-            isQuran = false;
-            break;
-          default:
-            return const SizedBox.shrink();
-        }
-
+        final descriptor = audioManager.currentDescriptor;
+        final title = descriptor?.title ?? (audioManager.currentSource == AudioSourceType.quran ? 'القرآن الكريم' : 'الإذاعة المباشرة');
+        final subtitle = descriptor?.subtitle ?? '';
+        final artwork = descriptor?.metadata?['artwork'] as String?;
+        final isQuran = audioManager.currentSource == AudioSourceType.quran;
         final isPlaying = audioManager.isPlaying;
 
         return Padding(
@@ -71,12 +54,13 @@ class UnifiedMiniPlayer extends StatelessWidget {
             child: InkWell(
               onTap: () {
                 if (isQuran) {
+                  final surahNum = descriptor?.metadata?['surahNumber'] as int? ?? 1;
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const SurahViewerScreen(
-                        surahNumber: 1,
-                        surahName: 'الفاتحة',
+                      builder: (_) => SurahViewerScreen(
+                        surahNumber: surahNum,
+                        surahName: title.replaceFirst('سورة ', ''),
                       ),
                     ),
                   );
@@ -159,11 +143,11 @@ class UnifiedMiniPlayer extends StatelessWidget {
                     onPressed: () => audioManager.togglePlayPause(),
                   ),
 
-                  // Close Button
+                  // Stop / Close Button
                   IconButton(
                     icon: const Icon(
                       Icons.close_rounded,
-                      color: DesignSystem.textMuted,
+                      color: Colors.white54,
                       size: 20,
                     ),
                     onPressed: () => audioManager.stop(),

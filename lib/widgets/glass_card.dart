@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../utils/design_system.dart';
 
 class GlassCard extends StatefulWidget {
@@ -17,7 +17,7 @@ class GlassCard extends StatefulWidget {
     required this.child,
     this.padding = const EdgeInsets.all(DesignSystem.spacingM),
     this.margin,
-    this.borderRadius = DesignSystem.radiusMedium,
+    this.borderRadius = DesignSystem.radiusLarge,
     this.onTap,
     this.isSelected = false,
     this.hasGlow = false,
@@ -34,14 +34,67 @@ class _GlassCardState extends State<GlassCard> {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = widget.isSelected
-        ? DesignSystem.gold.withOpacity(0.6)
-        : (_isHovered
-            ? DesignSystem.electricBlue.withOpacity(0.4)
-            : Colors.white.withOpacity(0.08));
+    final isLight = DesignSystem.isLightMode;
 
-    final effectiveGlowColor = widget.glowColor ??
-        (widget.isSelected ? DesignSystem.gold : DesignSystem.electricBlue);
+    if (!isLight) {
+      return _buildLuxuryDarkModeCard();
+    }
+
+    final borderColor = widget.isSelected
+        ? const Color(0xFFC89B3C)
+        : (_isHovered
+            ? const Color(0xFF102A43).withOpacity(0.25)
+            : const Color(0xFFDCE3EC));
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: widget.margin,
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFFFF),
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+          gradient: widget.gradient,
+          border: Border.all(
+            color: borderColor,
+            width: widget.isSelected ? 1.5 : 1.0,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF102A43).withOpacity(widget.isSelected ? 0.09 : (_isHovered ? 0.08 : 0.04)),
+              blurRadius: widget.isSelected ? 24 : 18,
+              offset: const Offset(0, 5),
+            ),
+            if (widget.hasGlow || widget.isSelected)
+              BoxShadow(
+                color: const Color(0xFFC89B3C).withOpacity(0.12),
+                blurRadius: 16,
+                offset: const Offset(0, 3),
+              ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            child: Padding(
+              padding: widget.padding ?? const EdgeInsets.all(DesignSystem.spacingM),
+              child: widget.child,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLuxuryDarkModeCard() {
+    final borderColor = widget.isSelected
+        ? const Color(0xFFC89B3C)
+        : (_isHovered
+            ? const Color(0xFFC89B3C).withOpacity(0.4)
+            : const Color(0xFFC89B3C).withOpacity(0.15));
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -57,12 +110,12 @@ class _GlassCardState extends State<GlassCard> {
                 end: Alignment.bottomRight,
                 colors: widget.isSelected
                     ? [
-                        DesignSystem.gold.withOpacity(0.12),
-                        DesignSystem.bgCard.withOpacity(0.85),
+                        const Color(0xFF1C273C),
+                        const Color(0xFF111722),
                       ]
                     : [
-                        DesignSystem.bgCard.withOpacity(0.7),
-                        DesignSystem.bgElevated.withOpacity(0.85),
+                        const Color(0xFF131A26),
+                        const Color(0xFF0C111A),
                       ],
               ),
           border: Border.all(
@@ -71,29 +124,26 @@ class _GlassCardState extends State<GlassCard> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.35),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
+              color: Colors.black.withOpacity(0.5),
+              blurRadius: widget.isSelected ? 24 : 16,
+              offset: const Offset(0, 6),
             ),
             if (widget.hasGlow || widget.isSelected || _isHovered)
               BoxShadow(
-                color: effectiveGlowColor.withOpacity(
-                    widget.isSelected ? 0.25 : (_isHovered ? 0.18 : 0.12)),
-                blurRadius: 20,
+                color: const Color(0xFFC89B3C).withOpacity(widget.isSelected ? 0.2 : 0.1),
+                blurRadius: 18,
                 spreadRadius: 1,
+                offset: const Offset(0, 3),
               ),
           ],
         ),
         child: Material(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(widget.borderRadius),
           child: InkWell(
-            borderRadius: BorderRadius.circular(widget.borderRadius),
             onTap: widget.onTap,
-            splashColor: DesignSystem.electricBlue.withOpacity(0.15),
-            highlightColor: DesignSystem.gold.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(widget.borderRadius),
             child: Padding(
-              padding: widget.padding ?? EdgeInsets.zero,
+              padding: widget.padding ?? const EdgeInsets.all(DesignSystem.spacingM),
               child: widget.child,
             ),
           ),

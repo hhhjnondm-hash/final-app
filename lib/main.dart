@@ -8,10 +8,11 @@ import 'widgets/premium_bottom_nav.dart';
 import 'widgets/unified_mini_player.dart';
 import 'screens/home_screen.dart';
 import 'screens/iqra_screen.dart';
-import 'screens/quran_screen.dart';
-import 'screens/prayer_times_screen.dart';
-import 'screens/azkar_screen.dart';
 import 'screens/audio_screen.dart';
+import 'screens/radio_screen.dart';
+import 'screens/prayer_times_screen.dart';
+import 'screens/quran_screen.dart';
+import 'screens/azkar_screen.dart';
 import 'screens/hadith_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/splash_screen.dart';
@@ -85,14 +86,14 @@ class _MainScreenState extends State<MainScreen> {
   ThemeMode _themeMode = ThemeMode.system;
 
   final List<Widget> _screens = [
-    const HomeScreen(),
-    const IqraScreen(),
-    const QuranScreen(),
-    const PrayerTimesScreen(),
-    const AzkarScreen(),
-    const AudioScreen(),
-    const HadithScreen(),
-    const ProfileScreen(),
+    const HomeScreen(),          // 0. الرئيسية
+    const IqraScreen(),          // 1. اقرأ
+    const AudioScreen(),         // 2. المصاحف الصوتية
+    const RadioScreen(),         // 3. الراديو
+    const PrayerTimesScreen(),   // 4. مواقيت الصلاة
+    const QuranScreen(),         // 5. القرآن الكريم
+    const AzkarScreen(),         // 6. الأذكار
+    const HadithScreen(),        // 7. الأحاديث النبوية
   ];
 
   void _onTabChange(int index) {

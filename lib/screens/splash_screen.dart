@@ -196,7 +196,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 800),
                   child: Image.asset(
-                    'assets/splash_hero.jpg',
+                    'assets/out logo app/startapp.png',
                     width: double.infinity,
                     height: double.infinity,
                     fit: BoxFit.cover,

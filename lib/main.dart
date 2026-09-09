@@ -81,7 +81,8 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 1; // Default to Iqra screen for immediate preview
+  int _currentIndex = 0; // Default to HomeScreen
+  ThemeMode _themeMode = ThemeMode.system;
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -98,6 +99,17 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       _currentIndex = index;
     });
+  }
+
+  void _toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    });
+  }
+
+  String _getAppLogoPath() {
+    final isDark = MediaQuery.of(context).platformBrightness == Brightness.dark;
+    return isDark ? 'assets/out logo app/darkapp.png' : 'assets/out logo app/lightapp.png';
   }
 
   @override

@@ -154,19 +154,7 @@ class RadioData {
       listenersCount: '٤٠.٧K مستمع',
       currentProgram: 'تلاوة حجازية ندية من سورة آل عمران',
     ),
-    // 14. إذاعة الشيخ حسن صالح
-    RadioStation(
-      id: 'hassan_saleh_radio',
-      name: 'إذاعة الشيخ حسن صالح',
-      origin: 'مصر · نبرة شجية خاشعة',
-      description: 'تلاوات عطرة ومؤثرة تفيض خشوعاً بصوت الشيخ حسن صالح.',
-      streamUrl: 'https://backup.qurango.net/radio/hassan_saleh',
-      category: RadioCategory.quran,
-      photoUrl: 'assets/reciters/shaikh-Hassan-Saleh.webP',
-      listenersCount: '٥٨.٤K مستمع',
-      currentProgram: 'تلاوة سورة النمل والقصص',
-    ),
-    // 15. إذاعة الشيخ مشاري بن راشد العفاسي
+    // 14. إذاعة الشيخ مشاري بن راشد العفاسي
     RadioStation(
       id: 'afasy_radio',
       name: 'إذاعة الشيخ مشاري بن راشد العفاسي',

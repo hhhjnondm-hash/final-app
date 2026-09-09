@@ -305,6 +305,50 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                     ),
                     const SizedBox(width: 12),
 
+                    // Offline Download Surah Button
+                    IconButton(
+                      icon: Icon(
+                        _service.isDownloaded(reciter.id, surah.number)
+                            ? Icons.download_done_rounded
+                            : Icons.download_for_offline_rounded,
+                        color: _service.isDownloaded(reciter.id, surah.number)
+                            ? const Color(0xFF4ADE80)
+                            : DesignSystem.goldLight,
+                        size: 24,
+                      ),
+                      tooltip: _service.isDownloaded(reciter.id, surah.number) ? 'تم التحميل أوفلاين' : 'تحميل للاستماع بدون نت',
+                      onPressed: () async {
+                        if (!_service.isDownloaded(reciter.id, surah.number)) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('بدأ تحميل سورة ${surah.nameArabic} للقارئ ${reciter.nameArabic} للاستماع بدون إنترنت...'),
+                              duration: const Duration(seconds: 2),
+                              backgroundColor: const Color(0xFF102A43),
+                            ),
+                          );
+                          await _service.downloadCurrentSurah();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('تم اكتمال تحميل سورة ${surah.nameArabic} بنجاح! متاحة الآن أوفلاين.'),
+                                duration: const Duration(seconds: 2),
+                                backgroundColor: const Color(0xFF10B981),
+                              ),
+                            );
+                          }
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('سورة ${surah.nameArabic} محملة بالفعل ومتاحة بدون إنترنت.'),
+                              duration: const Duration(seconds: 2),
+                              backgroundColor: const Color(0xFF102A43),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 8),
+
                     // Speed Toggle
                     InkWell(
                       onTap: () {

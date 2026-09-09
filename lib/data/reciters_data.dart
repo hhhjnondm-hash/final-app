@@ -2,19 +2,7 @@ import '../models/audio_models.dart';
 
 class RecitersData {
   static List<ReciterProfile> reciters = [
-    // 1. حسن صالح (Hasan Saleh)
-    ReciterProfile(
-      id: 'hassan_saleh',
-      nameArabic: 'حسن صالح',
-      nameEnglish: 'Hasan Saleh',
-      country: 'مصر',
-      style: 'حفص عن عاصم - صوت شجي خاشع',
-      photoUrl: 'assets/reciters/shaikh-Hassan-Saleh.webP',
-      surahCount: 114,
-      category: ReciterCategory.popular,
-      serverUrl: 'https://server7.mp3quran.net/h_saleh/',
-    ),
-    // 2. مشاري العفاسي
+    // 1. مشاري العفاسي
     ReciterProfile(
       id: 'afasy',
       nameArabic: 'مشاري بن راشد العفاسي',

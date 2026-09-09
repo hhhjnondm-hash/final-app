@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/prayer_models.dart';
 import 'athan_service.dart';
 import 'prayer_time_calculator.dart';
-import 'location_service.dart';
+import 'storage_service.dart';
 
 class PrayerServiceV2 extends ChangeNotifier {
   static final PrayerServiceV2 _instance = PrayerServiceV2._internal();
@@ -66,7 +66,7 @@ class PrayerServiceV2 extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Load 30 days of prayer data from timesprayer.com
+  /// Load 30 days of prayer data from timesprayer.com and clean old cache
   Future<void> _load30DayPrayerData() async {
     try {
       if (_currentLocation == null) {
@@ -82,7 +82,12 @@ class PrayerServiceV2 extends ChangeNotifier {
       final now = DateTime.now();
       final startDate = DateTime(now.year, now.month, now.day);
       
-      debugPrint('📅 Loading 30 days of prayer data from timesprayer.com...');
+      // 1. Run System Cache Cleaner to remove old cache older than 30 days and save user storage
+      final storage = StorageService();
+      await storage.init();
+      await storage.autoCleanOldCache();
+
+      debugPrint('📅 Loading and synchronizing 30 days of prayer data...');
       
       await _calculator.preloadPrayerData(
         startDate: startDate,
@@ -93,7 +98,10 @@ class PrayerServiceV2 extends ChangeNotifier {
         timezone: 'Africa/Cairo',
       );
       
-      // Cache the data
+      // 2. Clear old cached memory map when refreshing with a new 30-day window
+      _cachedPrayerData.removeWhere((key, _) => key.isBefore(startDate));
+
+      // Cache the new 30 days of data
       for (int i = 0; i < 30; i++) {
         final date = startDate.add(Duration(days: i));
         final finalTimes = await _calculator.getAllFinalPrayerTimes(
@@ -106,10 +114,15 @@ class PrayerServiceV2 extends ChangeNotifier {
         
         if (finalTimes.isNotEmpty) {
           _cachedPrayerData[date] = finalTimes;
+          
+          // Persist to local storage cache for offline retrieval
+          final dateKey = '${date.year}-${date.month}-${date.day}';
+          final prayerMap = finalTimes.map((k, v) => MapEntry(k.name, v.toIso8601String()));
+          await storage.savePrayerCache(dateKey, prayerMap);
         }
       }
       
-      debugPrint('✅ Cached ${_cachedPrayerData.length} days of prayer data');
+      debugPrint('✅ Synced & Cached ${_cachedPrayerData.length} days of prayer data with clean storage.');
       notifyListeners();
     } catch (e) {
       debugPrint('❌ Error loading 30-day prayer data: $e');
@@ -122,9 +135,12 @@ class PrayerServiceV2 extends ChangeNotifier {
     return _cachedPrayerData[normalizedDate];
   }
 
-  /// Refresh prayer data from timesprayer.com
+  /// Refresh prayer data from timesprayer.com and clean cache
   Future<void> refreshPrayerData() async {
     _cachedPrayerData.clear();
+    final storage = StorageService();
+    await storage.init();
+    await storage.clearPrayerCache();
     await _load30DayPrayerData();
   }
 

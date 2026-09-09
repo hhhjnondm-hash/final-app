@@ -6,7 +6,6 @@ import '../models/prayer_models.dart';
 import '../services/prayer_service_v2.dart';
 import '../services/audio_quran_service.dart';
 import '../data/reciters_data.dart';
-import 'ai_assistant_screen.dart';
 import 'azkar_screen.dart';
 import 'audio_screen.dart';
 import 'iqra_screen.dart';
@@ -109,6 +108,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
+              // 2.5 Daily Ayah Spotlight Card (آية اليوم وتدبر)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: DesignSystem.spacingL,
+                    vertical: DesignSystem.spacingXS,
+                  ),
+                  child: _buildDailyAyahCard(context),
+                ),
+              ),
+
               // 3. Prayer Times Spotlight Card (Next Prayer: الظهر 12:54 م)
               SliverToBoxAdapter(
                 child: Padding(
@@ -191,6 +201,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ==================== 1. TOP HEADER ====================
   Widget _buildTopBar(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -350,13 +362,14 @@ class _HomeScreenState extends State<HomeScreen> {
         // Right Side: Brand Logo & Typography (Rafeeq / رفيقك في رحلتك الإيمانية)
         Row(
           children: [
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
                   'Rafeeq',
                   style: TextStyle(
-                    color: Color(0xFF102A43),
+                    fontFamily: 'Cairo',
+                    color: isLight ? const Color(0xFF102A43) : Colors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.5,
@@ -365,7 +378,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   'رفيقك في رحلتك الإيمانية',
                   style: TextStyle(
-                    color: Color(0xFFC89B3C),
+                    fontFamily: 'Cairo',
+                    color: const Color(0xFFC89B3C),
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
@@ -378,17 +392,20 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 44,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFC89B3C), width: 1.5),
+                border: Border.all(
+                  color: const Color(0xFFFFD56B).withOpacity(0.6),
+                  width: 1.5,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFC89B3C).withOpacity(0.2),
+                    color: const Color(0xFFC89B3C).withOpacity(0.25),
                     blurRadius: 10,
                   ),
                 ],
               ),
               child: ClipOval(
                 child: Image.asset(
-                  'assets/app_logo.png',
+                  isLight ? 'assets/out logo app/lightapp.png' : 'assets/out logo app/darkapp.png',
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => const Icon(
                     Icons.mosque,
@@ -449,91 +466,248 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
         ],
       ),
-      child: Stack(
-        children: [
-          // Left Decorative Daytime / Nighttime Mosque Illustration
-          Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: 280,
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(24),
-                bottomLeft: Radius.circular(24),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: [
+            // Background Mosque Sunset Artwork
+            Positioned.fill(
+              child: Image.asset(
+                'assets/home_hero_mosque.jpg',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox(),
               ),
-              child: Opacity(
-                opacity: isLight ? 1.0 : 0.45,
-                child: Image.asset(
-                  'assets/light_hero_art.png',
-                  fit: BoxFit.cover,
-                  alignment: Alignment.centerLeft,
-                  errorBuilder: (_, __, ___) => const SizedBox(),
+            ),
+
+            // Deep Royal Gradient Overlay to ensure crisp readability for text
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerRight,
+                    end: Alignment.centerLeft,
+                    colors: isLight
+                        ? [
+                            const Color(0xFFFFFFFF).withOpacity(0.95),
+                            const Color(0xFFFFFFFF).withOpacity(0.82),
+                            const Color(0xFFFFFFFF).withOpacity(0.20),
+                          ]
+                        : [
+                            const Color(0xFF07090E).withOpacity(0.96),
+                            const Color(0xFF07090E).withOpacity(0.85),
+                            const Color(0xFF07090E).withOpacity(0.30),
+                          ],
+                  ),
                 ),
               ),
+            ),
+
+            // Right Content: Verse & Welcome Note
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // "كلمة اليوم ★" Pill
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF131A26),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
+                      border: Border.all(
+                        color: const Color(0xFFC89B3C),
+                        width: 1.0,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFC89B3C).withOpacity(0.2),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.star_rounded, color: Color(0xFFC89B3C), size: 14),
+                        SizedBox(width: 4),
+                        Text(
+                          'كلمة اليوم',
+                          style: TextStyle(
+                            color: Color(0xFFC89B3C),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Main Quranic Verse
+                  Text(
+                    'أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ',
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      fontFamily: 'Amiri',
+                      color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.3,
+                      shadows: [
+                        Shadow(
+                          color: isLight ? Colors.white.withOpacity(0.8) : Colors.black,
+                          blurRadius: 10,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Subtitle
+                  Text(
+                    'مرحباً بك في رفيق — رفيقك الإيماني للقرآن، الأذكار، ومواقيت الصلاة بدقة وطمأنينة.',
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      color: isLight ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                      fontSize: 12.5,
+                      height: 1.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ==================== 2.5 DAILY AYAH SECTION ====================
+  Widget _buildDailyAyahCard(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+
+    return GlassCard(
+      padding: const EdgeInsets.all(20),
+      borderRadius: 22,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const SurahViewerScreen(
+              surahNumber: 2,
+              surahName: 'البقرة',
+            ),
+          ),
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Row: Tag + Share / Bookmark icon
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF1B2332),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFFFD56B).withOpacity(0.5),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.menu_book_rounded,
+                      size: 14,
+                      color: const Color(0xFFFFD56B),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'آية اليوم وتدبّر',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: isLight ? const Color(0xFF0F172A) : const Color(0xFFFFD56B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Row(
+                children: [
+                  Icon(
+                    Icons.bookmark_border_rounded,
+                    size: 20,
+                    color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.share_outlined,
+                    size: 18,
+                    color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          // Quranic Ayah Text in Amiri calligraphy
+          Text(
+            '﴿ وَإِذَا سَأَلَكَ عِبَادِي عَنِّي فَإِنِّي قَرِيبٌ ۖ أُجِيبُ دَعْوَةَ الدَّاعِ إِذَا دَعَانِ ﴾',
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontFamily: 'Amiri',
+              fontSize: 21,
+              fontWeight: FontWeight.bold,
+              height: 1.6,
+              color: isLight ? const Color(0xFF0F172A) : const Color(0xFFFFD56B),
             ),
           ),
 
-          // Right Content: Verse & Welcome Note
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                // "كلمة اليوم ★" Pill
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF131A26),
-                    borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                    border: Border.all(
-                      color: const Color(0xFFC89B3C),
-                      width: 1.0,
+          const SizedBox(height: 10),
+
+          // Ayah Surah Ref + Meaning / Tadabbur
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'سورة البقرة • الآية 186',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isLight ? const Color(0xFF0F6B78) : const Color(0xFF38BDF8),
+                ),
+              ),
+              Row(
+                children: [
+                  Text(
+                    'قراءة وتفسير الآية',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
                     ),
                   ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.star_rounded, color: Color(0xFFC89B3C), size: 14),
-                      SizedBox(width: 4),
-                      Text(
-                        'كلمة اليوم',
-                        style: TextStyle(
-                          color: Color(0xFFC89B3C),
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 11,
+                    color: const Color(0xFFFFD56B),
                   ),
-                ),
-                const SizedBox(height: 12),
-
-                // Main Quranic Verse
-                Text(
-                  'أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ',
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                    color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
-                    fontSize: 23,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-                const SizedBox(height: 6),
-
-                // Subtitle
-                Text(
-                  'مرحباً بك في رفيق — رفيقك الإيماني للقرآن، الأذكار، ومواقيت الصلاة بدقة وطمأنينة.',
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                    color: isLight ? const Color(0xFF667085) : const Color(0xFF94A3B8),
-                    fontSize: 12,
-                    height: 1.5,
-                  ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
@@ -543,6 +717,8 @@ class _HomeScreenState extends State<HomeScreen> {
   // ==================== 3. PRAYER TIMES SECTION ====================
   Widget _buildPrayerSpotlightCard(BuildContext context) {
     final isLight = DesignSystem.isLightMode;
+    final nextPrayerTitle = _nextPrayer?.nameArabic ?? 'الظهر';
+    final nextPrayerTime = _nextPrayer?.formattedTimeArabic ?? '12:54 م';
 
     return GlassCard(
       padding: const EdgeInsets.all(20),
@@ -558,7 +734,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '12:54 م',
+                    nextPrayerTime,
                     style: TextStyle(
                       color: isLight ? const Color(0xFF102A43) : const Color(0xFFF6F8FA),
                       fontSize: 26,
@@ -613,7 +789,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       Text(
-                        'الظهر',
+                        nextPrayerTitle,
                         style: TextStyle(
                           color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
                           fontSize: 22,
@@ -644,17 +820,31 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 18),
 
           // 6 Prayer Cards Row (الفجر، الشروق، الظهر، العصر، المغرب، العشاء)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildPrayerCard('الفجر', '5:03 ص', Icons.wb_twilight_rounded, false),
-              _buildPrayerCard('الشروق', '6:33 ص', Icons.wb_sunny_outlined, false),
-              _buildPrayerCard('الظهر', '12:54 م', Icons.wb_sunny_rounded, true), // Active
-              _buildPrayerCard('العصر', '4:28 م', Icons.wb_sunny_outlined, false),
-              _buildPrayerCard('المغرب', '7:15 م', Icons.wb_twilight_rounded, false),
-              _buildPrayerCard('العشاء', '8:35 م', Icons.nightlight_round, false),
-            ],
-          ),
+          if (_allPrayers.isNotEmpty)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: _allPrayers.map((prayer) {
+                final isActive = _nextPrayer != null && _nextPrayer!.type == prayer.type;
+                return _buildPrayerCard(
+                  prayer.nameArabic,
+                  prayer.formattedTimeArabic,
+                  prayer.icon,
+                  isActive,
+                );
+              }).toList(),
+            )
+          else
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildPrayerCard('الفجر', '5:03 ص', Icons.wb_twilight_rounded, false),
+                _buildPrayerCard('الشروق', '6:33 ص', Icons.wb_sunny_outlined, false),
+                _buildPrayerCard('الظهر', '12:54 م', Icons.wb_sunny_rounded, true),
+                _buildPrayerCard('العصر', '4:28 م', Icons.wb_sunny_outlined, false),
+                _buildPrayerCard('المغرب', '7:15 م', Icons.wb_twilight_rounded, false),
+                _buildPrayerCard('العشاء', '8:35 م', Icons.nightlight_round, false),
+              ],
+            ),
         ],
       ),
     );
@@ -932,7 +1122,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildSelectedRecitersSection(BuildContext context) {
     final audioService = AudioQuranService();
     // Choose prominent reciters
-    final famousReciterIds = ['hassan_saleh', 'afasy', 'abdulbasit_murattal', 'minshawi_murattal', 'maher', 'ghamdi', 'ajmy', 'dosari'];
+    final famousReciterIds = ['afasy', 'abdulbaset_murattal', 'minshawi_murattal', 'hussary_murattal', 'ghamdi', 'ajmy', 'dosari'];
     final selectedReciters = RecitersData.reciters.where((r) => famousReciterIds.contains(r.id)).toList();
 
     return SizedBox(

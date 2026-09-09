@@ -101,11 +101,35 @@ class AudioQuranService extends ChangeNotifier {
     await _audioManager.play(descriptor);
   }
 
+  String buildAudioUrl(ReciterProfile reciter, int surahNumber) {
+    return _buildAudioUrl(reciter, surahNumber);
+  }
+
+  Future<void> downloadCurrentSurah() async {
+    final url = _buildAudioUrl(_currentReciter, _currentSurah.number);
+    await _downloadManager.downloadSurah(
+      reciter: _currentReciter,
+      surah: _currentSurah,
+      audioUrl: url,
+    );
+    notifyListeners();
+  }
+
+  Future<void> downloadSpecificSurah(ReciterProfile reciter, SurahMeta surah) async {
+    final url = _buildAudioUrl(reciter, surah.number);
+    await _downloadManager.downloadSurah(
+      reciter: reciter,
+      surah: surah,
+      audioUrl: url,
+    );
+    notifyListeners();
+  }
+
   String _buildAudioUrl(ReciterProfile reciter, int surahNumber) {
     final surahStr = surahNumber.toString().padLeft(3, '0');
     final baseUrl = reciter.serverUrl;
     
-    if (baseUrl == null || baseUrl.isEmpty) {
+    if (baseUrl.isEmpty) {
       return 'https://server8.mp3quran.net/afs/$surahStr.mp3';
     }
     

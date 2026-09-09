@@ -6,6 +6,8 @@ enum AzkarCategoryType {
   afterPrayer,
   sleep,
   wakingUp,
+  general,
+  propheticHadiths,
   mosque,
 }
 

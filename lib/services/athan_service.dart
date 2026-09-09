@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:audio_session/audio_session.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'adhan_asset_mapper.dart';
-import '../models/prayer_models.dart';
+import '../models/canonical_identities.dart';
+import 'global_audio_manager.dart';
 
 enum AthanMethod {
   muslimWorldLeague,
@@ -26,12 +25,13 @@ enum AthanMethod {
 }
 
 enum AthanSound {
-  none,
-  local,
-  multiple,
-  makkah,
-  madinah,
-  cairo,
+  customDownloaded, // الأذان المحمّل الجديد (أصوات متعددة للمشايخ)
+  local,            // أذان الحرم المكي الافتراضي
+  multiple,         // أذان الفجر المميز
+  makkah,           // أذان مكة المكرمة أونلاين
+  madinah,          // أذان المدينة المنورة أونلاين
+  cairo,            // أذان القاهرة ومصر
+  none,             // صامت / بدون صوت
 }
 
 class AthanSettings {
@@ -40,13 +40,25 @@ class AthanSettings {
   final AthanSound sound;
   final double volume;
   final bool vibrate;
+  final bool playFullAthan;
+  final bool playFajrSpecial;
+  final Map<String, bool> enabledPrayers; // Fajr, Dhuhr, Asr, Maghrib, Isha
 
   const AthanSettings({
     this.enabled = true,
-    this.method = AthanMethod.muslimWorldLeague,
-    this.sound = AthanSound.local,
-    this.volume = 0.8,
+    this.method = AthanMethod.egyptianGeneralAuthorityOfSurvey,
+    this.sound = AthanSound.customDownloaded,
+    this.volume = 0.9,
     this.vibrate = true,
+    this.playFullAthan = true,
+    this.playFajrSpecial = true,
+    this.enabledPrayers = const {
+      'Fajr': true,
+      'Dhuhr': true,
+      'Asr': true,
+      'Maghrib': true,
+      'Isha': true,
+    },
   });
 
   AthanSettings copyWith({
@@ -55,6 +67,9 @@ class AthanSettings {
     AthanSound? sound,
     double? volume,
     bool? vibrate,
+    bool? playFullAthan,
+    bool? playFajrSpecial,
+    Map<String, bool>? enabledPrayers,
   }) {
     return AthanSettings(
       enabled: enabled ?? this.enabled,
@@ -62,6 +77,9 @@ class AthanSettings {
       sound: sound ?? this.sound,
       volume: volume ?? this.volume,
       vibrate: vibrate ?? this.vibrate,
+      playFullAthan: playFullAthan ?? this.playFullAthan,
+      playFajrSpecial: playFajrSpecial ?? this.playFajrSpecial,
+      enabledPrayers: enabledPrayers ?? this.enabledPrayers,
     );
   }
 
@@ -72,16 +90,30 @@ class AthanSettings {
       'sound': sound.index,
       'volume': volume,
       'vibrate': vibrate,
+      'playFullAthan': playFullAthan,
+      'playFajrSpecial': playFajrSpecial,
+      'enabledPrayers': enabledPrayers,
     };
   }
 
   factory AthanSettings.fromJson(Map<String, dynamic> json) {
     return AthanSettings(
       enabled: json['enabled'] ?? true,
-      method: AthanMethod.values[json['method'] ?? 0],
-      sound: AthanSound.values[json['sound'] ?? 1],
-      volume: json['volume']?.toDouble() ?? 0.8,
+      method: AthanMethod.values[(json['method'] ?? 2).clamp(0, AthanMethod.values.length - 1)],
+      sound: AthanSound.values[(json['sound'] ?? 0).clamp(0, AthanSound.values.length - 1)],
+      volume: json['volume']?.toDouble() ?? 0.9,
       vibrate: json['vibrate'] ?? true,
+      playFullAthan: json['playFullAthan'] ?? true,
+      playFajrSpecial: json['playFajrSpecial'] ?? true,
+      enabledPrayers: json['enabledPrayers'] != null
+          ? Map<String, bool>.from(json['enabledPrayers'])
+          : const {
+              'Fajr': true,
+              'Dhuhr': true,
+              'Asr': true,
+              'Maghrib': true,
+              'Isha': true,
+            },
     );
   }
 }
@@ -91,30 +123,35 @@ class AthanService extends ChangeNotifier {
   factory AthanService() => _instance;
   AthanService._internal();
 
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  final GlobalAudioManager _audioManager = GlobalAudioManager();
   AthanSettings _settings = const AthanSettings();
   Timer? _athanTimer;
   DateTime? _lastPrayerTime;
+  String? _currentlyPlayingPrayer;
   final Map<String, DateTime> _prayerTimes = {};
 
-  // Offline storage for prayer times (30 days)
   final Map<String, Map<String, DateTime>> _offlinePrayerCache = {};
 
-  AudioPlayer get audioPlayer => _audioPlayer;
   AthanSettings get settings => _settings;
   Map<String, DateTime> get prayerTimes => _prayerTimes;
+  bool get isPlayingAthan => _audioManager.isPlaying && _audioManager.currentSource == AudioSourceType.adhan;
+  String? get currentlyPlayingPrayer => _currentlyPlayingPrayer;
 
   Future<void> initialize() async {
     await _loadSettings();
     await _loadOfflineCache();
-    debugPrint('✅ Athan Service initialized');
+    debugPrint('✅ Advanced Athan Service initialized successfully');
   }
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     final settingsJson = prefs.getString('athan_settings');
     if (settingsJson != null) {
-      _settings = AthanSettings.fromJson(jsonDecode(settingsJson));
+      try {
+        _settings = AthanSettings.fromJson(jsonDecode(settingsJson));
+      } catch (e) {
+        debugPrint('Error parsing athan settings: $e');
+      }
     }
     notifyListeners();
   }
@@ -175,15 +212,13 @@ class AthanService extends ChangeNotifier {
     final requestDate = date ?? DateTime.now();
     final dateKey = '${requestDate.year}-${requestDate.month}-${requestDate.day}';
 
-    // Check offline cache first
     if (_offlinePrayerCache.containsKey(dateKey)) {
-      debugPrint('📅 Using cached prayer times for $dateKey');
       return _offlinePrayerCache[dateKey]!;
     }
 
     try {
       final url = Uri.parse(
-        'http://api.aladhan.com/v1/timings/${requestDate.day}-${requestDate.month}-${requestDate.year}',
+        'https://api.aladhan.com/v1/timings/${requestDate.day}-${requestDate.month}-${requestDate.year}',
       ).replace(
         queryParameters: {
           'latitude': latitude.toString(),
@@ -215,21 +250,17 @@ class AthanService extends ChangeNotifier {
           );
         }
 
-        // Save to cache
         _offlinePrayerCache[dateKey] = prayerTimes;
         await _saveOfflineCache();
 
-        debugPrint('✅ Prayer times fetched and cached for $dateKey');
         return prayerTimes;
       } else {
         throw Exception('Failed to fetch prayer times');
       }
     } catch (e) {
       debugPrint('❌ Error fetching prayer times: $e');
-      // Return cached times if available, even if old
       if (_offlinePrayerCache.isNotEmpty) {
         final lastCacheKey = _offlinePrayerCache.keys.last;
-        debugPrint('📅 Using last cached prayer times as fallback');
         return _offlinePrayerCache[lastCacheKey]!;
       }
       rethrow;
@@ -242,7 +273,7 @@ class AthanService extends ChangeNotifier {
   }) {
     _athanTimer?.cancel();
     
-    _athanTimer = Timer.periodic(const Duration(minutes: 1), (timer) async {
+    _athanTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
       if (!_settings.enabled) return;
 
       try {
@@ -256,16 +287,19 @@ class AthanService extends ChangeNotifier {
         final prayerNames = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
         
         for (final prayer in prayerNames) {
+          if (_settings.enabledPrayers[prayer] == false) continue;
+
           final prayerTime = prayerTimes[prayer];
           if (prayerTime != null) {
-            final timeDiff = prayerTime.difference(now);
+            final diffInSeconds = now.difference(prayerTime).inSeconds;
             
-            // Trigger athan 1 minute before prayer time
-            if (timeDiff.inMinutes == 1 && 
+            // Trigger when within 0 to 45 seconds of prayer time
+            if (diffInSeconds >= 0 && diffInSeconds <= 45 && 
                 (_lastPrayerTime == null || 
-                 _lastPrayerTime!.difference(prayerTime).inMinutes.abs() > 2)) {
+                 _lastPrayerTime!.difference(prayerTime).inMinutes.abs() > 5)) {
               _lastPrayerTime = prayerTime;
               await playAthan(prayer: prayer);
+              break;
             }
           }
         }
@@ -275,70 +309,128 @@ class AthanService extends ChangeNotifier {
     });
   }
 
+  String _getArabicPrayerName(String prayer) {
+    switch (prayer.toLowerCase()) {
+      case 'fajr':
+        return 'الفجر';
+      case 'dhuhr':
+        return 'الظهر';
+      case 'asr':
+        return 'العصر';
+      case 'maghrib':
+        return 'المغرب';
+      case 'isha':
+        return 'العشاء';
+      default:
+        return prayer;
+    }
+  }
+
+  String getSoundDisplayName(AthanSound sound) {
+    switch (sound) {
+      case AthanSound.customDownloaded:
+        return 'أذان نداء الحق (المحمّل - صوت رائع)';
+      case AthanSound.local:
+        return 'أذان الحرم المكي الشريف';
+      case AthanSound.multiple:
+        return 'أذان الفجر المميز (الصلاة خير من النوم)';
+      case AthanSound.makkah:
+        return 'أذان الشيخ مشاري العفاسي';
+      case AthanSound.madinah:
+        return 'أذان المسجد النبوي الشريف';
+      case AthanSound.cairo:
+        return 'أذان مصر وجامع الأزهر';
+      case AthanSound.none:
+        return 'صامت (بدون صوت أذان)';
+    }
+  }
+
   Future<void> playAthan({required String prayer}) async {
     if (!_settings.enabled || _settings.sound == AthanSound.none) {
-      debugPrint('🔇 Athan disabled or sound set to none');
+      debugPrint('🔇 Athan disabled or set to silent');
       return;
     }
 
     try {
+      _currentlyPlayingPrayer = prayer;
+      notifyListeners();
+
       String audioPath;
-      
-      switch (_settings.sound) {
-        case AthanSound.local:
-          audioPath = AdhanAssetMapper.getAssetPath(PrayerType.fajr);
-          break;
-        case AthanSound.multiple:
-          audioPath = AdhanAssetMapper.getAssetPath(PrayerType.fajr, useSpecial: true);
-          break;
-        case AthanSound.makkah:
-          audioPath = 'https://media.blubrry.com/muslim_central_quran/podcasts.quran-central.com/mishari-rashid-al-afasy/mishari-rashid-al-afasy-athan.mp3';
-          break;
-        case AthanSound.madinah:
-          audioPath = 'https://server12.mp3quran.net/athan/';
-          break;
-        case AthanSound.cairo:
-          audioPath = 'https://server7.mp3quran.net/athan/';
-          break;
-        case AthanSound.none:
-          return;
-      }
+      bool isRemote = false;
 
-      await _audioPlayer.setVolume(_settings.volume);
-      
-      if (audioPath.startsWith('http')) {
-        await _audioPlayer.setUrl(audioPath);
+      // Special handling for Fajr if enabled
+      if (prayer.toLowerCase() == 'fajr' && _settings.playFajrSpecial) {
+        audioPath = 'assets/audio/athan/athan_multiple.mp3';
       } else {
-        await _audioPlayer.setAsset(audioPath);
-      }
-      
-      await _audioPlayer.play();
-
-      debugPrint('🎵 Playing athan for $prayer: $audioPath');
-      
-      // Handle completion
-      _audioPlayer.playerStateStream.listen((state) {
-        if (state.processingState == ProcessingState.completed) {
-          debugPrint('✅ Athan completed for $prayer');
+        switch (_settings.sound) {
+          case AthanSound.customDownloaded:
+            audioPath = 'assets/audio/athan/athan_custom.mp3';
+            break;
+          case AthanSound.local:
+            audioPath = 'assets/audio/athan/athan_general.mp3';
+            break;
+          case AthanSound.multiple:
+            audioPath = 'assets/audio/athan/athan_multiple.mp3';
+            break;
+          case AthanSound.makkah:
+            audioPath = 'https://media.blubrry.com/muslim_central_quran/podcasts.quran-central.com/mishari-rashid-al-afasy/mishari-rashid-al-afasy-athan.mp3';
+            isRemote = true;
+            break;
+          case AthanSound.madinah:
+            audioPath = 'https://server12.mp3quran.net/athan/001.mp3';
+            isRemote = true;
+            break;
+          case AthanSound.cairo:
+            audioPath = 'https://server7.mp3quran.net/athan/002.mp3';
+            isRemote = true;
+            break;
+          case AthanSound.none:
+            return;
         }
-      });
+      }
+
+      final arabicName = _getArabicPrayerName(prayer);
+      final descriptor = AudioSourceDescriptor(
+        id: 'athan_$prayer',
+        type: AudioSourceType.adhan,
+        title: 'أذان صلاة $arabicName',
+        subtitle: getSoundDisplayName(_settings.sound),
+        provider: 'تطبيق رفيق',
+        localPath: isRemote ? null : audioPath,
+        remoteUrl: isRemote ? audioPath : null,
+        metadata: {
+          'prayer': prayer,
+          'sound': _settings.sound.name,
+        },
+      );
+
+      debugPrint('🎵 Triggering unified Athan for $prayer with sound $audioPath');
+      await _audioManager.play(descriptor);
     } catch (e) {
       debugPrint('❌ Error playing athan: $e');
     }
   }
 
   Future<void> stopAthan() async {
-    await _audioPlayer.stop();
-    debugPrint('⏹️ Athan stopped');
+    if (isPlayingAthan) {
+      await _audioManager.stop();
+    }
+    _currentlyPlayingPrayer = null;
+    notifyListeners();
   }
 
-  Future<void> testAthan() async {
-    await playAthan(prayer: 'Test');
+  Future<void> testAthan({AthanSound? testSound}) async {
+    final previousSound = _settings.sound;
+    if (testSound != null) {
+      _settings = _settings.copyWith(sound: testSound);
+    }
+    await playAthan(prayer: 'Dhuhr');
+    _settings = _settings.copyWith(sound: previousSound);
   }
 
+  @override
   void dispose() {
     _athanTimer?.cancel();
-    _audioPlayer.dispose();
     super.dispose();
   }
 }

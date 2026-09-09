@@ -1,3 +1,4 @@
+import 'app_security_service.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -37,6 +38,11 @@ class AppInitializer {
   static Future<void> initializeServices() async {
     try {
       debugPrint('🚀 Starting AppInitializer...');
+
+      // Step 0: Initialize Security Shield
+      debugPrint('🛡️ Initializing App Security Shield...');
+      await AppSecurityService().initialize();
+      debugPrint('✅ Security Shield active');
 
       // Step 1: Initialize Storage Service
       debugPrint('📦 Initializing Storage Service...');
@@ -145,6 +151,10 @@ class AppInitializer {
     }
 
     try {
+      // Step 0: Initialize Security Shield
+      onProgress(0.05, 'تفعيل درع الحماية والأمان...');
+      await AppSecurityService().initialize();
+
       // Step 1: Initialize local storage & user preferences
       onProgress(0.10, 'تحميل التفضيلات والإعدادات المحلية...');
       final storageService = StorageService();

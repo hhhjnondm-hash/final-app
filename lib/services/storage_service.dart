@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -246,9 +247,10 @@ class StorageService {
     return getJson(_lastPlayedKey);
   }
 
-  // ==================== PRAYER CACHE STORAGE ====================
+  // ==================== PRAYER CACHE & AUTO CLEANER STORAGE ====================
   
   static const String _prayerCachePrefix = 'prayer_cache_';
+  static const String _lastCacheCleanKey = 'last_cache_clean_timestamp';
   
   Future<bool> savePrayerCache(String dateKey, Map<String, dynamic> prayerData) async {
     return await setJson('$_prayerCachePrefix$dateKey', prayerData);
@@ -276,5 +278,45 @@ class StorageService {
         .where((key) => key.startsWith(_prayerCachePrefix))
         .map((key) => key.substring(_prayerCachePrefix.length))
         .toList();
+  }
+
+  /// System Cache Cleaner: Automatically purges prayer & temporary cache older than 30 days
+  Future<int> autoCleanOldCache() async {
+    int deletedCount = 0;
+    try {
+      final now = DateTime.now();
+      final lastCleanStr = getString(_lastCacheCleanKey);
+      
+      // Run deep clean if never run or last clean was more than 1 day ago
+      if (lastCleanStr != null) {
+        final lastClean = DateTime.parse(lastCleanStr);
+        if (now.difference(lastClean).inHours < 24) {
+          return 0; // Already cleaned today
+        }
+      }
+
+      final thirtyDaysAgo = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 30));
+      final keys = getPrayerCacheKeys();
+
+      for (final key in keys) {
+        try {
+          final parts = key.split('-');
+          if (parts.length == 3) {
+            final cacheDate = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+            // If cache date is older than 30 days or is in the past before today
+            if (cacheDate.isBefore(thirtyDaysAgo) || cacheDate.isBefore(DateTime(now.year, now.month, now.day))) {
+              await removePrayerCache(key);
+              deletedCount++;
+            }
+          }
+        } catch (_) {}
+      }
+
+      await setString(_lastCacheCleanKey, now.toIso8601String());
+      debugPrint('🧹 Cache Cleaner: Purged $deletedCount expired cache records');
+    } catch (e) {
+      debugPrint('⚠️ Error in autoCleanOldCache: $e');
+    }
+    return deletedCount;
   }
 }

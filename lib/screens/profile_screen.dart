@@ -4,9 +4,7 @@ import '../utils/design_system.dart';
 import 'ai_assistant_screen.dart';
 import 'azkar_screen.dart';
 import 'iqra_screen.dart';
-import 'notification_settings_screen.dart';
 import 'tasbih_screen.dart';
-import 'health_monitor_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -123,15 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
 
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
-                // 10. Account Settings (الإعدادات)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
-                    child: _buildSettingsSection(context),
-                  ),
-                ),
 
                 const SliverToBoxAdapter(
                   child: SizedBox(height: 100),
@@ -776,64 +766,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSettingsSection(BuildContext context) {
-    final settings = [
-      {'title': 'البيانات الشخصية', 'icon': Icons.person_outline_rounded},
-      {'title': 'المظهر والخلفية', 'icon': Icons.palette_outlined},
-      {'title': 'الإشعارات والتنبيهات', 'icon': Icons.notifications_none_rounded},
-      {'title': 'إعدادات خط القرآن', 'icon': Icons.format_size_rounded},
-      {'title': 'مراقبة صحة النظام', 'icon': Icons.health_and_safety},
-      {'title': 'الخصوصية والأمان', 'icon': Icons.lock_outline_rounded},
-    ];
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: DesignSystem.bgCard.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('الإعدادات', style: TextStyle(color: DesignSystem.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            ...settings.map((item) {
-              return ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                leading: Icon(item['icon'] as IconData, color: DesignSystem.goldLight, size: 20),
-                title: Text(item['title'] as String, style: const TextStyle(color: DesignSystem.textWhite, fontSize: 13)),
-                trailing: const Icon(Icons.arrow_forward_ios_rounded, color: DesignSystem.textMuted, size: 14),
-                onTap: () {
-                  if (item['title'] == 'الإشعارات والتنبيهات') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const NotificationSettingsScreen()),
-                    );
-                  } else if (item['title'] == 'مراقبة صحة النظام') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const HealthMonitorScreen()),
-                    );
-                  } else {
-                    _showGeneralSettings(context);
-                  }
-                },
-              );
-            }),
-          ],
-        ),
-      ),
-    );
-  }
 
   void _showGeneralSettings(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('تم حفظ الإعدادات بنجاح'),
+        content: Text('تم حفظ الإعدادات والتفضيلات بنجاح'),
         backgroundColor: Color(0xFF064E3B),
       ),
     );

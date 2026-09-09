@@ -113,6 +113,18 @@ flutter:
     - assets/app_logo.png
     - assets/splash_hero.jpg
     - assets/light_hero_art.png
+    - assets/home_hero_mosque.jpg
+    - assets/azkar_panoramic_hero.png
+    - assets/quran_viewer_left_bg.jpg
+    - assets/quran_mushaf_frame_high.png
+    - assets/quran_mushaf_frame_parchment.png
+    - assets/quran_mushaf_frame_original.png
+    - assets/surah_info_quran_stand.png
+    - assets/surah_info_mosque_bg.jpg
+    - assets/surah_info_hero_banner.png
+    - assets/surah_info_left_artwork.png
+    - assets/surah_info_iqra_banner.png
+    - assets/surah_info_quote_banner.png
     - assets/reciters/
     - assets/data/notifications/
     - assets/data/

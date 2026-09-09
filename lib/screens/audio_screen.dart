@@ -556,9 +556,36 @@ class _AudioScreenState extends State<AudioScreen> {
                                 ),
                               ],
                             ),
-                            Text(
-                              '${surah.ayahCount} آية',
-                              style: const TextStyle(color: DesignSystem.textMuted, fontSize: 11),
+                            Row(
+                              children: [
+                                Text(
+                                  '${surah.ayahCount} آية',
+                                  style: const TextStyle(color: DesignSystem.textMuted, fontSize: 11),
+                                ),
+                                const SizedBox(width: 12),
+                                IconButton(
+                                  icon: Icon(
+                                    _audioService.isDownloaded(_audioService.currentReciter.id, surah.number)
+                                        ? Icons.download_done_rounded
+                                        : Icons.download_rounded,
+                                    color: _audioService.isDownloaded(_audioService.currentReciter.id, surah.number)
+                                        ? const Color(0xFF4ADE80)
+                                        : DesignSystem.goldLight,
+                                    size: 18,
+                                  ),
+                                  onPressed: () async {
+                                    if (!_audioService.isDownloaded(_audioService.currentReciter.id, surah.number)) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('بدأ تحميل سورة ${surah.nameArabic}...'),
+                                          duration: const Duration(seconds: 1),
+                                        ),
+                                      );
+                                      await _audioService.downloadSpecificSurah(_audioService.currentReciter, surah);
+                                    }
+                                  },
+                                ),
+                              ],
                             ),
                           ],
                         ),

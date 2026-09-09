@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'utils/design_system.dart';
 import 'widgets/islamic_background.dart';
 import 'widgets/premium_bottom_nav.dart';
 import 'widgets/unified_mini_player.dart';
+import 'widgets/spiritual_welcome_dialog.dart';
 import 'screens/home_screen.dart';
 import 'screens/iqra_screen.dart';
 import 'screens/audio_screen.dart';
@@ -16,15 +16,7 @@ import 'screens/azkar_screen.dart';
 import 'screens/hadith_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/splash_screen.dart';
-import 'services/storage_service.dart';
-import 'services/location_service.dart';
-import 'services/notification_service.dart';
-import 'services/hive_database_service.dart';
-import 'services/error_handler.dart';
 import 'services/app_initializer.dart';
-import 'services/prayer_time_calculator.dart';
-import 'services/global_audio_manager.dart';
-import 'providers/user_preferences_provider.dart';
 import 'l10n/localization.dart';
 
 void main() async {
@@ -85,6 +77,19 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0; // Default to HomeScreen
   ThemeMode _themeMode = ThemeMode.system;
 
+  @override
+  void initState() {
+    super.initState();
+    // Trigger Spiritual Welcome Dialog right after first frame render
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          SpiritualWelcomeDialog.show(context);
+        }
+      });
+    });
+  }
+
   final List<Widget> _screens = [
     const HomeScreen(),          // 0. الرئيسية
     const IqraScreen(),          // 1. اقرأ
@@ -94,6 +99,7 @@ class _MainScreenState extends State<MainScreen> {
     const QuranScreen(),         // 5. القرآن الكريم
     const AzkarScreen(),         // 6. الأذكار
     const HadithScreen(),        // 7. الأحاديث النبوية
+    const ProfileScreen(),       // 8. حسابي
   ];
 
   void _onTabChange(int index) {

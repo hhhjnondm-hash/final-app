@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/prayer_models.dart';
+import '../services/athan_service.dart';
 import '../utils/design_system.dart';
 
 class PrayerAlertSheet extends StatefulWidget {
@@ -15,10 +16,29 @@ class PrayerAlertSheet extends StatefulWidget {
 }
 
 class _PrayerAlertSheetState extends State<PrayerAlertSheet> {
-  bool _isPlayingAthan = false;
+  final AthanService _athanService = AthanService();
+
+  @override
+  void initState() {
+    super.initState();
+    _athanService.addListener(_onAthanUpdate);
+  }
+
+  @override
+  void dispose() {
+    _athanService.removeListener(_onAthanUpdate);
+    super.dispose();
+  }
+
+  void _onAthanUpdate() {
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isPlaying = _athanService.isPlayingAthan;
+    final soundName = _athanService.getSoundDisplayName(_athanService.settings.sound);
+
     return Container(
       padding: const EdgeInsets.all(DesignSystem.spacingL),
       decoration: BoxDecoration(
@@ -88,6 +108,17 @@ class _PrayerAlertSheetState extends State<PrayerAlertSheet> {
             ),
           ),
 
+          const SizedBox(height: 4),
+
+          Text(
+            soundName,
+            style: TextStyle(
+              color: DesignSystem.gold.withValues(alpha: 0.9),
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+
           const SizedBox(height: 24),
 
           // Actions
@@ -96,8 +127,8 @@ class _PrayerAlertSheetState extends State<PrayerAlertSheet> {
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: DesignSystem.gold,
-                    foregroundColor: DesignSystem.bgDarkest,
+                    backgroundColor: isPlaying ? Colors.redAccent : DesignSystem.gold,
+                    foregroundColor: isPlaying ? Colors.white : DesignSystem.bgDarkest,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
@@ -105,18 +136,25 @@ class _PrayerAlertSheetState extends State<PrayerAlertSheet> {
                     elevation: 6,
                   ),
                   onPressed: () {
-                    setState(() => _isPlayingAthan = !_isPlayingAthan);
+                    if (isPlaying) {
+                      _athanService.stopAthan();
+                    } else {
+                      _athanService.playAthan(prayer: widget.timing.type.name);
+                    }
                   },
-                  icon: Icon(_isPlayingAthan ? Icons.pause_rounded : Icons.volume_up_rounded),
+                  icon: Icon(isPlaying ? Icons.stop_rounded : Icons.volume_up_rounded),
                   label: Text(
-                    _isPlayingAthan ? 'إيقاف الأذان' : 'تشغيل الأذان كاملاً',
+                    isPlaying ? 'إيقاف صوت الأذان' : 'تشغيل صوت الأذان',
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ),
               ),
               const SizedBox(width: 12),
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  _athanService.stopAthan();
+                  Navigator.pop(context);
+                },
                 child: const Text('إغلاق', style: TextStyle(color: DesignSystem.textMuted)),
               ),
             ],

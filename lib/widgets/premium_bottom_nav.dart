@@ -13,16 +13,17 @@ class PremiumBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 8 Required Sections in Exact Order
+    // 9 Sections in Exact Order
     final navItems = [
       _NavItem(Icons.home_outlined, Icons.home_rounded, 'الرئيسية'),
       _NavItem(Icons.auto_stories_outlined, Icons.auto_stories_rounded, 'اقرأ'),
-      _NavItem(Icons.record_voice_over_outlined, Icons.record_voice_over_rounded, 'المصاحف الصوتية'),
+      _NavItem(Icons.record_voice_over_outlined, Icons.record_voice_over_rounded, 'المصاحف'),
       _NavItem(Icons.radio_outlined, Icons.radio_rounded, 'الراديو'),
-      _NavItem(Icons.access_time_outlined, Icons.access_time_filled, 'مواقيت الصلاة'),
-      _NavItem(Icons.menu_book_outlined, Icons.menu_book_rounded, 'القرآن الكريم'),
+      _NavItem(Icons.access_time_outlined, Icons.access_time_filled, 'المواقيت'),
+      _NavItem(Icons.menu_book_outlined, Icons.menu_book_rounded, 'القرآن'),
       _NavItem(Icons.auto_awesome_outlined, Icons.auto_awesome_rounded, 'الأذكار'),
-      _NavItem(Icons.library_books_outlined, Icons.library_books_rounded, 'الأحاديث النبوية'),
+      _NavItem(Icons.library_books_outlined, Icons.library_books_rounded, 'الأحاديث'),
+      _NavItem(Icons.person_outline_rounded, Icons.person_rounded, 'حسابي'),
     ];
 
     final isLight = DesignSystem.isLightMode;
@@ -65,83 +66,13 @@ class PremiumBottomNav extends StatelessWidget {
                 children: List.generate(navItems.length, (index) {
                   final item = navItems[index];
                   final isSelected = currentIndex == index;
-
-                  if (isSelected) {
-                    // Active Pill (#102A43 navy in light, royal gold gradient in dark)
-                    return GestureDetector(
-                      onTap: () => onTap(index),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        decoration: BoxDecoration(
-                          gradient: isLight
-                              ? const LinearGradient(colors: [Color(0xFF102A43), Color(0xFF183B5B)])
-                              : const LinearGradient(colors: [Color(0xFFC89B3C), Color(0xFF996515)]),
-                          borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                          border: Border.all(
-                            color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
-                            width: 1.2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: isLight
-                                  ? const Color(0xFF102A43).withOpacity(0.25)
-                                  : const Color(0xFFC89B3C).withOpacity(0.4),
-                              blurRadius: 12,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              item.selectedIcon,
-                              color: isLight ? const Color(0xFFE8D29A) : const Color(0xFF07090E),
-                              size: 17,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              item.label,
-                              style: TextStyle(
-                                color: isLight ? const Color(0xFFE8D29A) : const Color(0xFF07090E),
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-
-                  // Inactive Item
-                  return GestureDetector(
+                  return _buildItem(
+                    icon: item.icon,
+                    activeIcon: item.activeIcon,
+                    label: item.label,
+                    isSelected: isSelected,
+                    isLight: isLight,
                     onTap: () => onTap(index),
-                    behavior: HitTestBehavior.opaque,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            item.unselectedIcon,
-                            color: isLight ? const Color(0xFF667085) : const Color(0xFF8C9BAE),
-                            size: 19,
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            item.label,
-                            style: TextStyle(
-                              color: isLight ? const Color(0xFF667085) : const Color(0xFF8C9BAE),
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   );
                 }),
               ),
@@ -151,12 +82,99 @@ class PremiumBottomNav extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildItem({
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required bool isSelected,
+    required bool isLight,
+    required VoidCallback onTap,
+  }) {
+    final activeTextColor = isLight ? const Color(0xFF0F172A) : const Color(0xFF07090E);
+    final inactiveTextColor = isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE);
+    final activeBg = isLight
+        ? const LinearGradient(
+            colors: [Color(0xFFE2E8F0), Color(0xFFCBD5E1)],
+          )
+        : const LinearGradient(
+            colors: [Color(0xFFFFD56B), Color(0xFFC89B3C)],
+          );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(22),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            padding: EdgeInsets.symmetric(
+              horizontal: isSelected ? 12 : 8,
+              vertical: 8,
+            ),
+            decoration: BoxDecoration(
+              gradient: isSelected ? activeBg : null,
+              color: isSelected ? null : Colors.transparent,
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: isSelected && !isLight
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFFC89B3C).withOpacity(0.4),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isSelected ? activeIcon : icon,
+                  size: 19,
+                  color: isSelected
+                      ? activeTextColor
+                      : (isLight ? const Color(0xFF475569) : const Color(0xFFA0AEC0)),
+                ),
+                if (isSelected) ...[
+                  const SizedBox(width: 6),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: activeTextColor,
+                    ),
+                  ),
+                ] else ...[
+                  const SizedBox(width: 4),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: inactiveTextColor,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _NavItem {
-  final IconData unselectedIcon;
-  final IconData selectedIcon;
+  final IconData icon;
+  final IconData activeIcon;
   final String label;
 
-  _NavItem(this.unselectedIcon, this.selectedIcon, this.label);
+  _NavItem(this.icon, this.activeIcon, this.label);
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/prayer_models.dart';
 import '../services/prayer_service_v2.dart';
-import '../services/athan_service.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/monthly_prayer_sheet.dart';
@@ -692,9 +691,11 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   }
 
   void _showAthanSettings(BuildContext context) {
-    // Temporarily disabled - needs service integration
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('إعدادات الأذان قيد التطوير')),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const PrayerSettingsSheet(),
     );
   }
 }

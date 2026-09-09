@@ -210,5 +210,29 @@ class DesignSystem {
           error: error,
         ),
       );
+
+  // ==================== DECORATIONS ====================
+  static BoxDecoration radialGlowBackground([BuildContext? context]) {
+    final isLight = isLightMode;
+    return BoxDecoration(
+      color: isLight ? lightBgMain : darkBgMain,
+      gradient: isLight
+          ? const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFF9F7F2), Color(0xFFF0EBE0)],
+            )
+          : const RadialGradient(
+              center: Alignment(0.0, -0.6),
+              radius: 1.2,
+              colors: [
+                Color(0xFF161E2E),
+                Color(0xFF0D121B),
+                Color(0xFF07090E),
+              ],
+            ),
+    );
+  }
 }
+
 

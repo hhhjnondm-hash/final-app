@@ -15,6 +15,8 @@ class ReciterImageResolution {
     this.reason,
   });
 
+  bool get hasAsset => isMapped && assetPath != null && assetPath!.isNotEmpty;
+
   ImageProvider? get imageProvider {
     if (assetPath == null || assetPath!.isEmpty) return null;
     return AssetImage(assetPath!);

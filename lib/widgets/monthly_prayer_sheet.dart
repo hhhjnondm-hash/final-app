@@ -11,7 +11,7 @@ class MonthlyPrayerSheet extends StatefulWidget {
 
 class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
   DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {

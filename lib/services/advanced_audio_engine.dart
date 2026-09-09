@@ -117,7 +117,7 @@ class AdvancedAudioEngine {
   Future<bool> _checkConnectivity() async {
     try {
       final result = await _connectivity.checkConnectivity();
-      return result != ConnectivityResult.none;
+      return !result.contains(ConnectivityResult.none);
     } catch (e) {
       debugPrint('AdvancedAudioEngine: Connectivity check failed - $e');
       return true; // افتراض وجود اتصال لتجنب تعطيل التشغيل

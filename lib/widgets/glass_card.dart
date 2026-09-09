@@ -43,7 +43,7 @@ class _GlassCardState extends State<GlassCard> {
     final borderColor = widget.isSelected
         ? const Color(0xFFC89B3C)
         : (_isHovered
-            ? const Color(0xFF102A43).withOpacity(0.25)
+            ? const Color(0xFF102A43).withValues(alpha: 0.25)
             : const Color(0xFFDCE3EC));
 
     return MouseRegion(
@@ -62,13 +62,13 @@ class _GlassCardState extends State<GlassCard> {
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF102A43).withOpacity(widget.isSelected ? 0.09 : (_isHovered ? 0.08 : 0.04)),
+              color: const Color(0xFF102A43).withValues(alpha: widget.isSelected ? 0.09 : (_isHovered ? 0.08 : 0.04)),
               blurRadius: widget.isSelected ? 24 : 18,
               offset: const Offset(0, 5),
             ),
             if (widget.hasGlow || widget.isSelected)
               BoxShadow(
-                color: const Color(0xFFC89B3C).withOpacity(0.12),
+                color: const Color(0xFFC89B3C).withValues(alpha: 0.12),
                 blurRadius: 16,
                 offset: const Offset(0, 3),
               ),
@@ -93,8 +93,8 @@ class _GlassCardState extends State<GlassCard> {
     final borderColor = widget.isSelected
         ? const Color(0xFFC89B3C)
         : (_isHovered
-            ? const Color(0xFFC89B3C).withOpacity(0.4)
-            : const Color(0xFFC89B3C).withOpacity(0.15));
+            ? const Color(0xFFC89B3C).withValues(alpha: 0.4)
+            : const Color(0xFFC89B3C).withValues(alpha: 0.15));
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -124,13 +124,13 @@ class _GlassCardState extends State<GlassCard> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               blurRadius: widget.isSelected ? 24 : 16,
               offset: const Offset(0, 6),
             ),
             if (widget.hasGlow || widget.isSelected || _isHovered)
               BoxShadow(
-                color: const Color(0xFFC89B3C).withOpacity(widget.isSelected ? 0.2 : 0.1),
+                color: const Color(0xFFC89B3C).withValues(alpha: widget.isSelected ? 0.2 : 0.1),
                 blurRadius: 18,
                 spreadRadius: 1,
                 offset: const Offset(0, 3),

@@ -156,7 +156,7 @@ class _QuranScreenState extends State<QuranScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color(0xFFFFD56B).withOpacity(0.6),
+                  color: const Color(0xFFFFD56B).withValues(alpha: 0.6),
                   width: 1.2,
                 ),
               ),
@@ -193,7 +193,7 @@ class _QuranScreenState extends State<QuranScreen> {
                     fontFamily: 'Cairo',
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: isLight ? const Color(0xFF64748B) : const Color(0xFFFFD56B).withOpacity(0.85),
+                    color: isLight ? const Color(0xFF64748B) : const Color(0xFFFFD56B).withValues(alpha: 0.85),
                   ),
                 ),
               ],
@@ -229,13 +229,13 @@ class _QuranScreenState extends State<QuranScreen> {
                       border: Border.all(
                         color: isSelected
                             ? const Color(0xFFFFD56B)
-                            : (isLight ? const Color(0xFFE2E8F0) : const Color(0xFFC89B3C).withOpacity(0.2)),
+                            : (isLight ? const Color(0xFFE2E8F0) : const Color(0xFFC89B3C).withValues(alpha: 0.2)),
                         width: 1.1,
                       ),
                       boxShadow: isSelected && !isLight
                           ? [
                               BoxShadow(
-                                color: const Color(0xFFFFD56B).withOpacity(0.18),
+                                color: const Color(0xFFFFD56B).withValues(alpha: 0.18),
                                 blurRadius: 10,
                               ),
                             ]
@@ -289,7 +289,7 @@ class _QuranScreenState extends State<QuranScreen> {
               color: isLight ? const Color(0xFFF8FAFC) : const Color(0xFF0D121B),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFFC89B3C).withOpacity(0.2),
+                color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFFC89B3C).withValues(alpha: 0.2),
               ),
             ),
             child: TextField(
@@ -379,13 +379,13 @@ class _QuranScreenState extends State<QuranScreen> {
           border: Border.all(
             color: isSelected
                 ? const Color(0xFFFFD56B)
-                : (isLight ? const Color(0xFFE2E8F0) : const Color(0xFFC89B3C).withOpacity(0.2)),
+                : (isLight ? const Color(0xFFE2E8F0) : const Color(0xFFC89B3C).withValues(alpha: 0.2)),
             width: 1,
           ),
           boxShadow: isSelected && !isLight
               ? [
                   BoxShadow(
-                    color: const Color(0xFFFFD56B).withOpacity(0.2),
+                    color: const Color(0xFFFFD56B).withValues(alpha: 0.2),
                     blurRadius: 8,
                   ),
                 ]
@@ -417,7 +417,7 @@ class _QuranScreenState extends State<QuranScreen> {
                 Icon(
                   Icons.search_off_rounded,
                   size: 56,
-                  color: const Color(0xFFFFD56B).withOpacity(0.5),
+                  color: const Color(0xFFFFD56B).withValues(alpha: 0.5),
                 ),
                 const SizedBox(height: 12),
                 Text(

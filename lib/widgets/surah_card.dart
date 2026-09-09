@@ -45,7 +45,7 @@ class _SurahCardState extends State<SurahCard> {
         ? (isHighlight ? const Color(0xFFC89B3C) : const Color(0xFFE2E8F0))
         : (isHighlight
             ? const Color(0xFFFFD56B)
-            : const Color(0xFFC89B3C).withOpacity(0.2));
+            : const Color(0xFFC89B3C).withValues(alpha: 0.2));
 
     final numberBadgeBg = isLight
         ? const Color(0xFFF1F5F9)
@@ -75,14 +75,14 @@ class _SurahCardState extends State<SurahCard> {
           boxShadow: [
             if (!isLight && isHighlight)
               BoxShadow(
-                color: const Color(0xFFFFD56B).withOpacity(0.2),
+                color: const Color(0xFFFFD56B).withValues(alpha: 0.2),
                 blurRadius: 18,
                 spreadRadius: 1,
               ),
             BoxShadow(
               color: isLight
-                  ? const Color(0xFF0F172A).withOpacity(isHighlight ? 0.08 : 0.03)
-                  : Colors.black.withOpacity(0.5),
+                  ? const Color(0xFF0F172A).withValues(alpha: isHighlight ? 0.08 : 0.03)
+                  : Colors.black.withValues(alpha: 0.5),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -130,7 +130,7 @@ class _SurahCardState extends State<SurahCard> {
                           shape: BoxShape.circle,
                           color: numberBadgeBg,
                           border: Border.all(
-                            color: const Color(0xFFFFD56B).withOpacity(0.5),
+                            color: const Color(0xFFFFD56B).withValues(alpha: 0.5),
                             width: 1,
                           ),
                         ),
@@ -192,8 +192,8 @@ class _SurahCardState extends State<SurahCard> {
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: widget.surah.isMeccan
-                                    ? const Color(0xFFC89B3C).withOpacity(0.7)
-                                    : const Color(0xFF38BDF8).withOpacity(0.7),
+                                    ? const Color(0xFFC89B3C).withValues(alpha: 0.7)
+                                    : const Color(0xFF38BDF8).withValues(alpha: 0.7),
                                 width: 0.8,
                               ),
                             ),
@@ -240,7 +240,7 @@ class _SurahCardState extends State<SurahCard> {
                             shape: BoxShape.circle,
                             color: Colors.transparent,
                             border: Border.all(
-                              color: const Color(0xFFFFD56B).withOpacity(0.7),
+                              color: const Color(0xFFFFD56B).withValues(alpha: 0.7),
                               width: 1.2,
                             ),
                           ),

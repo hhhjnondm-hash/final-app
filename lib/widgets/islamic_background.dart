@@ -103,7 +103,7 @@ class IslamicBackground extends StatelessWidget {
         Container(
           width: 1.5,
           height: 35,
-          color: const Color(0xFFC89B3C).withOpacity(isLight ? 0.45 : 0.75),
+          color: const Color(0xFFC89B3C).withValues(alpha: isLight ? 0.45 : 0.75),
         ),
         // Lantern Body
         Container(
@@ -129,8 +129,8 @@ class IslamicBackground extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: isLight
-                    ? const Color(0xFFC89B3C).withOpacity(0.22)
-                    : const Color(0xFFC89B3C).withOpacity(0.45),
+                    ? const Color(0xFFC89B3C).withValues(alpha: 0.22)
+                    : const Color(0xFFC89B3C).withValues(alpha: 0.45),
                 blurRadius: isLight ? 20 : 28,
                 spreadRadius: isLight ? 2 : 4,
               ),
@@ -180,7 +180,7 @@ class IslamicBackground extends StatelessWidget {
               Container(
                 width: 24,
                 height: 1.5,
-                color: const Color(0xFFC89B3C).withOpacity(isLight ? 0.4 : 0.6),
+                color: const Color(0xFFC89B3C).withValues(alpha: isLight ? 0.4 : 0.6),
               ),
             ],
           ),
@@ -194,12 +194,12 @@ class _NightCourtyardPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final patternPaint = Paint()
-      ..color = const Color(0xFFC89B3C).withOpacity(0.045)
+      ..color = const Color(0xFFC89B3C).withValues(alpha: 0.045)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
     final glowPaint = Paint()
-      ..color = const Color(0xFFC89B3C).withOpacity(0.02)
+      ..color = const Color(0xFFC89B3C).withValues(alpha: 0.02)
       ..style = PaintingStyle.fill;
 
     // Islamic 8-point geometric star lattices
@@ -219,8 +219,11 @@ class _NightCourtyardPainter extends CustomPainter {
       final r = (i % 2 == 0) ? radius : radius * 0.5;
       final x = center.dx + r * math.cos(angle);
       final y = center.dy + r * math.sin(angle);
-      if (i == 0) path.moveTo(x, y);
-      else path.lineTo(x, y);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
     }
     path.close();
     canvas.drawPath(path, paint);
@@ -234,12 +237,12 @@ class _DaytimeCourtyardPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final patternPaint = Paint()
-      ..color = const Color(0xFF102A43).withOpacity(0.025)
+      ..color = const Color(0xFF102A43).withValues(alpha: 0.025)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
     final leafPaint = Paint()
-      ..color = const Color(0xFF0F6B78).withOpacity(0.035)
+      ..color = const Color(0xFF0F6B78).withValues(alpha: 0.035)
       ..style = PaintingStyle.fill;
 
     // Outer subtle Islamic geometry (8-point star lattices in corners)
@@ -260,8 +263,11 @@ class _DaytimeCourtyardPainter extends CustomPainter {
       final r = (i % 2 == 0) ? radius : radius * 0.5;
       final x = center.dx + r * math.cos(angle);
       final y = center.dy + r * math.sin(angle);
-      if (i == 0) path.moveTo(x, y);
-      else path.lineTo(x, y);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
     }
     path.close();
     canvas.drawPath(path, paint);

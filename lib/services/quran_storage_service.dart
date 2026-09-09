@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../models/quran_models.dart';
 
@@ -57,7 +56,7 @@ class QuranStorageService extends ChangeNotifier {
 
   // Reading settings
   double _fontSize = 26.0;
-  String _fontFamily = 'Amiri';
+  final String _fontFamily = 'Amiri';
   String _readingTheme = 'dark'; // dark, oled, sepia
   bool _showAyahNumbers = true;
   bool _showTafseer = false;

@@ -33,9 +33,9 @@ class PrayerService extends ChangeNotifier {
   late StorageService _storage;
   
   // Cache for 30 days of prayer data
-  Map<DateTime, Map<PrayerType, DateTime>> _cachedPrayerData = {};
+  final Map<DateTime, Map<PrayerType, DateTime>> _cachedPrayerData = {};
 
-  Map<PrayerType, NotificationMode> _notificationSettings = {
+  final Map<PrayerType, NotificationMode> _notificationSettings = {
     PrayerType.fajr: NotificationMode.athan,
     PrayerType.sunrise: NotificationMode.silent,
     PrayerType.dhuhr: NotificationMode.athan,

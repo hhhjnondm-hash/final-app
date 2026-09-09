@@ -84,7 +84,7 @@ class _AudioDiagnosticDialogState extends State<AudioDiagnosticDialog> {
                   color: DesignSystem.bgDarkest,
                   borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
                   border: Border.all(
-                    color: DesignSystem.gold.withOpacity(0.3),
+                    color: DesignSystem.gold.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),

@@ -33,20 +33,20 @@ class UnifiedMiniPlayer extends StatelessWidget {
                   color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF090E17),
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(
-                    color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFFC89B3C).withOpacity(0.35),
+                    color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFFC89B3C).withValues(alpha: 0.35),
                     width: 1.1,
                   ),
                   boxShadow: [
                     BoxShadow(
                       color: isLight
-                          ? const Color(0xFF0F172A).withOpacity(0.06)
-                          : Colors.black.withOpacity(0.8),
+                          ? const Color(0xFF0F172A).withValues(alpha: 0.06)
+                          : Colors.black.withValues(alpha: 0.8),
                       blurRadius: 24,
                       offset: const Offset(0, 6),
                     ),
                     if (!isLight)
                       BoxShadow(
-                        color: const Color(0xFFFFD56B).withOpacity(0.12),
+                        color: const Color(0xFFFFD56B).withValues(alpha: 0.12),
                         blurRadius: 14,
                       ),
                   ],

@@ -66,7 +66,7 @@ class CachedImage extends StatelessWidget {
           child: CircularProgressIndicator(
             strokeWidth: 2,
             valueColor: AlwaysStoppedAnimation<Color>(
-              DesignSystem.gold.withOpacity(0.5),
+              DesignSystem.gold.withValues(alpha: 0.5),
             ),
           ),
         ),
@@ -83,7 +83,7 @@ class CachedImage extends StatelessWidget {
         child: Icon(
           Icons.broken_image_rounded,
           size: 32,
-          color: DesignSystem.textMuted.withOpacity(0.5),
+          color: DesignSystem.textMuted.withValues(alpha: 0.5),
         ),
       ),
     );
@@ -140,8 +140,8 @@ class CachedImageWithGradient extends StatelessWidget {
                 colors: gradientColors ??
                     [
                       Colors.transparent,
-                      DesignSystem.bgDarkest.withOpacity(0.3),
-                      DesignSystem.bgDarkest.withOpacity(0.7),
+                      DesignSystem.bgDarkest.withValues(alpha: 0.3),
+                      DesignSystem.bgDarkest.withValues(alpha: 0.7),
                     ],
               ),
             ),
@@ -204,7 +204,7 @@ class CachedCircleImage extends StatelessWidget {
           child: CircularProgressIndicator(
             strokeWidth: 2,
             valueColor: AlwaysStoppedAnimation<Color>(
-              DesignSystem.gold.withOpacity(0.5),
+              DesignSystem.gold.withValues(alpha: 0.5),
             ),
           ),
         ),
@@ -221,7 +221,7 @@ class CachedCircleImage extends StatelessWidget {
         child: Icon(
           Icons.person_rounded,
           size: size * 0.5,
-          color: DesignSystem.textMuted.withOpacity(0.5),
+          color: DesignSystem.textMuted.withValues(alpha: 0.5),
         ),
       ),
     );

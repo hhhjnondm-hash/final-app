@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart';
-import 'dart:convert';
 
 class QuranService {
   static Map<int, List<Map<String, dynamic>>>? _quranData;

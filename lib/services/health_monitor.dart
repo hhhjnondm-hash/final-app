@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
-import 'unified_audio_engine.dart';
 import 'mp3quran_api_service_v2.dart';
 import 'radio_api_service.dart';
 import 'asset_validator.dart';
@@ -18,7 +16,6 @@ class HealthMonitor {
 
   final Mp3QuranApiServiceV2 _mp3QuranApi = Mp3QuranApiServiceV2();
   final RadioApiService _radioApi = RadioApiService();
-  final AssetValidator _assetValidator = AssetValidator();
   final DownloadIntegrityVerifier _integrityVerifier = DownloadIntegrityVerifier();
   final ReciterImageRegistry _imageRegistry = ReciterImageRegistry();
   final PrayerRepository _prayerRepository = PrayerRepository();
@@ -79,7 +76,7 @@ class HealthMonitor {
     );
 
     if (overallHealth != HealthStatus.healthy) {
-      debugPrint('⚠️ Health check completed with issues: ${report}');
+      debugPrint('⚠️ Health check completed with issues: $report');
     } else {
       debugPrint('✅ Health check completed: All systems healthy');
     }
@@ -187,10 +184,9 @@ class HealthMonitor {
   /// Check reciter images health
   Future<HealthCheckResult> _checkReciterImages() async {
     try {
-      final report = await _imageRegistry.getValidationReport();
+      final report = _imageRegistry.getValidationReport();
       final totalAssets = report['totalAssets'] as int? ?? 0;
-      final validAssets = report['validAssets'] as int? ?? 0;
-      final invalidAssets = report['invalidAssets'] as int? ?? 0;
+            final invalidAssets = report['invalidAssets'] as int? ?? 0;
       
       if (invalidAssets > 0) {
         return HealthCheckResult(
@@ -222,8 +218,7 @@ class HealthMonitor {
     try {
       final report = await _integrityVerifier.getIntegrityReport();
       final totalFiles = report.totalFiles;
-      final validFiles = report.validFiles;
-      final invalidFiles = report.invalidFiles;
+            final invalidFiles = report.invalidFiles;
       
       if (invalidFiles > 0) {
         return HealthCheckResult(

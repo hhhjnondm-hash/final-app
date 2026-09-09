@@ -38,14 +38,14 @@ class SectionHeader extends StatelessWidget {
                     color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF111722),
                     borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
                     border: Border.all(
-                      color: const Color(0xFFC89B3C).withOpacity(isLight ? 0.4 : 0.6),
+                      color: const Color(0xFFC89B3C).withValues(alpha: isLight ? 0.4 : 0.6),
                       width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: isLight
-                            ? const Color(0xFF102A43).withOpacity(0.04)
-                            : const Color(0xFFC89B3C).withOpacity(0.12),
+                            ? const Color(0xFF102A43).withValues(alpha: 0.04)
+                            : const Color(0xFFC89B3C).withValues(alpha: 0.12),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),

@@ -27,11 +27,11 @@ class LocationService extends ChangeNotifier {
 
   Future<void> _init() async {
     await _storage.init();
-    _loadSavedLocation();
+    await _loadSavedLocation();
   }
 
-  void _loadSavedLocation() {
-    final savedLocation = _storage.getLocation();
+  Future<void> _loadSavedLocation() async {
+    final savedLocation = await _storage.getLocation();
     if (savedLocation != null) {
       _currentLocation = LocationProfile(
         cityName: savedLocation['cityName'] as String,

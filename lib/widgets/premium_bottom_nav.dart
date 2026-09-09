@@ -39,20 +39,20 @@ class PremiumBottomNav extends StatelessWidget {
               color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C1017),
               borderRadius: BorderRadius.circular(30),
               border: Border.all(
-                color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFC89B3C).withOpacity(0.35),
+                color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFC89B3C).withValues(alpha: 0.35),
                 width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
                   color: isLight
-                      ? const Color(0xFF102A43).withOpacity(0.08)
-                      : Colors.black.withOpacity(0.7),
+                      ? const Color(0xFF102A43).withValues(alpha: 0.08)
+                      : Colors.black.withValues(alpha: 0.7),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
                 ),
                 if (!isLight)
                   BoxShadow(
-                    color: const Color(0xFFC89B3C).withOpacity(0.12),
+                    color: const Color(0xFFC89B3C).withValues(alpha: 0.12),
                     blurRadius: 18,
                     spreadRadius: 1,
                   ),
@@ -122,7 +122,7 @@ class PremiumBottomNav extends StatelessWidget {
               boxShadow: isSelected && !isLight
                   ? [
                       BoxShadow(
-                        color: const Color(0xFFC89B3C).withOpacity(0.4),
+                        color: const Color(0xFFC89B3C).withValues(alpha: 0.4),
                         blurRadius: 10,
                         offset: const Offset(0, 2),
                       ),

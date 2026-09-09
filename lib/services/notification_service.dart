@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Stub notification service for quick compilation
@@ -9,7 +8,7 @@ class NotificationService extends ChangeNotifier {
   NotificationService._internal();
 
   bool _isInitialized = false;
-  bool _notificationsEnabled = true;
+  final bool _notificationsEnabled = true;
 
   bool get isInitialized => _isInitialized;
   bool get notificationsEnabled => _notificationsEnabled;

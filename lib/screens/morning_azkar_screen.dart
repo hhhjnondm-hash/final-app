@@ -102,7 +102,7 @@ class _MorningAzkarScreenState extends State<MorningAzkarScreen> {
             borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: Colors.white.withOpacity(0.1),
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
               valueColor: const AlwaysStoppedAnimation<Color>(DesignSystem.gold),
               minHeight: 8,
             ),
@@ -176,10 +176,10 @@ class _MorningAzkarScreenState extends State<MorningAzkarScreen> {
                   vertical: DesignSystem.spacingS,
                 ),
                 decoration: BoxDecoration(
-                  color: DesignSystem.violet.withOpacity(0.1),
+                  color: DesignSystem.violet.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
                   border: Border.all(
-                    color: DesignSystem.violet.withOpacity(0.3),
+                    color: DesignSystem.violet.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Text(
@@ -209,7 +209,7 @@ class _MorningAzkarScreenState extends State<MorningAzkarScreen> {
               decoration: currentIndex > 0
                   ? DesignSystem.glassButton()
                   : BoxDecoration(
-                      color: Colors.white.withOpacity(0.02),
+                      color: Colors.white.withValues(alpha: 0.02),
                       borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
                     ),
               child: IconButton(
@@ -289,7 +289,7 @@ class _MorningAzkarScreenState extends State<MorningAzkarScreen> {
               decoration: currentIndex < morningAzkarData.length - 1
                   ? DesignSystem.glassButton()
                   : BoxDecoration(
-                      color: Colors.white.withOpacity(0.02),
+                      color: Colors.white.withValues(alpha: 0.02),
                       borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
                     ),
               child: IconButton(
@@ -406,10 +406,10 @@ class _MorningAzkarScreenState extends State<MorningAzkarScreen> {
                       vertical: DesignSystem.spacingM,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
                     child: const Text(

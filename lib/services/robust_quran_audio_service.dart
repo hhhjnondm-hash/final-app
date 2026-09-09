@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../data/reciters_data.dart';
 import '../models/audio_models.dart';
 import 'advanced_audio_engine.dart';
 

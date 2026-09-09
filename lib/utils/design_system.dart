@@ -138,19 +138,19 @@ class DesignSystem {
   static List<BoxShadow> get softCardShadow => isLightMode
       ? [
           BoxShadow(
-            color: const Color(0xFF102A43).withOpacity(0.06),
+            color: const Color(0xFF102A43).withValues(alpha: 0.06),
             blurRadius: 20,
             offset: const Offset(0, 5),
           ),
         ]
       : [
           BoxShadow(
-            color: Colors.black.withOpacity(0.6),
+            color: Colors.black.withValues(alpha: 0.6),
             blurRadius: 24,
             offset: const Offset(0, 6),
           ),
           BoxShadow(
-            color: gold.withOpacity(0.08),
+            color: gold.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, 2),
           ),
@@ -158,7 +158,7 @@ class DesignSystem {
 
   static List<BoxShadow> get goldGlow => [
         BoxShadow(
-          color: gold.withOpacity(0.35),
+          color: gold.withValues(alpha: 0.35),
           blurRadius: 22,
           spreadRadius: 2,
           offset: const Offset(0, 4),

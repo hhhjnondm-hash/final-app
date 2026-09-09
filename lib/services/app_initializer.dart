@@ -1,11 +1,8 @@
 import 'app_security_service.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'ai_assistant_service.dart';
-import 'adhan_service.dart';
 import 'islamic_notification_service.dart';
-import 'mp3quran_api_service.dart';
 import 'mp3quran_api_service_v2.dart';
 import 'prayer_service.dart';
 import 'prayer_time_calculator.dart';
@@ -28,8 +25,8 @@ class AppInitializer {
   AppInitializer._internal();
 
   bool _isInitialized = false;
-  double _progress = 0.0;
-  String _statusText = 'جاري التحضير والتهيئة...';
+  final double _progress = 0.0;
+  final String _statusText = 'جاري التحضير والتهيئة...';
 
   bool get isInitialized => _isInitialized;
   double get progress => _progress;

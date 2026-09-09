@@ -1374,4 +1374,11 @@ class QuranMetadataProvider {
       ),
     ];
   }
+  
+  static SurahMeta getSurah(int number) {
+    return getAllSurahs().firstWhere(
+      (s) => s.number == number,
+      orElse: () => getAllSurahs().first,
+    );
+  }
 }

@@ -285,7 +285,11 @@ class AdvancedAudioEngine {
   /// التكرار
   Future<void> setLoopMode(LoopMode mode) async {
     try {
-      await _player.setLoopMode(mode);
+      // Convert custom LoopMode to just_audio LoopMode
+      final justAudioMode = (mode == LoopMode.one) 
+          ? just_audio.LoopMode.one 
+          : just_audio.LoopMode.off;
+      await _player.setLoopMode(justAudioMode);
     } catch (e) {
       _errorController.add('Set loop mode failed: $e');
     }

@@ -19,7 +19,7 @@ class QuranScreen extends StatefulWidget {
 
 class _QuranScreenState extends State<QuranScreen> with SingleTickerProviderStateMixin {
   final QuranStorageService _storage = QuranStorageService();
-  final GlobalAudioManager _audioManager = GlobalAudioManager();
+  final AudioQuranService _audioQuranService = AudioQuranService();
   late List<SurahMeta> _allSurahs;
 
   int _selectedNavTab = 0; // 0: السور, 1: الأجزاء, 2: العلامات, 3: الختمة, 4: الإحصائيات
@@ -32,11 +32,13 @@ class _QuranScreenState extends State<QuranScreen> with SingleTickerProviderStat
     super.initState();
     _allSurahs = QuranMetadataProvider.getAllSurahs();
     _storage.addListener(_onStorageUpdate);
+    _audioQuranService.addListener(_onAudioUpdate);
   }
 
   @override
   void dispose() {
     _storage.removeListener(_onStorageUpdate);
+    _audioQuranService.removeListener(_onAudioUpdate);
     super.dispose();
   }
 
@@ -44,18 +46,17 @@ class _QuranScreenState extends State<QuranScreen> with SingleTickerProviderStat
     if (mounted) setState(() {});
   }
 
-  /// Play surah using GlobalAudioManager
+  void _onAudioUpdate() {
+    if (mounted) setState(() {});
+  }
+
+  /// Play surah using AudioQuranService
   Future<void> _playSurah(int surahNumber, String surahName) async {
     try {
-      // Use AudioQuranService for Quran playback
-      final audioQuranService = AudioQuranService();
-      await audioQuranService.playSurah(surahNumber);
-      
+      await _audioQuranService.playSurah(surahNumber);
       debugPrint('🎵 Playing Surah $surahNumber: $surahName');
     } catch (e) {
       debugPrint('❌ Error playing surah: $e');
-      
-      // Show error to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('فشل تشغيل السورة: $e')),

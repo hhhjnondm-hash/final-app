@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/audio_quran_service.dart';
 import '../utils/design_system.dart';
 
-class AudioHeroPlayer extends StatelessWidget {
+class AudioHeroPlayer extends StatefulWidget {
   final VoidCallback? onReciterChangeTap;
 
   const AudioHeroPlayer({
@@ -11,13 +11,35 @@ class AudioHeroPlayer extends StatelessWidget {
   });
 
   @override
+  State<AudioHeroPlayer> createState() => _AudioHeroPlayerState();
+}
+
+class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
+  final AudioQuranService _service = AudioQuranService();
+
+  @override
+  void initState() {
+    super.initState();
+    _service.addListener(_onServiceUpdate);
+  }
+
+  @override
+  void dispose() {
+    _service.removeListener(_onServiceUpdate);
+    super.dispose();
+  }
+
+  void _onServiceUpdate() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final service = AudioQuranService();
-    final reciter = service.currentReciter;
-    final surah = service.currentSurah;
-    final isPlaying = service.isPlaying;
-    final pos = service.currentPosition;
-    final total = service.totalDuration;
+    final reciter = _service.currentReciter;
+    final surah = _service.currentSurah;
+    final isPlaying = _service.isPlaying;
+    final pos = _service.currentPosition;
+    final total = _service.totalDuration;
     final progress = (total.inSeconds > 0 ? pos.inSeconds / total.inSeconds : 0.0).clamp(0.0, 1.0);
 
     return Container(
@@ -119,9 +141,9 @@ class AudioHeroPlayer extends StatelessWidget {
                       ),
                     ),
 
-                    if (onReciterChangeTap != null)
+                    if (widget.onReciterChangeTap != null)
                       InkWell(
-                        onTap: onReciterChangeTap,
+                        onTap: widget.onReciterChangeTap,
                         borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -212,7 +234,7 @@ class AudioHeroPlayer extends StatelessWidget {
                       child: Slider(
                         value: progress,
                         onChanged: (val) {
-                          service.seekTo(Duration(seconds: (val * total.inSeconds).toInt()));
+                          _service.seekTo(Duration(seconds: (val * total.inSeconds).toInt()));
                         },
                       ),
                     ),
@@ -222,11 +244,11 @@ class AudioHeroPlayer extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            service.formatDuration(pos),
+                            _service.formatDuration(pos),
                             style: const TextStyle(color: DesignSystem.textMuted, fontSize: 11),
                           ),
                           Text(
-                            service.formatDuration(total),
+                            _service.formatDuration(total),
                             style: const TextStyle(color: DesignSystem.textMuted, fontSize: 11),
                           ),
                         ],
@@ -251,13 +273,13 @@ class AudioHeroPlayer extends StatelessWidget {
                     // Previous Surah Button
                     IconButton(
                       icon: const Icon(Icons.skip_previous_rounded, color: DesignSystem.goldLight, size: 30),
-                      onPressed: service.previousSurah,
+                      onPressed: _service.previousSurah,
                     ),
                     const SizedBox(width: 14),
 
                     // Big Play / Pause Central Button
                     InkWell(
-                      onTap: service.togglePlayPause,
+                      onTap: _service.togglePlayPause,
                       borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
                       child: Container(
                         width: 64,
@@ -279,15 +301,15 @@ class AudioHeroPlayer extends StatelessWidget {
                     // Next Surah Button
                     IconButton(
                       icon: const Icon(Icons.skip_next_rounded, color: DesignSystem.goldLight, size: 30),
-                      onPressed: service.nextSurah,
+                      onPressed: _service.nextSurah,
                     ),
                     const SizedBox(width: 12),
 
                     // Speed Toggle
                     InkWell(
                       onTap: () {
-                        final nextSpeed = service.playbackSpeed == 1.0 ? 1.25 : (service.playbackSpeed == 1.25 ? 1.5 : 1.0);
-                        service.setPlaybackSpeed(nextSpeed);
+                        final nextSpeed = _service.playbackSpeed == 1.0 ? 1.25 : (_service.playbackSpeed == 1.25 ? 1.5 : 1.0);
+                        _service.setPlaybackSpeed(nextSpeed);
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -296,7 +318,7 @@ class AudioHeroPlayer extends StatelessWidget {
                           borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
                         ),
                         child: Text(
-                          '${service.playbackSpeed}x',
+                          '${_service.playbackSpeed}x',
                           style: const TextStyle(color: DesignSystem.goldLight, fontSize: 11, fontWeight: FontWeight.bold),
                         ),
                       ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/audio_quran_service.dart';
 import '../utils/design_system.dart';
 
-class AudioMiniPlayer extends StatelessWidget {
+class AudioMiniPlayer extends StatefulWidget {
   final VoidCallback onTap;
 
   const AudioMiniPlayer({
@@ -11,17 +11,39 @@ class AudioMiniPlayer extends StatelessWidget {
   });
 
   @override
+  State<AudioMiniPlayer> createState() => _AudioMiniPlayerState();
+}
+
+class _AudioMiniPlayerState extends State<AudioMiniPlayer> {
+  final AudioQuranService _service = AudioQuranService();
+
+  @override
+  void initState() {
+    super.initState();
+    _service.addListener(_onServiceUpdate);
+  }
+
+  @override
+  void dispose() {
+    _service.removeListener(_onServiceUpdate);
+    super.dispose();
+  }
+
+  void _onServiceUpdate() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final service = AudioQuranService();
-    final reciter = service.currentReciter;
-    final surah = service.currentSurah;
-    final isPlaying = service.isPlaying;
-    final pos = service.currentPosition;
-    final total = service.totalDuration;
+    final reciter = _service.currentReciter;
+    final surah = _service.currentSurah;
+    final isPlaying = _service.isPlaying;
+    final pos = _service.currentPosition;
+    final total = _service.totalDuration;
     final progress = (total.inSeconds > 0 ? pos.inSeconds / total.inSeconds : 0.0).clamp(0.0, 1.0);
 
     return InkWell(
-      onTap: onTap,
+      onTap: widget.onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
@@ -90,11 +112,11 @@ class AudioMiniPlayer extends StatelessWidget {
                     color: DesignSystem.goldLight,
                     size: 34,
                   ),
-                  onPressed: service.togglePlayPause,
+                  onPressed: _service.togglePlayPause,
                 ),
                 IconButton(
                   icon: const Icon(Icons.skip_next_rounded, color: DesignSystem.textWhite, size: 24),
-                  onPressed: service.nextSurah,
+                  onPressed: _service.nextSurah,
                 ),
               ],
             ),

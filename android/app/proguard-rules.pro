@@ -6,7 +6,11 @@
 -keep class io.flutter.**  { *; }
 -keep class io.flutter.plugins.**  { *; }
 
-# Provider
+# Ignore warnings across third-party dependencies during R8 shrinking
+-dontwarn **
+-ignorewarnings
+
+# Provider & AndroidX Lifecycle
 -keep class * extends androidx.lifecycle.ViewModel
 -keep class * extends androidx.lifecycle.AndroidViewModel
 -keep class * implements androidx.lifecycle.ViewModelProvider$Factory
@@ -14,9 +18,9 @@
 # Sentry
 -keepattributes LineNumberTable,SourceFile
 -keep class io.sentry.** { *; }
--dontwarn io.sentry.**
 
 # Hive
+-keep class io.hive.** { *; }
 -keep @io.hive.HiveType class *
 -keepclassmembers class * {
   @io.hive.HiveField <fields>;
@@ -25,16 +29,19 @@
 # JSON serialization
 -keepattributes Signature
 -keepattributes *Annotation*
--dontwarn sun.misc.**
 -keep class com.google.gson.** { *; }
 -keep class * implements com.google.gson.TypeAdapter
 -keep class * implements com.google.gson.TypeAdapterFactory
 -keep class * implements com.google.gson.JsonSerializer
 -keep class * implements com.google.gson.JsonDeserializer
 
-# Crypto/Encryption
+# Crypto/Encryption & Secure Storage
 -keep class javax.crypto.** { *; }
 -keep class java.security.** { *; }
+
+# Just Audio & Audio Players
+-keep class com.ryanheise.just_audio.** { *; }
+-keep class xyz.luan.audioplayers.** { *; }
 
 # Location services
 -keep class com.google.android.gms.location.** { *; }
@@ -45,19 +52,7 @@
 # SQLite
 -keep class * extends android.database.sqlite.** { *; }
 
--dontwarn org.conscrypt.**
--dontwarn okio.**
--dontwarn okhttp3.**
-
-# Obfuscate everything else
--optimizationpasses 5
--dontusemixedcaseclassnames
--dontskipnonpubliclibraryclasses
--dontpreverify
--verbose
-
--optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
-
+# Keep Native Android Components
 -keep public class * extends android.app.Activity
 -keep public class * extends android.app.Application
 -keep public class * extends android.app.Service

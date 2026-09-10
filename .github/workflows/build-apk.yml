@@ -34,8 +34,8 @@ jobs:
       - name: Install Android Build Tools
         run: |
           sdkmanager "platform-tools"
-          sdkmanager "build-tools;33.0.0"
-          sdkmanager "platforms;android-34"
+          sdkmanager "build-tools;34.0.0" "build-tools;35.0.0"
+          sdkmanager "platforms;android-34" "platforms;android-35"
       
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew

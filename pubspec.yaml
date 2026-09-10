@@ -42,8 +42,7 @@ dependencies:
   shared_preferences: ^2.2.2
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  package_info_plus: ^8.3.0
-  flutter_secure_storage: ^9.2.2
+  package_info_plus: ^10.2.1
   
   # Encryption
   encrypt: ^5.0.3

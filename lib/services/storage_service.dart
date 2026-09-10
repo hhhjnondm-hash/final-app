@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
+import 'app_security_service.dart';
 
 class StorageService {
   static final StorageService _instance = StorageService._internal();
@@ -9,11 +9,6 @@ class StorageService {
   StorageService._internal();
 
   SharedPreferences? _prefs;
-  static final FlutterSecureStorage _secureStorage = FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
-  );
 
   Future<void> init() async {
     _prefs ??= await SharedPreferences.getInstance();
@@ -103,24 +98,12 @@ class StorageService {
       'longitude': longitude,
       'qiblaAngle': qiblaAngle,
     });
-    try {
-      await _secureStorage.write(key: _locationKey, value: locationData);
-      return true;
-    } catch (e) {
-      debugPrint('Storage: Secure location save error - $e');
-      return await setJson(_locationKey, {
-        'cityName': cityName,
-        'countryName': countryName,
-        'latitude': latitude,
-        'longitude': longitude,
-        'qiblaAngle': qiblaAngle,
-      });
-    }
+    return await AppSecurityService.saveSecureString(_locationKey, locationData);
   }
 
   Future<Map<String, dynamic>?> getLocation() async {
     try {
-      final locationData = await _secureStorage.read(key: _locationKey);
+      final locationData = await AppSecurityService.getSecureString(_locationKey);
       if (locationData == null) return null;
       return jsonDecode(locationData) as Map<String, dynamic>;
     } catch (e) {
@@ -135,18 +118,12 @@ class StorageService {
   
   Future<bool> saveNotificationSettings(Map<String, dynamic> settings) async {
     final settingsData = jsonEncode(settings);
-    try {
-      await _secureStorage.write(key: _notificationSettingsKey, value: settingsData);
-      return true;
-    } catch (e) {
-      debugPrint('Storage: Secure notification settings save error - $e');
-      return await setJson(_notificationSettingsKey, settings);
-    }
+    return await AppSecurityService.saveSecureString(_notificationSettingsKey, settingsData);
   }
 
   Future<Map<String, dynamic>?> getNotificationSettings() async {
     try {
-      final settingsData = await _secureStorage.read(key: _notificationSettingsKey);
+      final settingsData = await AppSecurityService.getSecureString(_notificationSettingsKey);
       if (settingsData == null) return null;
       return jsonDecode(settingsData) as Map<String, dynamic>;
     } catch (e) {
@@ -193,31 +170,19 @@ class StorageService {
     final favorites = await getFavorites();
     final newFavorites = [...favorites, {'id': itemId, 'type': itemType}];
     final favoritesData = jsonEncode({'items': newFavorites});
-    try {
-      await _secureStorage.write(key: _favoritesKey, value: favoritesData);
-      return true;
-    } catch (e) {
-      debugPrint('Storage: Secure favorites save error - $e');
-      return await setJson(_favoritesKey, {'items': newFavorites});
-    }
+    return await AppSecurityService.saveSecureString(_favoritesKey, favoritesData);
   }
 
   Future<bool> removeFavorite(String itemId) async {
     final favorites = await getFavorites();
     final newFavorites = favorites.where((item) => item['id'] != itemId).toList();
     final favoritesData = jsonEncode({'items': newFavorites});
-    try {
-      await _secureStorage.write(key: _favoritesKey, value: favoritesData);
-      return true;
-    } catch (e) {
-      debugPrint('Storage: Secure favorites remove error - $e');
-      return await setJson(_favoritesKey, {'items': newFavorites});
-    }
+    return await AppSecurityService.saveSecureString(_favoritesKey, favoritesData);
   }
 
   Future<List<Map<String, dynamic>>> getFavorites() async {
     try {
-      final favoritesData = await _secureStorage.read(key: _favoritesKey);
+      final favoritesData = await AppSecurityService.getSecureString(_favoritesKey);
       if (favoritesData == null) return [];
       final data = jsonDecode(favoritesData) as Map<String, dynamic>;
       return (data['items'] as List<dynamic>).cast<Map<String, dynamic>>();
@@ -280,22 +245,12 @@ class StorageService {
       'playbackRate': playbackRate,
       'autoPlay': autoPlay,
     });
-    try {
-      await _secureStorage.write(key: _audioSettingsKey, value: audioData);
-      return true;
-    } catch (e) {
-      debugPrint('Storage: Secure audio settings save error - $e');
-      return await setJson(_audioSettingsKey, {
-        'volume': volume,
-        'playbackRate': playbackRate,
-        'autoPlay': autoPlay,
-      });
-    }
+    return await AppSecurityService.saveSecureString(_audioSettingsKey, audioData);
   }
 
   Future<Map<String, dynamic>?> getAudioSettings() async {
     try {
-      final audioData = await _secureStorage.read(key: _audioSettingsKey);
+      final audioData = await AppSecurityService.getSecureString(_audioSettingsKey);
       if (audioData == null) return null;
       return jsonDecode(audioData) as Map<String, dynamic>;
     } catch (e) {

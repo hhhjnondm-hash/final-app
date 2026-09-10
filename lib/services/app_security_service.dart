@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// App Security & Anti-Tamper Service
 /// Provides strong defenses against tampering, MITM attacks, data sniffing, and unsafe inputs.
@@ -27,12 +27,11 @@ class AppSecurityService {
     'quran-central.com',
   ];
 
-  // Secure storage for sensitive data
-  static final FlutterSecureStorage _secureStorage = FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
-  );
+  static SharedPreferences? _prefs;
+  static Future<SharedPreferences> _getPrefs() async {
+    _prefs ??= await SharedPreferences.getInstance();
+    return _prefs!;
+  }
 
   bool _isSecureEnvironment = true;
   bool get isSecureEnvironment => _isSecureEnvironment;
@@ -147,11 +146,12 @@ class AppSecurityService {
     }
   }
 
-  /// 2. Secure Local Storage using flutter_secure_storage
+  /// 2. Secure Local Storage using AES-256 Encrypted SharedPreferences
   static Future<bool> saveSecureString(String key, String value) async {
     try {
-      await _secureStorage.write(key: key, value: value);
-      return true;
+      final prefs = await _getPrefs();
+      final encrypted = encryptData(value);
+      return await prefs.setString('sec_$key', encrypted);
     } catch (e) {
       debugPrint('Security: Secure storage error - $e');
       return false;
@@ -160,7 +160,10 @@ class AppSecurityService {
 
   static Future<String?> getSecureString(String key) async {
     try {
-      return await _secureStorage.read(key: key);
+      final prefs = await _getPrefs();
+      final encrypted = prefs.getString('sec_$key');
+      if (encrypted == null) return null;
+      return decryptData(encrypted);
     } catch (e) {
       debugPrint('Security: Secure storage read error - $e');
       return null;
@@ -169,8 +172,8 @@ class AppSecurityService {
 
   static Future<bool> deleteSecureString(String key) async {
     try {
-      await _secureStorage.delete(key: key);
-      return true;
+      final prefs = await _getPrefs();
+      return await prefs.remove('sec_$key');
     } catch (e) {
       debugPrint('Security: Secure storage delete error - $e');
       return false;
@@ -179,7 +182,8 @@ class AppSecurityService {
 
   static Future<bool> containsSecureKey(String key) async {
     try {
-      return await _secureStorage.containsKey(key: key);
+      final prefs = await _getPrefs();
+      return prefs.containsKey('sec_$key');
     } catch (e) {
       debugPrint('Security: Secure storage contains error - $e');
       return false;

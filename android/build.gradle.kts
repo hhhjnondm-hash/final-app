@@ -20,23 +20,20 @@ subprojects {
 }
 
 subprojects {
-    project.configurations.all {
+    val subproject = this
+    subproject.configurations.all {
         resolutionStrategy {
-            force("androidx.annotation:annotation-experimental:1.3.0")
+            force("androidx.annotation:annotation-experimental:1.4.0")
             force("androidx.core:core:1.13.1")
         }
     }
-    project.plugins.whenPluginAdded {
-        if (this is com.android.build.gradle.api.AndroidBasePlugin ||
-            project.plugins.hasPlugin("com.android.library") ||
-            project.plugins.hasPlugin("com.android.application")
-        ) {
-            val androidExt = project.extensions.findByType(com.android.build.gradle.BaseExtension::class.java)
-            androidExt?.let {
-                it.compileSdkVersion(35)
-                if (it.namespace == null || it.namespace!!.isEmpty()) {
-                    it.namespace = project.group.toString().ifEmpty { "com.example.${project.name}" }
-                }
+    
+    subproject.afterEvaluate {
+        val androidExt = subproject.extensions.findByName("android")
+        if (androidExt is com.android.build.gradle.BaseExtension) {
+            androidExt.compileSdkVersion(35)
+            if (androidExt.namespace == null || androidExt.namespace!!.isEmpty()) {
+                androidExt.namespace = subproject.group.toString().ifEmpty { "com.example.${subproject.name}" }
             }
         }
     }

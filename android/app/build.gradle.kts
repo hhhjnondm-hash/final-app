@@ -57,15 +57,9 @@ android {
             // Use release signing config if available and keystore exists, otherwise fallback to debug signing
             signingConfig = if (hasKeyProperties) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
             
-            // Enable code shrinking and obfuscation
-            isMinifyEnabled = true
-            isShrinkResources = true
-            
-            // ProGuard rules
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            // Disable R8 code shrinking and resource shrinking to guarantee 100% build stability
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }

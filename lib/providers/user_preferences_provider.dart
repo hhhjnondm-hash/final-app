@@ -44,14 +44,14 @@ class UserPreferencesProvider extends ChangeNotifier {
 
   Future<void> _init() async {
     await _storage.init();
-    _loadPreferences();
+    await _loadPreferences();
   }
 
   Future<void> initialize() async {
     await _init();
   }
 
-  void _loadPreferences() {
+  Future<void> _loadPreferences() async {
     // Load language
     final savedLanguage = _storage.getLanguage();
     if (savedLanguage != null) {
@@ -71,7 +71,7 @@ class UserPreferencesProvider extends ChangeNotifier {
     }
 
     // Load audio settings
-    final audioSettings = _storage.getAudioSettings();
+    final audioSettings = await _storage.getAudioSettings();
     if (audioSettings != null) {
       _audioVolume = audioSettings['volume'] as double? ?? 1.0;
       _audioPlaybackRate = audioSettings['playbackRate'] as double? ?? 1.0;

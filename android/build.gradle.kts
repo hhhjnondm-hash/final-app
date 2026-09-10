@@ -28,7 +28,7 @@ subprojects {
         ) {
             val androidExt = subproject.extensions.findByType(com.android.build.gradle.BaseExtension::class.java)
             androidExt?.let {
-                it.compileSdkVersion(35)
+                it.compileSdkVersion(36)
                 if (it.namespace == null || it.namespace!!.isEmpty()) {
                     it.namespace = subproject.group.toString().ifEmpty { "com.example.${subproject.name}" }
                 }

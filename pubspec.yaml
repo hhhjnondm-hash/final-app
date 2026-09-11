@@ -73,6 +73,7 @@ dependencies:
   
   # Error Handling
   sentry_flutter: ^9.28.0
+  flutter_compass: ^0.8.1
 
 dev_dependencies:
   flutter_test:

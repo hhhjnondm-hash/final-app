@@ -1,6 +1,4 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import '../utils/design_system.dart';
 
 class IqraMushafView extends StatelessWidget {
   final List<Map<String, dynamic>> ayahs;
@@ -31,77 +29,155 @@ class IqraMushafView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCream = theme == 'cream';
-    final isBlue = theme == 'blue';
+    Color bgColor;
+    Color textColor;
+    Color goldColor;
+    Color activeBgColor;
+    Color activeTextColor;
+    Color headerBgColor;
+    Color headerBorderColor;
+    Color cardBorderColor;
 
-    final bgColor = isCream
-        ? const Color(0xFFFDF7E7)
-        : (isBlue ? const Color(0xFF061426) : const Color(0xFF030A16));
-
-    final textColor = isCream ? const Color(0xFF231C10) : const Color(0xFFF3F4F6);
-    final goldColor = isCream ? const Color(0xFFB8860B) : DesignSystem.gold;
-    final activeBgColor = isCream ? const Color(0xFFD4AF37).withValues(alpha: 0.3) : DesignSystem.gold.withValues(alpha: 0.22);
-    final activeTextColor = isCream ? const Color(0xFF8B5A00) : DesignSystem.goldLight;
+    switch (theme) {
+      case 'dark':
+        bgColor = const Color(0xFF0C131D);
+        textColor = const Color(0xFFF6F8FA);
+        goldColor = const Color(0xFFFFD56B);
+        activeBgColor = const Color(0xFFC89B3C).withValues(alpha: 0.28);
+        activeTextColor = const Color(0xFFFFE082);
+        headerBgColor = const Color(0xFF141D2B);
+        headerBorderColor = const Color(0xFFC89B3C).withValues(alpha: 0.5);
+        cardBorderColor = const Color(0xFFC89B3C).withValues(alpha: 0.35);
+        break;
+      case 'green':
+        bgColor = const Color(0xFFF1F8F3);
+        textColor = const Color(0xFF12381E);
+        goldColor = const Color(0xFF2E7D32);
+        activeBgColor = const Color(0xFFA5D6A7).withValues(alpha: 0.45);
+        activeTextColor = const Color(0xFF0A4016);
+        headerBgColor = const Color(0xFFE2F0E5);
+        headerBorderColor = const Color(0xFF2E7D32).withValues(alpha: 0.4);
+        cardBorderColor = const Color(0xFF4CAF50).withValues(alpha: 0.35);
+        break;
+      case 'blue':
+        bgColor = const Color(0xFF071426);
+        textColor = const Color(0xFFF1F5F9);
+        goldColor = const Color(0xFF60A5FA);
+        activeBgColor = const Color(0xFF1E3A8A).withValues(alpha: 0.45);
+        activeTextColor = const Color(0xFF93C5FD);
+        headerBgColor = const Color(0xFF0F223D);
+        headerBorderColor = const Color(0xFF60A5FA).withValues(alpha: 0.4);
+        cardBorderColor = const Color(0xFF3B82F6).withValues(alpha: 0.3);
+        break;
+      case 'ivory':
+        bgColor = const Color(0xFFFAF9F6);
+        textColor = const Color(0xFF1E293B);
+        goldColor = const Color(0xFF8B6914);
+        activeBgColor = const Color(0xFFF1E6C8);
+        activeTextColor = const Color(0xFF5C4010);
+        headerBgColor = const Color(0xFFF0ECE1);
+        headerBorderColor = const Color(0xFFC89B3C).withValues(alpha: 0.4);
+        cardBorderColor = const Color(0xFFD4AF37).withValues(alpha: 0.35);
+        break;
+      case 'cream':
+      default:
+        bgColor = const Color(0xFFFDF7E7);
+        textColor = const Color(0xFF231C10);
+        goldColor = const Color(0xFFB8860B);
+        activeBgColor = const Color(0xFFF3E5AB);
+        activeTextColor = const Color(0xFF634107);
+        headerBgColor = const Color(0xFFF5ECD0);
+        headerBorderColor = const Color(0xFFC89B3C).withValues(alpha: 0.5);
+        cardBorderColor = const Color(0xFFC89B3C).withValues(alpha: 0.45);
+        break;
+    }
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isCream ? const Color(0xFFD4AF37).withValues(alpha: 0.45) : DesignSystem.gold.withValues(alpha: 0.35),
-          width: 1.5,
-        ),
+        border: Border.all(color: cardBorderColor, width: 1.4),
         boxShadow: [
           BoxShadow(
-            color: isCream ? Colors.brown.withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.45),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: theme == 'cream' || theme == 'ivory' || theme == 'green' ? 0.08 : 0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         children: [
-          // Elegant Surah Banner Header
+          // Elegant Islamic Ornate Surah Header Banner (Matching screenshot)
           if (surahName.isNotEmpty) ...[
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
               decoration: BoxDecoration(
+                color: headerBgColor,
                 borderRadius: BorderRadius.circular(16),
-                color: isCream ? const Color(0xFFF5ECD0) : DesignSystem.bgCard.withValues(alpha: 0.8),
-                border: Border.all(color: goldColor.withValues(alpha: 0.3)),
+                border: Border.all(color: headerBorderColor, width: 1.2),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  Text('✦ ─── ', style: TextStyle(color: goldColor.withValues(alpha: 0.6), fontSize: 12)),
-                  Text(
-                    'سورة $surahName',
-                    style: TextStyle(
-                      fontFamily: 'Amiri',
-                      color: isCream ? const Color(0xFF5C4010) : DesignSystem.goldLight,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  // Left & Right subtle arabesque diamonds
+                  Positioned(
+                    right: 8,
+                    child: Icon(Icons.star_rounded, color: goldColor.withValues(alpha: 0.6), size: 14),
                   ),
-                  if (juzNumber > 0) ...[
-                    Text(' • الجزء ${_toArabicDigits(juzNumber)}', style: TextStyle(color: isCream ? Colors.brown : DesignSystem.textMuted, fontSize: 12)),
-                  ],
-                  Text(' ─── ✦', style: TextStyle(color: goldColor.withValues(alpha: 0.6), fontSize: 12)),
+                  Positioned(
+                    left: 8,
+                    child: Icon(Icons.star_rounded, color: goldColor.withValues(alpha: 0.6), size: 14),
+                  ),
+
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('✦ ', style: TextStyle(color: goldColor, fontSize: 13)),
+                          Text(
+                            'سُورَةُ $surahName',
+                            style: TextStyle(
+                              fontFamily: 'Amiri',
+                              color: textColor,
+                              fontSize: 19,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                          Text(' ✦', style: TextStyle(color: goldColor, fontSize: 13)),
+                        ],
+                      ),
+                      if (juzNumber > 0) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          'الجزء ${_toArabicDigits(juzNumber)}',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            color: goldColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 18),
           ],
 
-          // Basmala (except for At-Tawbah)
-          // Basmala (except for At-Tawbah 9 and Al-Fatiha 1 where Ayah 1 is the Basmala)
+          // Basmala for all Surahs except At-Tawbah (9) and Al-Fatiha (1) where Ayah 1 is already Basmala
           if (surahNumber != 9 && surahNumber != 1) ...[
             Center(
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.only(bottom: 16),
                 child: Text(
                   'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
                   textAlign: TextAlign.center,
@@ -117,7 +193,7 @@ class IqraMushafView extends StatelessWidget {
             ),
           ],
 
-          // Continuous Quran Reading Flow (Text.rich with pure RTL wrapping)
+          // Continuous Flow Text with highlighted active Ayah
           Directionality(
             textDirection: TextDirection.rtl,
             child: Text.rich(
@@ -125,7 +201,7 @@ class IqraMushafView extends StatelessWidget {
                 style: TextStyle(
                   fontFamily: 'Amiri',
                   fontSize: fontSize,
-                  height: 2.3,
+                  height: 2.25,
                   color: textColor,
                   letterSpacing: 0.2,
                 ),
@@ -157,35 +233,70 @@ class IqraMushafView extends StatelessWidget {
       var text = ((ayah['text'] ?? '') as String).trim();
       final isCurrent = activeAyahNumber == number;
 
-      // If surah is not Fatiha and ayah 1 starts with Basmala in source text, handle cleanly
+      // Handle Basmala in Surahs other than Fatiha
       if (surahNumber != 1 && number == 1 && text.startsWith('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ')) {
         text = text.replaceFirst('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', '').trim();
       }
 
-      // Ayah Text Span with tap recognizer and active background highlight
+      // Ayah Text Span
       spans.add(
-        TextSpan(
-          text: '$text ',
-          style: TextStyle(
-            color: isCurrent ? activeTextColor : textColor,
-            backgroundColor: isCurrent ? activeBgColor : Colors.transparent,
-            fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-          ),
-          recognizer: TapGestureRecognizer()..onTap = () => onAyahTap(number, text),
-        ),
-      );
+        WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: InkWell(
+            onTap: () => onAyahTap(number, text),
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+              padding: isCurrent
+                  ? const EdgeInsets.symmetric(horizontal: 6, vertical: 2)
+                  : EdgeInsets.zero,
+              decoration: isCurrent
+                  ? BoxDecoration(
+                      color: activeBgColor,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: goldColor.withValues(alpha: 0.6), width: 1.1),
+                    )
+                  : null,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    text,
+                    style: TextStyle(
+                      fontFamily: 'Amiri',
+                      fontSize: fontSize,
+                      color: isCurrent ? activeTextColor : textColor,
+                      fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
 
-      // Traditional Quranic End-of-Ayah Bracket ﴿١﴾
-      spans.add(
-        TextSpan(
-          text: ' ﴿${_toArabicDigits(number)}﴾ ',
-          style: TextStyle(
-            color: isCurrent ? DesignSystem.goldLight : goldColor,
-            backgroundColor: isCurrent ? activeBgColor : Colors.transparent,
-            fontSize: fontSize * 0.82,
-            fontWeight: FontWeight.bold,
+                  // Octagram / Circle Ayah Badge
+                  Container(
+                    width: fontSize * 0.95,
+                    height: fontSize * 0.95,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: goldColor, width: 1.2),
+                      color: isCurrent ? goldColor.withValues(alpha: 0.2) : Colors.transparent,
+                    ),
+                    child: Center(
+                      child: Text(
+                        _toArabicDigits(number),
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: fontSize * 0.46,
+                          fontWeight: FontWeight.bold,
+                          color: isCurrent ? activeTextColor : goldColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                ],
+              ),
+            ),
           ),
-          recognizer: TapGestureRecognizer()..onTap = () => onAyahTap(number, text),
         ),
       );
     }
@@ -193,4 +304,5 @@ class IqraMushafView extends StatelessWidget {
     return spans;
   }
 }
+
 

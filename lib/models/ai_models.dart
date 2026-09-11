@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 enum AiMessageRole {
   user,
   assistant,
@@ -65,6 +63,7 @@ class AiMessage {
   final List<String> followUpQuestions;
   final AiContextAttachment? contextAttachment;
   final bool isSaved;
+  final bool? isLiked;
 
   const AiMessage({
     required this.id,
@@ -75,10 +74,12 @@ class AiMessage {
     this.followUpQuestions = const [],
     this.contextAttachment,
     this.isSaved = false,
+    this.isLiked,
   });
 
   AiMessage copyWith({
     bool? isSaved,
+    bool? isLiked,
     String? content,
   }) {
     return AiMessage(
@@ -90,6 +91,7 @@ class AiMessage {
       followUpQuestions: followUpQuestions,
       contextAttachment: contextAttachment,
       isSaved: isSaved ?? this.isSaved,
+      isLiked: isLiked ?? this.isLiked,
     );
   }
 }

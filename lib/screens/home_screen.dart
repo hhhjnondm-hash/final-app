@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
@@ -10,6 +11,7 @@ import 'azkar_screen.dart';
 import 'audio_screen.dart';
 import 'iqra_screen.dart';
 import 'notification_settings_screen.dart';
+import 'prayer_times_screen.dart';
 import 'qibla_screen.dart';
 import 'radio_screen.dart';
 import 'surah_viewer_screen.dart';
@@ -25,53 +27,159 @@ class _HomeScreenState extends State<HomeScreen> {
   final PrayerServiceV2 _prayerService = PrayerServiceV2();
 
   PrayerTiming? _nextPrayer;
-  PrayerTiming? _currentPrayer;
-  String _countdown = '03:55:10';
+  String _countdown = '00:00:00';
   List<PrayerTiming> _allPrayers = [];
-  bool _isLoading = true;
+  Timer? _liveTimer;
 
   @override
   void initState() {
     super.initState();
-    _prayerService.addListener(_onUpdate);
+    _initDefaultPrayerTimes();
+    _startLiveTimer();
+    _prayerService.addListener(_onServiceUpdate);
     _loadPrayerData();
   }
 
   @override
   void dispose() {
-    _prayerService.removeListener(_onUpdate);
+    _liveTimer?.cancel();
+    _prayerService.removeListener(_onServiceUpdate);
     super.dispose();
   }
 
-  void _onUpdate() async {
+  void _initDefaultPrayerTimes() {
+    // Default Egyptian General Authority timings for instant 0ms render
+    _allPrayers = [
+      PrayerTiming(
+        type: PrayerType.fajr,
+        nameArabic: 'الفجر',
+        nameEnglish: 'Fajr',
+        time: const TimeOfDay(hour: 5, minute: 3),
+        icon: Icons.nightlight_round,
+      ),
+      PrayerTiming(
+        type: PrayerType.sunrise,
+        nameArabic: 'الشروق',
+        nameEnglish: 'Sunrise',
+        time: const TimeOfDay(hour: 6, minute: 33),
+        icon: Icons.wb_twilight_rounded,
+      ),
+      PrayerTiming(
+        type: PrayerType.dhuhr,
+        nameArabic: 'الظهر',
+        nameEnglish: 'Dhuhr',
+        time: const TimeOfDay(hour: 12, minute: 54),
+        icon: Icons.wb_sunny_rounded,
+      ),
+      PrayerTiming(
+        type: PrayerType.asr,
+        nameArabic: 'العصر',
+        nameEnglish: 'Asr',
+        time: const TimeOfDay(hour: 16, minute: 28),
+        icon: Icons.cloud_queue_rounded,
+      ),
+      PrayerTiming(
+        type: PrayerType.maghrib,
+        nameArabic: 'المغرب',
+        nameEnglish: 'Maghrib',
+        time: const TimeOfDay(hour: 19, minute: 15),
+        icon: Icons.wb_sunny_outlined,
+      ),
+      PrayerTiming(
+        type: PrayerType.isha,
+        nameArabic: 'العشاء',
+        nameEnglish: 'Isha',
+        time: const TimeOfDay(hour: 20, minute: 35),
+        icon: Icons.nightlight_round,
+      ),
+    ];
+    _updateRealtimePrayerState();
+  }
+
+  void _startLiveTimer() {
+    _liveTimer?.cancel();
+    _liveTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        _updateRealtimePrayerState();
+      }
+    });
+  }
+
+  void _updateRealtimePrayerState() {
+    if (_allPrayers.isEmpty) return;
+
+    final now = DateTime.now();
+    PrayerTiming? next;
+    DateTime? nextDateTime;
+
+    for (final prayer in _allPrayers) {
+      final prayerDateTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        prayer.time.hour,
+        prayer.time.minute,
+      );
+
+      if (prayerDateTime.isAfter(now)) {
+        if (nextDateTime == null || prayerDateTime.isBefore(nextDateTime)) {
+          nextDateTime = prayerDateTime;
+          next = prayer;
+        }
+      }
+    }
+
+    // If all prayers today have passed (after Isha), next prayer is tomorrow's Fajr
+    if (next == null || nextDateTime == null) {
+      final fajrPrayer = _allPrayers.firstWhere(
+        (p) => p.type == PrayerType.fajr,
+        orElse: () => _allPrayers.first,
+      );
+      next = fajrPrayer;
+      nextDateTime = DateTime(
+        now.year,
+        now.month,
+        now.day + 1,
+        fajrPrayer.time.hour,
+        fajrPrayer.time.minute,
+      );
+    }
+
+    final diff = nextDateTime.difference(now);
+    final hours = diff.inHours.toString().padLeft(2, '0');
+    final minutes = (diff.inMinutes % 60).toString().padLeft(2, '0');
+    final seconds = (diff.inSeconds % 60).toString().padLeft(2, '0');
+    final formattedCountdown = '$hours:$minutes:$seconds';
+
+    setState(() {
+      _nextPrayer = next;
+      _countdown = formattedCountdown;
+    });
+  }
+
+  void _onServiceUpdate() async {
     if (mounted) {
-      final countdown = await _prayerService.getFormattedCountdown();
-      setState(() {
-        _countdown = countdown;
-      });
+      final allPrayers = await _prayerService.getPrayerTimingsForDate(DateTime.now());
+      if (mounted && allPrayers.isNotEmpty) {
+        setState(() {
+          _allPrayers = allPrayers;
+        });
+        _updateRealtimePrayerState();
+      }
     }
   }
 
   Future<void> _loadPrayerData() async {
     try {
-      setState(() => _isLoading = true);
-      await _prayerService.preloadPrayerData();
-      final nextPrayer = await _prayerService.getNextPrayer();
-      final currentPrayer = await _prayerService.getCurrentPrayer();
-      final countdown = await _prayerService.getFormattedCountdown();
       final allPrayers = await _prayerService.getPrayerTimingsForDate(DateTime.now());
-
-      if (mounted) {
+      if (mounted && allPrayers.isNotEmpty) {
         setState(() {
-          _nextPrayer = nextPrayer;
-          _currentPrayer = currentPrayer;
-          _countdown = countdown.isNotEmpty ? countdown : '03:55:10';
           _allPrayers = allPrayers;
-          _isLoading = false;
         });
+        _updateRealtimePrayerState();
       }
     } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+      debugPrint('Error loading prayer data: $e');
     }
   }
 
@@ -723,6 +831,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return GlassCard(
       padding: const EdgeInsets.all(20),
       borderRadius: 24,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const PrayerTimesScreen()),
+        );
+      },
       child: Column(
         children: [
           // Next Prayer Header Row

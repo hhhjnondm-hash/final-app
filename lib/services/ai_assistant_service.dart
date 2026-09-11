@@ -21,6 +21,7 @@ class AiAssistantService extends ChangeNotifier {
   bool get isThinking => _isThinking;
   bool get isLoadingKb => _isLoadingKb;
   List<AiConversation> get conversations => List.unmodifiable(_conversations);
+  List<Map<String, dynamic>> get allQuestions => List.unmodifiable(_knowledgeBase);
 
   AiConversation? get activeConversation {
     if (_conversations.isEmpty) return null;
@@ -28,6 +29,24 @@ class AiAssistantService extends ChangeNotifier {
       (c) => c.id == _activeConversationId,
       orElse: () => _conversations.first,
     );
+  }
+
+  /// Get list of unique categories
+  List<String> get categories {
+    final set = <String>{};
+    for (final item in _knowledgeBase) {
+      final cat = item['category']?.toString();
+      if (cat != null && cat.isNotEmpty) set.add(cat);
+    }
+    return set.toList();
+  }
+
+  /// Get questions by category
+  List<Map<String, dynamic>> getQuestionsByCategory(String category) {
+    if (category == 'الكل' || category.isEmpty) {
+      return _knowledgeBase;
+    }
+    return _knowledgeBase.where((q) => q['category'] == category).toList();
   }
 
   Future<void> _loadKnowledgeBase() async {
@@ -108,6 +127,42 @@ class AiAssistantService extends ChangeNotifier {
     }
   }
 
+  void rateMessage(String messageId, bool isLike) {
+    final conv = activeConversation;
+    if (conv == null) return;
+
+    final updatedMessages = conv.messages.map((m) {
+      if (m.id == messageId) {
+        final currentVal = m.isLiked;
+        final newVal = (currentVal == isLike) ? null : isLike;
+        return m.copyWith(isLiked: newVal);
+      }
+      return m;
+    }).toList();
+
+    final idx = _conversations.indexWhere((c) => c.id == conv.id);
+    if (idx != -1) {
+      _conversations[idx] = conv.copyWith(messages: updatedMessages);
+      notifyListeners();
+    }
+  }
+
+  /// Arabic text normalizer for accurate natural language matching
+  String _normalizeArabic(String text) {
+    var s = text.trim().toLowerCase();
+    // Remove Tashkeel / Harakat
+    s = s.replaceAll(RegExp(r'[\u064B-\u065F\u0670]'), '');
+    // Normalize Alifs
+    s = s.replaceAll(RegExp(r'[أإآٱ]'), 'ا');
+    // Normalize Yaa
+    s = s.replaceAll('ى', 'ي');
+    // Normalize Taa Marbuta
+    s = s.replaceAll('ة', 'ه');
+    // Remove punctuation
+    s = s.replaceAll(RegExp(r'[؟?!.,;:_"\(\)\[\]«»\-–]'), ' ');
+    return s.replaceAll(RegExp(r'\s+'), ' ').trim();
+  }
+
   Future<void> sendMessage({
     required String query,
     AiContextAttachment? contextAttachment,
@@ -145,8 +200,8 @@ class AiAssistantService extends ChangeNotifier {
     _isThinking = true;
     notifyListeners();
 
-    // Find best match in verified Islamic Knowledge Base
-    await Future.delayed(const Duration(milliseconds: 900));
+    // Natural responsive delay
+    await Future.delayed(const Duration(milliseconds: 600));
 
     final matchResult = _queryKnowledgeBase(cleanQuery, contextAttachment);
 
@@ -175,13 +230,13 @@ class AiAssistantService extends ChangeNotifier {
   _QueryResult _queryKnowledgeBase(String query, AiContextAttachment? context) {
     if (context != null) {
       return _QueryResult(
-        answer: 'بخصوص تدبر ودلالات سياق: "${context.title}":\n\n${context.content}\n\nيُرشدنا هذا النص القرآني/الحديثي المبارك إلى تعظيم شأن الإخلاص والتزام هدي النبي ﷺ والعمل بمقتضى ما جاء فيه من هدايات وأحكام.',
+        answer: 'بخصوص تدبر ودلالات سياق: "${context.title}":\n\n${context.content}\n\nيُرشدنا هذا النص القرآني/الحديثي المبارك إلى تعظيم شأن الإخلاص والتزام هدي النبي ﷺ والعمل بمقتضى ما جاء فيه من هدايات وأحكام فقهية وتربوية.',
         sources: [
           AiSource(
             title: context.title,
             reference: context.source ?? 'القرآن الكريم / السنة النبوية',
           ),
-          const AiSource(title: 'كتب التفسير المعتمدة', reference: 'تفسير ابن كثير / السعدي'),
+          const AiSource(title: 'كتب التفسير المعتمدة', reference: 'تفسير ابن كثير / السعدي / القرطبي'),
         ],
         followUps: [
           'ما هي أهم الفوائد المستنبطة من هذه الآية؟',
@@ -191,22 +246,34 @@ class AiAssistantService extends ChangeNotifier {
       );
     }
 
-    final qLower = query.toLowerCase();
+    final qNorm = _normalizeArabic(query);
+    final qWords = qNorm.split(' ').where((w) => w.length >= 2).toList();
 
-    // Fuzzy search through verified Knowledge Base
+    // 1. Exact or High-Score Match
     Map<String, dynamic>? bestMatch;
-    int highestScore = 0;
+    double highestScore = 0.0;
 
     for (final item in _knowledgeBase) {
-      final questionText = (item['question'] ?? '').toString().toLowerCase();
-      final categoryText = (item['category'] ?? '').toString().toLowerCase();
+      final qText = _normalizeArabic((item['question'] ?? '').toString());
+      final catText = _normalizeArabic((item['category'] ?? '').toString());
+      final ansText = _normalizeArabic((item['answer'] ?? '').toString());
 
-      int score = 0;
-      final keywords = qLower.split(RegExp(r'\s+'));
-      for (final kw in keywords) {
-        if (kw.length >= 3) {
-          if (questionText.contains(kw)) score += 3;
-          if (categoryText.contains(kw)) score += 1;
+      if (qText == qNorm) {
+        highestScore = 100.0;
+        bestMatch = item;
+        break;
+      }
+
+      double score = 0.0;
+
+      // Word matching
+      for (final w in qWords) {
+        if (qText.contains(w)) {
+          score += 4.0;
+        } else if (catText.contains(w)) {
+          score += 2.0;
+        } else if (ansText.contains(w)) {
+          score += 1.0;
         }
       }
 
@@ -216,45 +283,49 @@ class AiAssistantService extends ChangeNotifier {
       }
     }
 
-    if (bestMatch != null && highestScore >= 2) {
+    if (bestMatch != null && highestScore >= 3.0) {
       final answer = bestMatch['answer'] ?? '';
-      final source = bestMatch['source'] ?? 'فقه الإسلام المعتمد';
+      final source = bestMatch['source'] ?? 'فقه الإسلام وأصول الشريعة';
       final category = bestMatch['category'] ?? 'العلوم الشرعية';
 
       return _QueryResult(
         answer: answer,
         sources: [
           AiSource(title: category, reference: source),
-          const AiSource(title: 'المصادر الفقهية المعتمدة', reference: 'الإجماع وجمهور الفقهاء'),
+          const AiSource(title: 'المصادر المعتمدة', reference: 'القرآن الكريم وصحيح السنة وإجماع الفقهاء'),
         ],
-        followUps: _generateRelatedQuestions(category),
+        followUps: _generateRelatedQuestions(category, query),
       );
     }
 
-    // Default polite authentic synthesis fallback
+    // 2. Fallback contextual synthesis for uncataloged queries
     return _QueryResult(
-      answer: 'الحمد لله، والصلاة والسلام على رسول الله ﷺ.\n\nوفقاً للأصول الشرعية والقواعد الفقهية الكلية، فإن الإسلام دين يسر وسماحة يُراعي مقاصد الشريعة في حفظ الدين والنفس والعقل والعرض والمال.\n\nيُستحب للمسلم دائماً تحري السنة والرجوع لكبار العلماء المعتمدين فيما أشكل عليه من دقائق المسائل.',
+      answer: 'الحمد لله، والصلاة والسلام على رسول الله ﷺ.\n\nبناءً على القواعد الكلية للشريعة الإسلامية وأصول الفقه المعتمدة:\n• الإسلام دين يسر وسماحة مبني على جلب المصالح ودرء المفاسد.\n• يُستحب للمسلم دائماً استحضار النية الصالحة والرجوع لأهل العلم الموثوقين فيما يشكل عليه من تفاصيل المسائل.\n\nقال تعالى: ﴿فَاسْأَلُوا أَهْلَ الذِّكْرِ إِن كُنتُمْ لَا تَعْلَمُونَ﴾ [النحل: 43].',
       sources: [
-        const AiSource(title: 'القواعد الفقهية الكلية', reference: 'الشريعة الإسلامية'),
+        const AiSource(title: 'القواعد الفقهية الكلية', reference: 'أصول الفقه الإسلامي'),
         const AiSource(title: 'مقاصد الشريعة', reference: 'جمهور أهل العلم'),
       ],
       followUps: [
-        'ما هي أركان وشروط صحة الصلاة؟',
+        'ما هي شروط صحة الصلاة وأركانها؟',
         'ما هي السنن الرواتب المؤكدة؟',
-        'كيف أحافظ على أذكار الصباح والمساء؟',
+        'ما هي أهم أذكار الصباح والمساء؟',
       ],
     );
   }
 
-  List<String> _generateRelatedQuestions(String category) {
-    if (category.contains('صلاة')) {
-      return ['ما هي مبطلات الصلاة؟', 'ما حكم صلاة الاستخارة وكيفيتها؟', 'ما هي السنن الرواتب؟'];
+  List<String> _generateRelatedQuestions(String category, String query) {
+    if (category.contains('صلاة') || query.contains('صلاة')) {
+      return ['ما هي أركان الصلاة الأربعة عشر؟', 'ما هي مبطلات الصلاة؟', 'كيفية صلاة الاستخارة وما هو دعاؤها؟'];
     } else if (category.contains('صيام') || category.contains('رمضان')) {
-      return ['ما هي مفسدات الصيام؟', 'ما فضل صيام الست من شوال؟', 'ما حكم القضاء والفدية؟'];
+      return ['ما هي مفسدات الصيام في نهار رمضان؟', 'ما فضل صيام الست من شوال؟', 'كيف تُحسب زكاة المال؟'];
     } else if (category.contains('قرآن') || category.contains('تفسير')) {
-      return ['ما فضل تلاوة سورة الكهف؟', 'ما هي السور المنجية؟', 'كيف أتدبر القرآن؟'];
+      return ['ما هي فضائل سورة الفاتحة؟', 'ما هو فضل آية الكرسي؟', 'ما هو فضل سورة الكهف يوم الجمعة؟'];
+    } else if (category.contains('عقيدة') || category.contains('إيمان')) {
+      return ['ما هي أركان الإيمان الستة؟', 'ما هي شروط التوبة الصادقة المقبولة؟', 'ما معنى شهادة أن لا إله إلا الله؟'];
+    } else if (category.contains('أذكار') || category.contains('دعاء')) {
+      return ['ما هي أهم أذكار الصباح والمساء؟', 'ما هي الأوقات التي يُستجاب فيها الدعاء؟', 'ما هي شروط الرقية الشرعية الصحيحة؟'];
     }
-    return ['ما هي أحب الأعمال إلى الله؟', 'كيف أحقق الإخلاص في العبادة؟', 'ما هي أوقات إجابة الدعاء؟'];
+    return ['ما حكم بر الوالدين وحقوقهما؟', 'ما هي كبائر الذنوب في الإسلام؟', 'ما هي آداب النوم والاستيقاظ؟'];
   }
 }
 

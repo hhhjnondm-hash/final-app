@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/prayer_service.dart';
+import '../models/prayer_models.dart';
+import '../services/prayer_service_v2.dart';
 import '../utils/design_system.dart';
 
 class MonthlyPrayerSheet extends StatefulWidget {
@@ -11,11 +12,39 @@ class MonthlyPrayerSheet extends StatefulWidget {
 
 class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
   DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
-  final bool _isLoading = false;
+  bool _isLoading = true;
+  final Map<int, List<PrayerTiming>> _monthTimings = {};
+  final PrayerServiceV2 _service = PrayerServiceV2();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMonthTimings();
+  }
+
+  Future<void> _loadMonthTimings() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    final daysInMonth = DateUtils.getDaysInMonth(_currentMonth.year, _currentMonth.month);
+    final Map<int, List<PrayerTiming>> timingsMap = {};
+
+    for (int day = 1; day <= daysInMonth; day++) {
+      final date = DateTime(_currentMonth.year, _currentMonth.month, day);
+      final timings = await _service.getPrayerTimingsForDate(date);
+      timingsMap[day] = timings;
+    }
+
+    if (mounted) {
+      setState(() {
+        _monthTimings.clear();
+        _monthTimings.addAll(timingsMap);
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final service = PrayerService();
     final daysInMonth = DateUtils.getDaysInMonth(_currentMonth.year, _currentMonth.month);
     final now = DateTime.now();
 
@@ -77,6 +106,7 @@ class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
                       setState(() {
                         _currentMonth = DateTime(_currentMonth.year, _currentMonth.month - 1, 1);
                       });
+                      _loadMonthTimings();
                     },
                   ),
                   IconButton(
@@ -85,6 +115,7 @@ class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
                       setState(() {
                         _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 1);
                       });
+                      _loadMonthTimings();
                     },
                   ),
                 ],
@@ -129,46 +160,73 @@ class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
                       final dayNum = index + 1;
                       final date = DateTime(_currentMonth.year, _currentMonth.month, dayNum);
                       final isToday = now.year == date.year && now.month == date.month && now.day == date.day;
-                      final timings = service.getPrayerTimingsForDate(date);
+                      final isSelected = _service.selectedDate.year == date.year &&
+                          _service.selectedDate.month == date.month &&
+                          _service.selectedDate.day == date.day;
+                      final timings = _monthTimings[dayNum] ?? [];
 
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 6),
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: isToday
-                              ? DesignSystem.gold.withValues(alpha: 0.15)
-                              : Colors.white.withValues(alpha: 0.02),
-                          borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-                          border: isToday
-                              ? Border.all(color: DesignSystem.gold.withValues(alpha: 0.5))
-                              : null,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 1,
-                              child: Text(
-                                '$dayNum',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: isToday ? DesignSystem.goldLight : DesignSystem.textWhite,
-                                  fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                                  fontSize: 12,
+                      return InkWell(
+                        onTap: () {
+                          _service.setSelectedDate(date);
+                          Navigator.pop(context);
+                        },
+                        borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 6),
+                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? DesignSystem.gold.withValues(alpha: 0.25)
+                                : isToday
+                                    ? DesignSystem.gold.withValues(alpha: 0.12)
+                                    : Colors.white.withValues(alpha: 0.02),
+                            borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
+                            border: isSelected
+                                ? Border.all(color: DesignSystem.goldLight, width: 1.5)
+                                : isToday
+                                    ? Border.all(color: DesignSystem.gold.withValues(alpha: 0.5))
+                                    : null,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: Text(
+                                  '$dayNum',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: (isToday || isSelected) ? DesignSystem.goldLight : DesignSystem.textWhite,
+                                    fontWeight: (isToday || isSelected) ? FontWeight.bold : FontWeight.normal,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
-                            ),
-                            ...timings.map((t) => Expanded(
-                              flex: 1,
-                              child: Text(
-                                t.time.format(context),
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: isToday ? DesignSystem.goldLight : DesignSystem.textSecondary,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            )),
-                          ],
+                              if (timings.isEmpty)
+                                const Expanded(
+                                  flex: 6,
+                                  child: Center(
+                                    child: SizedBox(
+                                      width: 12,
+                                      height: 12,
+                                      child: CircularProgressIndicator(strokeWidth: 1.5, color: DesignSystem.goldLight),
+                                    ),
+                                  ),
+                                )
+                              else
+                                ...timings.map((t) => Expanded(
+                                  flex: 1,
+                                  child: Text(
+                                    t.time.format(context),
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: (isToday || isSelected) ? DesignSystem.goldLight : DesignSystem.textSecondary,
+                                      fontSize: 10,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                    ),
+                                  ),
+                                )),
+                            ],
+                          ),
                         ),
                       );
                     },

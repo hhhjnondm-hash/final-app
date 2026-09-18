@@ -3,6 +3,7 @@ import '../models/notification_models.dart';
 import '../services/adhan_service.dart';
 import '../services/athan_service.dart';
 import '../services/islamic_notification_service.dart';
+import '../services/notification_service.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
 
@@ -80,6 +81,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             children: [
               // Master Switch Card
               _buildMasterSwitchCard(),
+              _buildTestNotificationRow(),
 
               const SizedBox(height: 24),
 
@@ -212,6 +214,63 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             value: isEnabled,
             activeColor: DesignSystem.gold,
             onChanged: (val) => setState(() => _notifService.toggleMaster(val)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTestNotificationRow() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: DesignSystem.goldLight,
+                side: BorderSide(color: DesignSystem.gold.withValues(alpha: 0.5)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+              onPressed: () async {
+                await _notifService.sendTestNotification();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('تم إرسال إشعار تجريبي فوري بنجاح 🔔'),
+                      backgroundColor: DesignSystem.bgCard,
+                      duration: Duration(seconds: 3),
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.send_rounded, size: 16),
+              label: const Text('تجربة إرسال إشعار فوري للتأكد', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            ),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            tooltip: 'تفعيل إذن الإشعارات',
+            style: IconButton.styleFrom(
+              backgroundColor: DesignSystem.bgCard,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+              ),
+            ),
+            icon: const Icon(Icons.security_update_good_rounded, color: DesignSystem.goldLight, size: 20),
+            onPressed: () async {
+              final granted = await NotificationService().requestPermissionsManually();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(granted ? 'إذن الإشعارات مفعل بنجاح ✅' : 'يرجى تفعيل الإشعارات من إعدادات النظام ⚠️'),
+                    backgroundColor: DesignSystem.bgCard,
+                  ),
+                );
+              }
+            },
           ),
         ],
       ),

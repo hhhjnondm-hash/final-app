@@ -8,6 +8,7 @@ import '../services/audio_quran_service.dart';
 import '../services/global_audio_manager.dart';
 import '../services/quran_service.dart';
 import '../services/quran_storage_service.dart';
+import '../widgets/iqra_tafsir_sheet.dart';
 
 class SurahViewerScreen extends StatefulWidget {
   final int surahNumber;

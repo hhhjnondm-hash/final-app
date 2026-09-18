@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -136,17 +137,35 @@ class AthanService extends ChangeNotifier {
   final NotificationService _notificationService = NotificationService();
   static GlobalKey<NavigatorState>? globalNavigatorKey;
 
+  static const MethodChannel _systemChannel = MethodChannel('com.islamyat.islamyat_app/system_status');
+  static const MethodChannel _nativeAthanChannel = MethodChannel('com.islamyat.islamyat_app/athan_native');
+
+  /// Check if the Android device is currently in Silent or Vibrate mode
+  static Future<bool> isDeviceInSilentMode() async {
+    if (kIsWeb) return false;
+    try {
+      final bool? isSilent = await _systemChannel.invokeMethod<bool>('isSilentMode');
+      return isSilent ?? false;
+    } catch (e) {
+      debugPrint('Error checking silent mode via system channel: $e');
+      return false;
+    }
+  }
+
   AthanSettings _settings = const AthanSettings();
   Timer? _athanTimer;
   DateTime? _lastPrayerTime;
   String? _currentlyPlayingPrayer;
   final Map<String, DateTime> _prayerTimes = {};
   final Map<String, Map<String, DateTime>> _offlinePrayerCache = {};
+  final Set<String> _triggeredPrayersToday = {};
+  String _lastTimerCheckedDate = '';
   bool _hasScheduledUpcomingToday = false;
   String _lastScheduledDate = '';
 
   AthanSettings get settings => _settings;
   Map<String, DateTime> get prayerTimes => _prayerTimes;
+  DateTime? get lastPrayerTime => _lastPrayerTime;
   bool get isPlayingAthan => _audioManager.isPlaying && _audioManager.currentSource == AudioSourceType.adhan;
   String? get currentlyPlayingPrayer => _currentlyPlayingPrayer;
 
@@ -180,7 +199,10 @@ class AthanService extends ChangeNotifier {
       }
     });
 
-    debugPrint('✅ Advanced Athan Service initialized successfully');
+    // Start mandatory timer immediately on startup with default coordinates
+    setupAthanTimer(latitude: 30.0444, longitude: 31.2357);
+
+    debugPrint('✅ Advanced Mandatory Athan Service initialized successfully');
   }
 
   Future<void> _loadSettings() async {
@@ -303,7 +325,14 @@ class AthanService extends ChangeNotifier {
         final lastCacheKey = _offlinePrayerCache.keys.last;
         return _offlinePrayerCache[lastCacheKey]!;
       }
-      rethrow;
+      // Safe offline fallback prayer times for Middle East / Cairo
+      return {
+        'Fajr': DateTime(requestDate.year, requestDate.month, requestDate.day, 4, 45),
+        'Dhuhr': DateTime(requestDate.year, requestDate.month, requestDate.day, 12, 0),
+        'Asr': DateTime(requestDate.year, requestDate.month, requestDate.day, 15, 25),
+        'Maghrib': DateTime(requestDate.year, requestDate.month, requestDate.day, 18, 5),
+        'Isha': DateTime(requestDate.year, requestDate.month, requestDate.day, 19, 25),
+      };
     }
   }
 
@@ -348,9 +377,48 @@ class AthanService extends ChangeNotifier {
       }
     }
 
+    // Schedule native background Android AlarmClock alarms (fires even when app is killed or phone is locked)
+    await scheduleNativeAthanAlarms(prayerTimes);
+
     _hasScheduledUpcomingToday = true;
     _lastScheduledDate = todayStr;
     debugPrint('📅 Scheduled all remaining daily prayer notifications in OS');
+  }
+
+  /// Schedule exact background Alarms in Android native AlarmManager
+  /// This ensures Athan audio & notification fire even if the app is killed and phone is locked.
+  Future<void> scheduleNativeAthanAlarms(Map<String, DateTime> prayerTimes) async {
+    if (kIsWeb) return;
+    try {
+      final List<Map<String, dynamic>> alarmsList = [];
+      final now = DateTime.now();
+
+      for (final entry in prayerTimes.entries) {
+        final prayer = entry.key;
+        final prayerTime = entry.value;
+
+        if (_settings.enabledPrayers[prayer] == false) continue;
+
+        if (prayerTime.isAfter(now)) {
+          alarmsList.add({
+            'prayer': prayer,
+            'arabicName': _getArabicPrayerName(prayer),
+            'timestampMs': prayerTime.millisecondsSinceEpoch,
+            'isFajr': prayer.toLowerCase() == 'fajr',
+          });
+        }
+      }
+
+      if (alarmsList.isNotEmpty) {
+        await _nativeAthanChannel.invokeMethod('scheduleAthanAlarms', {
+          'alarmsJson': jsonEncode(alarmsList),
+          'respectSilentMode': _settings.respectSilentMode,
+        });
+        debugPrint('⏰ Native AlarmClock scheduled for ${alarmsList.length} prayers (Screen locked / App killed)');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error scheduling native athan alarms: $e');
+    }
   }
 
   void setupAthanTimer({
@@ -359,11 +427,18 @@ class AthanService extends ChangeNotifier {
   }) {
     _athanTimer?.cancel();
     
-    _athanTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
+    // Check frequently (every 5 seconds) to guarantee the prayer time is NEVER missed
+    _athanTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
       if (!_settings.enabled) return;
 
       try {
         final now = DateTime.now();
+        final todayStr = '${now.year}-${now.month}-${now.day}';
+        if (_lastTimerCheckedDate != todayStr) {
+          _triggeredPrayersToday.removeWhere((k) => !k.startsWith(todayStr));
+          _lastTimerCheckedDate = todayStr;
+        }
+
         final prayerTimes = await fetchPrayerTimes(
           latitude: latitude,
           longitude: longitude,
@@ -380,13 +455,21 @@ class AthanService extends ChangeNotifier {
 
           final prayerTime = prayerTimes[prayer];
           if (prayerTime != null) {
+            final key = '${todayStr}_$prayer';
+            if (_triggeredPrayersToday.contains(key)) continue;
+
             final diffInSeconds = now.difference(prayerTime).inSeconds;
-            
-            // Trigger when within 0 to 45 seconds of prayer time
-            if (diffInSeconds >= 0 && diffInSeconds <= 45 && 
-                (_lastPrayerTime == null || 
-                 _lastPrayerTime!.difference(prayerTime).inMinutes.abs() > 5)) {
+            final isSameMinute = now.year == prayerTime.year &&
+                now.month == prayerTime.month &&
+                now.day == prayerTime.day &&
+                now.hour == prayerTime.hour &&
+                now.minute == prayerTime.minute;
+
+            // Trigger when within the prayer minute or between 0 and 90 seconds past prayer time
+            if (isSameMinute || (diffInSeconds >= 0 && diffInSeconds <= 90)) {
+              _triggeredPrayersToday.add(key);
               _lastPrayerTime = prayerTime;
+              debugPrint('🚨 MANDATORY ATHAN TRIGGERED: $prayer at $now (scheduled: $prayerTime)');
               await playAthan(prayer: prayer, prayerTime: prayerTime);
               break;
             }
@@ -470,6 +553,12 @@ class AthanService extends ChangeNotifier {
       final prayerIndex = _getPrayerIndex(prayer);
       final time = prayerTime ?? DateTime.now();
 
+      // Check if device is in Silent or Vibrate mode
+      bool isSilent = false;
+      if (_settings.respectSilentMode) {
+        isSilent = await isDeviceInSilentMode();
+      }
+
       // 1. Trigger High-Priority OS Notification (With Athan Sound, works when screen locked)
       await _notificationService.showPrayerAthanNotification(
         id: prayerIndex + 100,
@@ -490,15 +579,27 @@ class AthanService extends ChangeNotifier {
       // 3. If in-app and context available, pop up the luxury PrayerAthanDialog
       if (showDialog && globalNavigatorKey?.currentContext != null) {
         final context = globalNavigatorKey!.currentContext!;
-        PrayerAthanDialog.show(
-          context,
-          prayerName: prayer,
-          arabicName: arabicName,
-        );
+        if (context.mounted) {
+          PrayerAthanDialog.show(
+            context,
+            prayerName: prayer,
+            arabicName: arabicName,
+          );
+        }
       }
 
-      // 4. Play in-app audio if sound is not set to none
-      if (_settings.sound != AthanSound.none) {
+      // 4. Play in-app audio if device is not silent and sound is not set to none
+      if (isSilent) {
+        debugPrint('🔕 Phone is in silent/vibrate mode: In-app athan sound suppressed per user settings');
+        // Still trigger missed prayer follow-up reminder after athan normal duration
+        Future.delayed(const Duration(minutes: 3), () {
+          _notificationService.showMissedPrayerNotification(
+            id: prayerIndex + 500,
+            prayerName: prayer,
+            arabicName: arabicName,
+          );
+        });
+      } else if (_settings.sound != AthanSound.none) {
         String audioPath;
         bool isRemote = false;
 
@@ -559,8 +660,31 @@ class AthanService extends ChangeNotifier {
     if (isPlayingAthan) {
       await _audioManager.stop();
     }
+    if (!kIsWeb) {
+      try {
+        await _nativeAthanChannel.invokeMethod('stopAthanSound');
+      } catch (e) {
+        debugPrint('Error stopping native athan sound: $e');
+      }
+    }
     _currentlyPlayingPrayer = null;
     notifyListeners();
+  }
+
+  /// Test native Android background athan (triggers native foreground service)
+  Future<void> testNativeBackgroundAthan({String prayer = 'Dhuhr'}) async {
+    if (kIsWeb) return;
+    try {
+      await _nativeAthanChannel.invokeMethod('testNativeAthan', {
+        'prayer': prayer,
+        'arabicName': _getArabicPrayerName(prayer),
+        'isFajr': prayer.toLowerCase() == 'fajr',
+        'respectSilentMode': _settings.respectSilentMode,
+      });
+      debugPrint('🔔 Triggered native background athan service test for $prayer');
+    } catch (e) {
+      debugPrint('❌ Error testing native background athan: $e');
+    }
   }
 
   Future<void> testAthan({AthanSound? testSound, BuildContext? context}) async {

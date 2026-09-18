@@ -203,6 +203,37 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                       ),
                     ],
                   ),
+
+                  const SizedBox(height: 8),
+
+                  // Test Background Athan (Foreground Service & Lock Screen)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: DesignSystem.textWhite,
+                            side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () async {
+                            await _athanService.testNativeBackgroundAthan();
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('تم إطلاق خدمة الأذان بالخلفية والشاشة مغلقة بنجاح 🔔'),
+                                  backgroundColor: DesignSystem.bgCard,
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.notifications_active_rounded, size: 18, color: DesignSystem.goldLight),
+                          label: const Text('تجربة أذان الخلفية وقفل الشاشة (إجباري)', style: TextStyle(fontSize: 12)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),

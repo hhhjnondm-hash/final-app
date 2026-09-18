@@ -1,10 +1,16 @@
 import 'package:flutter/foundation.dart';
 import '../models/quran_models.dart';
+import 'storage_service.dart';
 
 class QuranStorageService extends ChangeNotifier {
   static final QuranStorageService _instance = QuranStorageService._internal();
   factory QuranStorageService() => _instance;
-  QuranStorageService._internal();
+  QuranStorageService._internal() {
+    _loadSavedHighlights();
+  }
+
+  Map<String, String> _ayahHighlights = {};
+  QuranReadingMark? _readingStopMark;
 
   ReadingProgress _readingProgress = ReadingProgress(
     lastSurahNumber: 2,
@@ -192,5 +198,75 @@ class QuranStorageService extends ChangeNotifier {
   void toggleTafseer() {
     _showTafseer = !_showTafseer;
     notifyListeners();
+  }
+
+  // ==================== AYAH HIGHLIGHTS & STOP MARK ====================
+
+  Map<String, String> get ayahHighlights => Map.unmodifiable(_ayahHighlights);
+  QuranReadingMark? get readingStopMark => _readingStopMark;
+
+  Future<void> _loadSavedHighlights() async {
+    try {
+      final storage = StorageService();
+      await storage.init();
+      final highlightsData = storage.getJson('quran_ayah_highlights');
+      if (highlightsData != null) {
+        _ayahHighlights = highlightsData.map((k, v) => MapEntry(k, v.toString()));
+      }
+      final markData = storage.getJson('quran_reading_stop_mark');
+      if (markData != null) {
+        _readingStopMark = QuranReadingMark.fromJson(markData);
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('⚠️ Error loading saved ayah highlights: $e');
+    }
+  }
+
+  Future<void> highlightAyah(int surahNumber, int ayahNumber, String colorKey) async {
+    final key = '${surahNumber}_$ayahNumber';
+    _ayahHighlights[key] = colorKey;
+    notifyListeners();
+    try {
+      final storage = StorageService();
+      await storage.init();
+      await storage.setJson('quran_ayah_highlights', _ayahHighlights);
+    } catch (e) {
+      debugPrint('⚠️ Error saving ayah highlight: $e');
+    }
+  }
+
+  Future<void> removeAyahHighlight(int surahNumber, int ayahNumber) async {
+    final key = '${surahNumber}_$ayahNumber';
+    _ayahHighlights.remove(key);
+    notifyListeners();
+    try {
+      final storage = StorageService();
+      await storage.init();
+      await storage.setJson('quran_ayah_highlights', _ayahHighlights);
+    } catch (e) {
+      debugPrint('⚠️ Error removing ayah highlight: $e');
+    }
+  }
+
+  String? getAyahHighlight(int surahNumber, int ayahNumber) {
+    return _ayahHighlights['${surahNumber}_$ayahNumber'];
+  }
+
+  Future<void> saveReadingStopMark(int surahNumber, String surahName, int ayahNumber) async {
+    _readingStopMark = QuranReadingMark(
+      surahNumber: surahNumber,
+      surahName: surahName,
+      ayahNumber: ayahNumber,
+      timestamp: DateTime.now(),
+    );
+    notifyListeners();
+    try {
+      final storage = StorageService();
+      await storage.init();
+      await storage.setJson('quran_reading_stop_mark', _readingStopMark!.toJson());
+    } catch (e) {
+      debugPrint('⚠️ Error saving reading stop mark: $e');
+    }
   }
 }

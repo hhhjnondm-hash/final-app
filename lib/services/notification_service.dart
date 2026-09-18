@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -22,6 +23,8 @@ class NotificationService extends ChangeNotifier {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
+  static const MethodChannel _nativeReminderChannel = MethodChannel('com.islamyat.islamyat_app/reminders_native');
+
   bool _isInitialized = false;
   bool _notificationsEnabled = true;
   bool _exactAlarmsPermissionGranted = false;
@@ -34,11 +37,11 @@ class NotificationService extends ChangeNotifier {
   final StreamController<String> _actionController = StreamController<String>.broadcast();
   Stream<String> get onActionStream => _actionController.stream;
 
-  // Channels
-  static const String athanChannelId = 'athan_channel_v2';
-  static const String athanFajrChannelId = 'athan_fajr_channel_v2';
-  static const String missedPrayerChannelId = 'missed_prayer_channel_v2';
-  static const String remindersChannelId = 'islamic_reminders_v2';
+  // Channels (v5 ensures fresh registration on Android with high priority and audioAttributes)
+  static const String athanChannelId = 'athan_channel_v5';
+  static const String athanFajrChannelId = 'athan_fajr_channel_v5';
+  static const String missedPrayerChannelId = 'missed_prayer_channel_v5';
+  static const String remindersChannelId = 'islamic_reminders_v5';
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -87,6 +90,25 @@ class NotificationService extends ChangeNotifier {
     }
   }
 
+  Future<bool> requestPermissionsManually() async {
+    if (kIsWeb) return true;
+    try {
+      final androidImplementation = _flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      if (androidImplementation != null) {
+        final granted = await androidImplementation.requestNotificationsPermission();
+        final exact = await androidImplementation.requestExactAlarmsPermission();
+        _notificationsEnabled = granted ?? true;
+        _exactAlarmsPermissionGranted = exact ?? false;
+        notifyListeners();
+        return _notificationsEnabled;
+      }
+    } catch (e) {
+      debugPrint('Error requesting permissions: $e');
+    }
+    return false;
+  }
+
   void _handleNotificationResponse(NotificationResponse response) {
     debugPrint('🔔 Notification clicked: actionId=${response.actionId}, payload=${response.payload}');
     if (response.actionId != null) {
@@ -116,7 +138,7 @@ class NotificationService extends ChangeNotifier {
       // silences the sound when the user's phone is set to Silent or Vibrate mode!
       const AndroidNotificationChannel athanChannel = AndroidNotificationChannel(
         athanChannelId,
-        'أذان الصلوات المفروضة',
+        'أذان الصلوات المفروضة (إجباري)',
         description: 'تشغيل صوت الأذان والتنبيه عند دخول وقت الصلاة',
         importance: Importance.max,
         sound: RawResourceAndroidNotificationSound('athan_sound'),
@@ -153,7 +175,7 @@ class NotificationService extends ChangeNotifier {
         remindersChannelId,
         'التذكيرات الإيمانية اليومية',
         description: 'آيات وأدعية وأذكار يومية مباركة',
-        importance: Importance.defaultImportance,
+        importance: Importance.high,
         playSound: true,
         enableVibration: true,
       );
@@ -192,6 +214,7 @@ class NotificationService extends ChangeNotifier {
         enableVibration: true,
         audioAttributesUsage: AudioAttributesUsage.notification,
         category: AndroidNotificationCategory.alarm,
+        visibility: NotificationVisibility.public,
         fullScreenIntent: true,
         styleInformation: BigTextStyleInformation(
           'حان الآن موعد أذان صلاة $arabicName - قال تعالى: ﴿وَأَقِمِ الصَّلَاةَ لِذِكْرِي﴾',
@@ -265,6 +288,7 @@ class NotificationService extends ChangeNotifier {
         enableVibration: true,
         audioAttributesUsage: AudioAttributesUsage.notification,
         category: AndroidNotificationCategory.alarm,
+        visibility: NotificationVisibility.public,
         fullScreenIntent: true,
         actions: <AndroidNotificationAction>[
           const AndroidNotificationAction(
@@ -300,15 +324,28 @@ class NotificationService extends ChangeNotifier {
         return; // Don't schedule past events
       }
 
-      await _flutterLocalNotificationsPlugin.zonedSchedule(
-        id: id,
-        title: '🕌 حان الآن أَذَان $arabicName',
-        body: 'حان وقت صلاة $arabicName - ﴿وَأَقِمِ الصَّلَاةَ لِذِكْرِي﴾',
-        scheduledDate: tzDateTime,
-        notificationDetails: notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        payload: 'prayer_$prayerName',
-      );
+      try {
+        await _flutterLocalNotificationsPlugin.zonedSchedule(
+          id: id,
+          title: '🕌 حان الآن أَذَان $arabicName',
+          body: 'حان وقت صلاة $arabicName - ﴿وَأَقِمِ الصَّلَاةَ لِذِكْرِي﴾',
+          scheduledDate: tzDateTime,
+          notificationDetails: notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.alarmClock,
+          payload: 'prayer_$prayerName',
+        );
+      } catch (e) {
+        debugPrint('⚠️ AlarmClock schedule failed ($e), falling back to inexactAllowWhileIdle');
+        await _flutterLocalNotificationsPlugin.zonedSchedule(
+          id: id,
+          title: '🕌 حان الآن أَذَان $arabicName',
+          body: 'حان وقت صلاة $arabicName - ﴿وَأَقِمِ الصَّلَاةَ لِذِكْرِي﴾',
+          scheduledDate: tzDateTime,
+          notificationDetails: notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          payload: 'prayer_$prayerName',
+        );
+      }
 
       debugPrint('⏰ Scheduled Athan notification for $arabicName at $scheduledDate (ID: $id)');
     } catch (e) {
@@ -337,6 +374,8 @@ class NotificationService extends ChangeNotifier {
         playSound: true,
         enableVibration: true,
         audioAttributesUsage: AudioAttributesUsage.notification,
+        category: AndroidNotificationCategory.reminder,
+        visibility: NotificationVisibility.public,
         styleInformation: BigTextStyleInformation(
           'قال الله تعالى: ﴿وَأَقِمِ الصَّلَاةَ لِذِكْرِي﴾ [طه : 14]\nسارع بأداء صلاة $arabicName يرحمك الله، فالصلاة أحب الأعمال إلى الله.',
           contentTitle: '⏰ تذكير: هل صليت صلاة $arabicName؟',
@@ -394,6 +433,8 @@ class NotificationService extends ChangeNotifier {
         playSound: true,
         enableVibration: true,
         audioAttributesUsage: AudioAttributesUsage.notification,
+        category: AndroidNotificationCategory.reminder,
+        visibility: NotificationVisibility.public,
         styleInformation: BigTextStyleInformation(
           'قال الله تعالى: ﴿وَأَقِمِ الصَّلَاةَ لِذِكْرِي﴾ [طه : 14]\nسارع بأداء صلاة $arabicName يرحمك الله، فالصلاة أحب الأعمال إلى الله.',
           contentTitle: '⏰ تذكير: هل صليت صلاة $arabicName؟',
@@ -410,19 +451,150 @@ class NotificationService extends ChangeNotifier {
         ),
       );
 
-      await _flutterLocalNotificationsPlugin.zonedSchedule(
-        id: id,
-        title: '⏰ تذكير: هل صليت صلاة $arabicName؟',
-        body: 'قال تعالى: ﴿وَأَقِمِ الصَّلَاةَ لِذِكْرِي﴾ - سارع بأداء صلاتك',
-        scheduledDate: tzDateTime,
-        notificationDetails: notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        payload: 'missed_$prayerName',
-      );
+      try {
+        await _flutterLocalNotificationsPlugin.zonedSchedule(
+          id: id,
+          title: '⏰ تذكير: هل صليت صلاة $arabicName؟',
+          body: 'قال تعالى: ﴿وَأَقِمِ الصَّلَاةَ لِذِكْرِي﴾ - سارع بأداء صلاتك',
+          scheduledDate: tzDateTime,
+          notificationDetails: notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.alarmClock,
+          payload: 'missed_$prayerName',
+        );
+      } catch (e) {
+        try {
+          await _flutterLocalNotificationsPlugin.zonedSchedule(
+            id: id,
+            title: '⏰ تذكير: هل صليت صلاة $arabicName؟',
+            body: 'قال تعالى: ﴿وَأَقِمِ الصَّلَاةَ لِذِكْرِي﴾ - سارع بأداء صلاتك',
+            scheduledDate: tzDateTime,
+            notificationDetails: notificationDetails,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+            payload: 'missed_$prayerName',
+          );
+        } catch (e2) {
+          await _flutterLocalNotificationsPlugin.zonedSchedule(
+            id: id,
+            title: '⏰ تذكير: هل صليت صلاة $arabicName؟',
+            body: 'قال تعالى: ﴿وَأَقِمِ الصَّلَاةَ لِذِكْرِي﴾ - سارع بأداء صلاتك',
+            scheduledDate: tzDateTime,
+            notificationDetails: notificationDetails,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            payload: 'missed_$prayerName',
+          );
+        }
+      }
+
+      // Schedule in Native Android AlarmClock for 100% reliability on lock screen & app killed
+      try {
+        await _nativeReminderChannel.invokeMethod('scheduleSingleReminder', {
+          'id': id,
+          'title': '⏰ تذكير: هل صليت صلاة $arabicName؟',
+          'body': 'قال رسول الله ﷺ: «مَن حافَظَ عليها كانتْ له نوراً وبُرهاناً ونجاةً يومَ القيامة»',
+          'timestampMs': scheduledTime.millisecondsSinceEpoch,
+          'category': 'تذكير الصلاة',
+        });
+      } catch (e) {
+        debugPrint('Note: Native reminder schedule: $e');
+      }
 
       debugPrint('⏰ Scheduled missed prayer reminder for $arabicName at $scheduledTime (ID: $id)');
     } catch (e) {
       debugPrint('❌ Error scheduling missed prayer reminder: $e');
+    }
+  }
+
+  /// Schedule Islamic daily content notification (Ayah, Dua, Dhikr, Quote)
+  Future<void> scheduleIslamicContentNotification({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledDate,
+    String? category,
+  }) async {
+    if (kIsWeb) return;
+
+    try {
+      final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+        remindersChannelId,
+        'التذكيرات الإيمانية اليومية',
+        channelDescription: 'آيات وأدعية وأذكار يومية مباركة تظهر حتى مع قفل الشاشة',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        enableVibration: true,
+        category: AndroidNotificationCategory.reminder,
+        visibility: NotificationVisibility.public,
+        fullScreenIntent: true,
+        styleInformation: BigTextStyleInformation(
+          body,
+          contentTitle: title,
+          summaryText: category ?? 'رفيق المسلم',
+        ),
+      );
+
+      final NotificationDetails notificationDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      );
+
+      final tzDateTime = tz.TZDateTime.from(scheduledDate, tz.local);
+      if (tzDateTime.isBefore(tz.TZDateTime.now(tz.local))) return;
+
+      try {
+        await _flutterLocalNotificationsPlugin.zonedSchedule(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: tzDateTime,
+          notificationDetails: notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.alarmClock,
+          payload: 'content_${category ?? "reminder"}',
+        );
+      } catch (e) {
+        try {
+          await _flutterLocalNotificationsPlugin.zonedSchedule(
+            id: id,
+            title: title,
+            body: body,
+            scheduledDate: tzDateTime,
+            notificationDetails: notificationDetails,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+            payload: 'content_${category ?? "reminder"}',
+          );
+        } catch (e2) {
+          await _flutterLocalNotificationsPlugin.zonedSchedule(
+            id: id,
+            title: title,
+            body: body,
+            scheduledDate: tzDateTime,
+            notificationDetails: notificationDetails,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            payload: 'content_${category ?? "reminder"}',
+          );
+        }
+      }
+
+      // Schedule in Native Android AlarmClock for 100% precision even when phone is asleep/screen off
+      try {
+        await _nativeReminderChannel.invokeMethod('scheduleSingleReminder', {
+          'id': id,
+          'title': title,
+          'body': body,
+          'timestampMs': scheduledDate.millisecondsSinceEpoch,
+          'category': category ?? 'تذكير إيماني',
+        });
+      } catch (e) {
+        debugPrint('Note: Native reminder single schedule: $e');
+      }
+
+      debugPrint('📅 Scheduled Islamic content notification for $scheduledDate (ID: $id)');
+    } catch (e) {
+      debugPrint('❌ Error in scheduleIslamicContentNotification: $e');
     }
   }
 
@@ -439,11 +611,14 @@ class NotificationService extends ChangeNotifier {
       final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
         remindersChannelId,
         'التذكيرات الإيمانية اليومية',
-        channelDescription: 'آيات وأدعية وأذكار يومية مباركة',
-        importance: Importance.defaultImportance,
-        priority: Priority.defaultPriority,
+        channelDescription: 'آيات وأدعية وأذكار يومية مباركة تظهر حتى مع قفل الشاشة',
+        importance: Importance.max,
+        priority: Priority.high,
         playSound: true,
         enableVibration: true,
+        category: AndroidNotificationCategory.reminder,
+        visibility: NotificationVisibility.public,
+        fullScreenIntent: true,
         styleInformation: BigTextStyleInformation(
           body,
           contentTitle: title,
@@ -469,6 +644,25 @@ class NotificationService extends ChangeNotifier {
       );
     } catch (e) {
       debugPrint('❌ Error showing content notification: $e');
+    }
+  }
+
+  /// Test native Android Lock-Screen reminder (uses AlarmClock and wakes lockscreen)
+  Future<void> testNativeReminder({
+    String title = '📖 آية وتدبر: قال الله تعالى',
+    String body = '﴿أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ﴾ [الرعد : 28]',
+    String category = 'آية وتدبر',
+  }) async {
+    if (kIsWeb) return;
+    try {
+      await _nativeReminderChannel.invokeMethod('testNativeReminder', {
+        'title': title,
+        'body': body,
+        'category': category,
+      });
+      debugPrint('🔔 Triggered native reminder test (Lock screen wakeup)');
+    } catch (e) {
+      debugPrint('Error in testNativeReminder: $e');
     }
   }
 

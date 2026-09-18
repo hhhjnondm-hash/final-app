@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import '../data/all_azkar_data.dart';
+import '../models/azkar_models.dart';
 import '../models/prayer_models.dart';
+import '../services/location_service.dart';
 import '../services/prayer_service_v2.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
@@ -9,6 +12,7 @@ import '../widgets/prayer_hero_card.dart';
 import '../widgets/prayer_settings_sheet.dart';
 import '../widgets/prayer_timeline_card.dart';
 import '../widgets/qibla_compass_sheet.dart';
+import 'dhikr_reader_screen.dart';
 import 'qibla_screen.dart';
 
 class PrayerTimesScreen extends StatefulWidget {
@@ -40,11 +44,22 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     super.dispose();
   }
 
+  DateTime? _lastLoadedDate;
+
   void _onUpdate() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    if (_lastLoadedDate == null ||
+        _lastLoadedDate!.year != _prayerService.selectedDate.year ||
+        _lastLoadedDate!.month != _prayerService.selectedDate.month ||
+        _lastLoadedDate!.day != _prayerService.selectedDate.day) {
+      _loadPrayerData();
+    } else {
+      setState(() {});
+    }
   }
 
   Future<void> _loadPrayerData() async {
+    _lastLoadedDate = _prayerService.selectedDate;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -464,8 +479,15 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
         'icon': Icons.menu_book_rounded,
         'color': DesignSystem.electricBlue,
         'onTap': () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('تم فتح أذكار ما بعد الصلاة')),
+          final afterPrayerCategory = AllAzkarData.categories.firstWhere(
+            (c) => c.type == AzkarCategoryType.afterPrayer,
+            orElse: () => AllAzkarData.categories.first,
+          );
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => DhikrReaderScreen(category: afterPrayerCategory),
+            ),
           );
         },
       },
@@ -582,9 +604,10 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   Widget _buildNotificationOption(PrayerType prayer, NotificationMode mode, String title, IconData icon) {
     final isSelected = _prayerService.notificationSettings[prayer] == mode;
     return InkWell(
-      onTap: () {
-        _prayerService.setNotificationMode(prayer, mode);
+      onTap: () async {
         Navigator.pop(context);
+        await _prayerService.setNotificationMode(prayer, mode);
+        await _loadPrayerData();
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
@@ -633,56 +656,142 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
           ),
           child: Padding(
             padding: const EdgeInsets.all(DesignSystem.spacingL),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'اختيار المدينة والموقع',
-                  style: TextStyle(
-                    color: DesignSystem.goldLight,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'اختيار المدينة والموقع',
+                    style: TextStyle(
+                      color: DesignSystem.goldLight,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                ...cities.map((city) => InkWell(
-                  onTap: () {
-                    _prayerService.setLocation(city);
-                    _loadPrayerData();
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: _prayerService.currentLocation?.cityName == city.cityName
-                          ? DesignSystem.gold.withValues(alpha: 0.15)
-                          : Colors.white.withValues(alpha: 0.03),
-                      borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-                      border: Border.all(
-                        color: _prayerService.currentLocation?.cityName == city.cityName
-                            ? DesignSystem.gold
-                            : Colors.white.withValues(alpha: 0.08),
+                  const SizedBox(height: 16),
+
+                  // 📍 Real Device GPS Auto-detect Button
+                  InkWell(
+                    onTap: () async {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Row(
+                            children: [
+                              SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: DesignSystem.goldLight),
+                              ),
+                              SizedBox(width: 12),
+                              Text('جاري تحديد موقعك الدقيق عبر GPS...'),
+                            ],
+                          ),
+                          duration: Duration(seconds: 4),
+                        ),
+                      );
+
+                      try {
+                        final locService = LocationService();
+                        await locService.getCurrentPosition();
+                        if (locService.currentLocation != null) {
+                          await _prayerService.setLocation(locService.currentLocation!);
+                          await _loadPrayerData();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('تم تحديث الموقع بنجاح: ${locService.currentLocation!.cityName}'),
+                                backgroundColor: Colors.green.shade800,
+                              ),
+                            );
+                          }
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('تعذر تحديد الموقع تلقائياً: $e'),
+                              backgroundColor: Colors.red.shade800,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            DesignSystem.gold.withValues(alpha: 0.25),
+                            DesignSystem.goldLight.withValues(alpha: 0.1),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
+                        border: Border.all(color: DesignSystem.gold),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.my_location_rounded, color: DesignSystem.goldLight, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'تحديد موقعي الحالي تلقائياً (GPS)',
+                            style: TextStyle(
+                              color: DesignSystem.goldLight,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${city.cityName}، ${city.countryName}',
-                          style: TextStyle(
-                            color: _prayerService.currentLocation?.cityName == city.cityName
-                                ? DesignSystem.goldLight
-                                : DesignSystem.textWhite,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Icon(Icons.location_city_rounded, color: DesignSystem.textMuted, size: 18),
-                      ],
-                    ),
                   ),
-                )),
-              ],
+
+                  const Divider(color: Colors.white24, height: 16),
+
+                  ...cities.map((city) => InkWell(
+                    onTap: () async {
+                      Navigator.pop(context);
+                      await _prayerService.setLocation(city);
+                      await _loadPrayerData();
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: _prayerService.currentLocation?.cityName == city.cityName
+                            ? DesignSystem.gold.withValues(alpha: 0.15)
+                            : Colors.white.withValues(alpha: 0.03),
+                        borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
+                        border: Border.all(
+                          color: _prayerService.currentLocation?.cityName == city.cityName
+                              ? DesignSystem.gold
+                              : Colors.white.withValues(alpha: 0.08),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${city.cityName}، ${city.countryName}',
+                            style: TextStyle(
+                              color: _prayerService.currentLocation?.cityName == city.cityName
+                                  ? DesignSystem.goldLight
+                                  : DesignSystem.textWhite,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Icon(Icons.location_city_rounded, color: DesignSystem.textMuted, size: 18),
+                        ],
+                      ),
+                    ),
+                  )),
+                ],
+              ),
             ),
           ),
         );

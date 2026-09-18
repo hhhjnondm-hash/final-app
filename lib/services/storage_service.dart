@@ -316,21 +316,22 @@ class StorageService {
   }
 
   /// System Cache Cleaner: Automatically purges prayer & temporary cache older than 30 days
-  Future<int> autoCleanOldCache() async {
+  /// or any records from previous days before today
+  Future<int> autoCleanOldCache({bool force = false}) async {
     int deletedCount = 0;
     try {
       final now = DateTime.now();
       final lastCleanStr = getString(_lastCacheCleanKey);
       
-      // Run deep clean if never run or last clean was more than 1 day ago
-      if (lastCleanStr != null) {
+      // Run deep clean if forced, never run, or last clean was more than 1 day ago
+      if (!force && lastCleanStr != null) {
         final lastClean = DateTime.parse(lastCleanStr);
         if (now.difference(lastClean).inHours < 24) {
           return 0; // Already cleaned today
         }
       }
 
-      final thirtyDaysAgo = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 30));
+      final today = DateTime(now.year, now.month, now.day);
       final keys = getPrayerCacheKeys();
 
       for (final key in keys) {
@@ -338,8 +339,8 @@ class StorageService {
           final parts = key.split('-');
           if (parts.length == 3) {
             final cacheDate = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
-            // If cache date is older than 30 days or is in the past before today
-            if (cacheDate.isBefore(thirtyDaysAgo) || cacheDate.isBefore(DateTime(now.year, now.month, now.day))) {
+            // If cache date is strictly before today (past days are purged)
+            if (cacheDate.isBefore(today)) {
               await removePrayerCache(key);
               deletedCount++;
             }
@@ -348,7 +349,7 @@ class StorageService {
       }
 
       await setString(_lastCacheCleanKey, now.toIso8601String());
-      debugPrint('🧹 Cache Cleaner: Purged $deletedCount expired cache records');
+      debugPrint('🧹 Cache Cleaner: Purged $deletedCount expired past prayer records from storage');
     } catch (e) {
       debugPrint('⚠️ Error in autoCleanOldCache: $e');
     }

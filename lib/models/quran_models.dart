@@ -118,3 +118,60 @@ class KhatmahPlan {
   double get progress => (completedAyahs / 6236).clamp(0.0, 1.0);
   int get todayTargetJuz => ((currentDay - 1) % 30) + 1;
 }
+
+class AyahHighlight {
+  final int surahNumber;
+  final int ayahNumber;
+  final String colorKey; // 'emerald', 'amber', 'sky'
+  final DateTime timestamp;
+
+  const AyahHighlight({
+    required this.surahNumber,
+    required this.ayahNumber,
+    required this.colorKey,
+    required this.timestamp,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'surahNumber': surahNumber,
+    'ayahNumber': ayahNumber,
+    'colorKey': colorKey,
+    'timestamp': timestamp.toIso8601String(),
+  };
+
+  factory AyahHighlight.fromJson(Map<String, dynamic> json) => AyahHighlight(
+    surahNumber: json['surahNumber'] as int,
+    ayahNumber: json['ayahNumber'] as int,
+    colorKey: json['colorKey'] as String? ?? 'emerald',
+    timestamp: json['timestamp'] != null ? DateTime.parse(json['timestamp'] as String) : DateTime.now(),
+  );
+}
+
+class QuranReadingMark {
+  final int surahNumber;
+  final String surahName;
+  final int ayahNumber;
+  final DateTime timestamp;
+
+  const QuranReadingMark({
+    required this.surahNumber,
+    required this.surahName,
+    required this.ayahNumber,
+    required this.timestamp,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'surahNumber': surahNumber,
+    'surahName': surahName,
+    'ayahNumber': ayahNumber,
+    'timestamp': timestamp.toIso8601String(),
+  };
+
+  factory QuranReadingMark.fromJson(Map<String, dynamic> json) => QuranReadingMark(
+    surahNumber: json['surahNumber'] as int? ?? 1,
+    surahName: json['surahName'] as String? ?? 'الفاتحة',
+    ayahNumber: json['ayahNumber'] as int? ?? 1,
+    timestamp: json['timestamp'] != null ? DateTime.parse(json['timestamp'] as String) : DateTime.now(),
+  );
+}
+

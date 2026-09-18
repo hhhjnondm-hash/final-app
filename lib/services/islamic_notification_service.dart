@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/notification_models.dart';
+import 'notification_service.dart';
 
 class IslamicNotificationService extends ChangeNotifier {
   static final IslamicNotificationService _instance = IslamicNotificationService._internal();
@@ -69,6 +72,8 @@ class IslamicNotificationService extends ChangeNotifier {
 
       _isInitialized = true;
       notifyListeners();
+      // Auto-schedule loaded content
+      unawaited(scheduleAllActiveReminders());
     } catch (e) {
       debugPrint('Error loading notification datasets: $e');
     }
@@ -77,11 +82,13 @@ class IslamicNotificationService extends ChangeNotifier {
   void updatePreferences(NotificationPreferences newPrefs) {
     _preferences = newPrefs;
     notifyListeners();
+    unawaited(scheduleAllActiveReminders());
   }
 
   void toggleMaster(bool enabled) {
     _preferences = _preferences.copyWith(masterEnabled: enabled);
     notifyListeners();
+    unawaited(scheduleAllActiveReminders());
   }
 
   void toggleCategory(NotificationContentType type, bool enabled) {
@@ -90,6 +97,7 @@ class IslamicNotificationService extends ChangeNotifier {
       currentSchedules[type] = currentSchedules[type]!.copyWith(isEnabled: enabled);
       _preferences = _preferences.copyWith(schedules: currentSchedules);
       notifyListeners();
+      unawaited(scheduleAllActiveReminders());
     }
   }
 
@@ -99,6 +107,7 @@ class IslamicNotificationService extends ChangeNotifier {
       currentSchedules[type] = currentSchedules[type]!.copyWith(preferredTime: newTime);
       _preferences = _preferences.copyWith(schedules: currentSchedules);
       notifyListeners();
+      unawaited(scheduleAllActiveReminders());
     }
   }
 
@@ -177,5 +186,142 @@ class IslamicNotificationService extends ChangeNotifier {
     notifyListeners();
 
     return updated;
+  }
+
+  /// Schedule daily notifications with the system for active categories
+  Future<void> scheduleAllActiveReminders() async {
+    if (!_preferences.masterEnabled) {
+      debugPrint('🔕 Islamic notifications master switch is OFF');
+      return;
+    }
+
+    final notifService = NotificationService();
+    final now = DateTime.now();
+    final List<Map<String, dynamic>> nativeReminders = [];
+
+    for (final entry in _preferences.schedules.entries) {
+      final type = entry.key;
+      final rule = entry.value;
+
+      if (!rule.isEnabled) continue;
+
+      final preferredTime = rule.preferredTime;
+      var targetDate = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        preferredTime.hour,
+        preferredTime.minute,
+      );
+
+      // If preferred time has passed today, schedule for tomorrow
+      if (targetDate.isBefore(now)) {
+        targetDate = targetDate.add(const Duration(days: 1));
+      }
+
+      // Schedule for next 3 consecutive days so notifications fire even without opening app
+      for (int dayOffset = 0; dayOffset < 3; dayOffset++) {
+        final scheduleTime = targetDate.add(Duration(days: dayOffset));
+        if (isInQuietHours(scheduleTime)) continue;
+
+        final item = getNextRotationItem(type);
+        if (item == null) continue;
+
+        final notifId = (type.index + 1) * 1000 + dayOffset;
+        String title;
+        switch (type) {
+          case NotificationContentType.ayah:
+            title = '📖 آية وتدبر';
+            break;
+          case NotificationContentType.dua:
+            title = '🤲 دعاء مأثور';
+            break;
+          case NotificationContentType.dhikr:
+            title = '✨ ذكر وفضيلة';
+            break;
+          case NotificationContentType.quote:
+            title = '💎 درر إيمانية';
+            break;
+          case NotificationContentType.prayer:
+            title = '🕌 مواقيت الصلاة';
+            break;
+        }
+
+        await notifService.scheduleIslamicContentNotification(
+          id: notifId,
+          title: title,
+          body: item.text,
+          scheduledDate: scheduleTime,
+          category: item.category,
+        );
+
+        nativeReminders.add({
+          'id': notifId,
+          'title': title,
+          'body': item.text,
+          'category': item.category,
+          'timestampMs': scheduleTime.millisecondsSinceEpoch,
+        });
+      }
+    }
+
+    // Register full list in Native Android AlarmClock system (wakes screen & fires even if app killed)
+    if (!kIsWeb && nativeReminders.isNotEmpty) {
+      try {
+        const nativeChannel = MethodChannel('com.islamyat.islamyat_app/reminders_native');
+        await nativeChannel.invokeMethod('scheduleRemindersList', {
+          'remindersJson': jsonEncode(nativeReminders),
+        });
+        debugPrint('⏰ Native AlarmClock registered for ${nativeReminders.length} Islamic reminders');
+      } catch (e) {
+        debugPrint('Note: Error registering native reminders list: $e');
+      }
+    }
+
+    debugPrint('📅 Successfully scheduled active Islamic reminders in OS');
+  }
+
+  /// Send an immediate test notification to verify delivery
+  Future<void> sendTestNotification([NotificationContentType type = NotificationContentType.ayah]) async {
+    final item = getNextRotationItem(type);
+    final notifService = NotificationService();
+
+    String title;
+    switch (type) {
+      case NotificationContentType.ayah:
+        title = '📖 آية وتدبر: قال الله تعالى';
+        break;
+      case NotificationContentType.dua:
+        title = '🤲 دعاء مأثور مبارك';
+        break;
+      case NotificationContentType.dhikr:
+        title = '✨ ذكر وفضيلة نبوية';
+        break;
+      case NotificationContentType.quote:
+        title = '💎 درر وحكم إيمانية';
+        break;
+      case NotificationContentType.prayer:
+        title = '🕌 أذان ومواقيت الصلاة';
+        break;
+    }
+
+    final body = item?.text ?? 'سبحان الله وبحمده، سبحان الله العظيم ﴿أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ﴾';
+
+    // 1. Show via Flutter Local Notifications
+    await notifService.showIslamicContentNotification(
+      id: 9999,
+      title: title,
+      body: body,
+      category: item?.category ?? 'تذكير إيماني',
+    );
+
+    // 2. Trigger Native Lockscreen Notification test
+    await notifService.testNativeReminder(
+      title: title,
+      body: body,
+      category: item?.category ?? 'تذكير إيماني',
+    );
+
+    debugPrint('🔔 Immediate test Islamic notification triggered (Local + Native Lockscreen)!');
   }
 }

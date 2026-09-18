@@ -18,10 +18,16 @@ import 'screens/profile_screen.dart';
 import 'screens/splash_screen.dart';
 import 'services/app_initializer.dart';
 import 'l10n/localization.dart';
+import 'services/athan_service.dart';
+
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Set global navigator key for Athan and spiritual dialogs
+  AthanService.globalNavigatorKey = appNavigatorKey;
+
   // Fast lightweight initializations
   await AppLocalization.initialize();
   
@@ -47,6 +53,7 @@ class IslamyatApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: appNavigatorKey,
       title: 'Rafeeq',
       debugShowCheckedModeBanner: false,
       theme: DesignSystem.darkTheme,

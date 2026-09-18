@@ -123,6 +123,19 @@ class PrayerServiceV2 extends ChangeNotifier {
       }
       
       debugPrint('✅ Synced & Cached ${_cachedPrayerData.length} days of prayer data with clean storage.');
+      
+      // Schedule OS exact alarms and notifications for today's prayers
+      final todayTimes = _cachedPrayerData[startDate];
+      if (todayTimes != null) {
+        final stringMap = <String, DateTime>{};
+        if (todayTimes[PrayerType.fajr] != null) stringMap['Fajr'] = todayTimes[PrayerType.fajr]!;
+        if (todayTimes[PrayerType.dhuhr] != null) stringMap['Dhuhr'] = todayTimes[PrayerType.dhuhr]!;
+        if (todayTimes[PrayerType.asr] != null) stringMap['Asr'] = todayTimes[PrayerType.asr]!;
+        if (todayTimes[PrayerType.maghrib] != null) stringMap['Maghrib'] = todayTimes[PrayerType.maghrib]!;
+        if (todayTimes[PrayerType.isha] != null) stringMap['Isha'] = todayTimes[PrayerType.isha]!;
+        _athanService.scheduleUpcomingNotifications(stringMap);
+      }
+
       notifyListeners();
     } catch (e) {
       debugPrint('❌ Error loading 30-day prayer data: $e');

@@ -150,7 +150,37 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
 
                   const SizedBox(height: 12),
 
-                  // Test Athan Button
+                  // Respect Silent Mode Switch
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.volume_off_rounded, color: DesignSystem.goldLight, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'مراعاة الوضع الصامت للموبايل',
+                            style: TextStyle(
+                              color: DesignSystem.textWhite,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Switch(
+                        value: athanSettings.respectSilentMode,
+                        activeThumbColor: DesignSystem.gold,
+                        onChanged: (val) {
+                          _athanService.updateSettings(athanSettings.copyWith(respectSilentMode: val));
+                        },
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Test Athan Button (with dialog popup)
                   Row(
                     children: [
                       Expanded(
@@ -164,11 +194,11 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                             if (_athanService.isPlayingAthan) {
                               _athanService.stopAthan();
                             } else {
-                              _athanService.testAthan();
+                              _athanService.testAthan(context: context);
                             }
                           },
                           icon: Icon(_athanService.isPlayingAthan ? Icons.stop_rounded : Icons.play_arrow_rounded),
-                          label: Text(_athanService.isPlayingAthan ? 'إيقاف التجربة' : 'تجربة صوت الأذان'),
+                          label: Text(_athanService.isPlayingAthan ? 'إيقاف التجربة' : 'تجربة صوت الأذان ونافذة التنبيه'),
                         ),
                       ),
                     ],

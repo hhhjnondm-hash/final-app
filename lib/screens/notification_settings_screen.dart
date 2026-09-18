@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/notification_models.dart';
 import '../services/adhan_service.dart';
+import '../services/athan_service.dart';
 import '../services/islamic_notification_service.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
@@ -14,7 +15,7 @@ class NotificationSettingsScreen extends StatefulWidget {
 
 class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
   final IslamicNotificationService _notifService = IslamicNotificationService();
-  final AdhanService _adhanService = AdhanService();
+  final AthanService _athanService = AthanService();
 
   String _formatTimeOfDay(TimeOfDay time) {
     final hour12 = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
@@ -314,8 +315,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
   }
 
   Widget _buildAdhanSettingsCard() {
-    final adhanEnabled = _adhanService.adhanSoundEnabled;
-    final preReminder = _adhanService.preAdhanReminderEnabled;
+    final athanSettings = _athanService.settings;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -347,9 +347,13 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                 ),
               ),
               Switch(
-                value: adhanEnabled,
+                value: athanSettings.enabled,
                 activeColor: DesignSystem.gold,
-                onChanged: (val) => setState(() => _adhanService.toggleAdhanSound(val)),
+                onChanged: (val) {
+                  setState(() {
+                    _athanService.updateSettings(athanSettings.copyWith(enabled: val));
+                  });
+                },
               ),
             ],
           ),
@@ -361,19 +365,23 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                 'صوت المؤذن:',
                 style: TextStyle(color: DesignSystem.textMuted, fontSize: 13),
               ),
-              DropdownButton<AdhanVoice>(
-                value: _adhanService.selectedVoice,
+              DropdownButton<AthanSound>(
+                value: athanSettings.sound,
                 dropdownColor: DesignSystem.bgCard,
                 style: const TextStyle(color: DesignSystem.goldLight, fontSize: 12, fontWeight: FontWeight.bold),
                 underline: const SizedBox.shrink(),
-                items: AdhanVoice.values.map((voice) {
+                items: AthanSound.values.map((sound) {
                   return DropdownMenuItem(
-                    value: voice,
-                    child: Text(_adhanService.getVoiceNameArabic(voice)),
+                    value: sound,
+                    child: Text(_athanService.getSoundDisplayName(sound)),
                   );
                 }).toList(),
                 onChanged: (v) {
-                  if (v != null) setState(() => _adhanService.selectVoice(v));
+                  if (v != null) {
+                    setState(() {
+                      _athanService.updateSettings(athanSettings.copyWith(sound: v));
+                    });
+                  }
                 },
               ),
             ],
@@ -381,30 +389,55 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           const Divider(color: Colors.white12, height: 20),
           Row(
             children: [
-              const Icon(Icons.timer_outlined, color: DesignSystem.goldLight, size: 20),
+              const Icon(Icons.volume_off_rounded, color: DesignSystem.goldLight, size: 20),
               const SizedBox(width: 12),
               const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'التنبيه قبل الأذان',
+                      'مراعاة الوضع الصامت للموبايل',
                       style: TextStyle(color: DesignSystem.textWhite, fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 2),
                     Text(
-                      'إشعار تذكيري قبل دخول الصلاة بـ 10 دقائق',
+                      'كتم صوت الأذان تلقائياً إذا كان الهاتف صامتاً أو اهتزاز',
                       style: TextStyle(color: DesignSystem.textMuted, fontSize: 11),
                     ),
                   ],
                 ),
               ),
               Switch(
-                value: preReminder,
+                value: athanSettings.respectSilentMode,
                 activeColor: DesignSystem.gold,
-                onChanged: (val) => setState(() => _adhanService.setPreAdhanReminder(val, 10)),
+                onChanged: (val) {
+                  setState(() {
+                    _athanService.updateSettings(athanSettings.copyWith(respectSilentMode: val));
+                  });
+                },
               ),
             ],
+          ),
+          const Divider(color: Colors.white12, height: 20),
+          // Test button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: DesignSystem.goldLight,
+                side: const BorderSide(color: DesignSystem.goldLight),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () {
+                if (_athanService.isPlayingAthan) {
+                  _athanService.stopAthan();
+                } else {
+                  _athanService.testAthan(context: context);
+                }
+              },
+              icon: Icon(_athanService.isPlayingAthan ? Icons.stop_rounded : Icons.play_arrow_rounded),
+              label: Text(_athanService.isPlayingAthan ? 'إيقاف التجربة' : 'تجربة الأذان ونافذة التنبيه الآن'),
+            ),
           ),
         ],
       ),

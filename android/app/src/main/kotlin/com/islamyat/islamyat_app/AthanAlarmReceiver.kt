@@ -54,7 +54,7 @@ class AthanAlarmReceiver : BroadcastReceiver() {
 
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_MY_PACKAGE_REPLACED,
-            Intent.ACTION_TIME_SET,
+            "android.intent.action.TIME_SET",
             Intent.ACTION_TIMEZONE_CHANGED -> {
                 Log.d(TAG, "Device rebooted or time changed: Rescheduling saved prayer athan alarms")
                 AthanAlarmScheduler.rescheduleSavedAlarms(context)

@@ -56,7 +56,7 @@ class IslamicReminderReceiver : BroadcastReceiver() {
 
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_MY_PACKAGE_REPLACED,
-            Intent.ACTION_TIME_SET,
+            "android.intent.action.TIME_SET",
             Intent.ACTION_TIMEZONE_CHANGED -> {
                 Log.d(TAG, "Device rebooted or time changed: Rescheduling saved islamic reminders")
                 IslamicReminderScheduler.rescheduleSavedReminders(context)
@@ -90,9 +90,8 @@ class IslamicReminderReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT
         }
 
-        val openIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
+        val openIntent = Intent(context, MainActivity::class.java)
+        openIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         val pendingIntent = PendingIntent.getActivity(context, id, openIntent, flags)
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)

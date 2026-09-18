@@ -218,9 +218,8 @@ class AthanPlaybackService : Service() {
                 PendingIntent.FLAG_UPDATE_CURRENT
             }
 
-            val openIntent = Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
+            val openIntent = Intent(this, MainActivity::class.java)
+            openIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             val pendingIntent = PendingIntent.getActivity(this, 1003, openIntent, flags)
 
             val missedNotification = NotificationCompat.Builder(this, MISSED_CHANNEL_ID)

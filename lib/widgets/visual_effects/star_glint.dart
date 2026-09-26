@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 /// Animated 4-point golden star lens flare / sparkle glint for card corners and headers.
@@ -51,30 +50,32 @@ class _StarGlintState extends State<StarGlint>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final scale = _scaleAnimation.value;
-        final glow = _glowAnimation.value;
-        final rotation = widget.rotate ? _controller.value * 0.15 : 0.0;
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          final scale = _scaleAnimation.value;
+          final glow = _glowAnimation.value;
+          final rotation = widget.rotate ? _controller.value * 0.15 : 0.0;
 
-        return Transform.rotate(
-          angle: rotation,
-          child: Transform.scale(
-            scale: scale,
-            child: SizedBox(
-              width: widget.size,
-              height: widget.size,
-              child: CustomPaint(
-                painter: _StarGlintPainter(
-                  color: widget.color,
-                  glowOpacity: glow,
+          return Transform.rotate(
+            angle: rotation,
+            child: Transform.scale(
+              scale: scale,
+              child: SizedBox(
+                width: widget.size,
+                height: widget.size,
+                child: CustomPaint(
+                  painter: _StarGlintPainter(
+                    color: widget.color,
+                    glowOpacity: glow,
+                  ),
                 ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
@@ -131,7 +132,6 @@ class _StarGlintPainter extends CustomPainter {
 
     final diagPath = Path();
     final dMax = radius * 0.5;
-    final dMin = radius * 0.12;
 
     diagPath.moveTo(center.dx + dMax * 0.707, center.dy - dMax * 0.707);
     diagPath.quadraticBezierTo(center.dx, center.dy, center.dx + dMax * 0.707, center.dy + dMax * 0.707);

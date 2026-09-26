@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../utils/design_system.dart';
 import '../data/morning_azkar_data.dart';
 import '../models/azkar_item.dart';
+import '../widgets/developer_credits_badge.dart';
+import '../widgets/visual_effects/floating_particles.dart';
 
 class MorningAzkarScreen extends StatefulWidget {
   const MorningAzkarScreen({super.key});
@@ -28,21 +30,41 @@ class _MorningAzkarScreenState extends State<MorningAzkarScreen> {
       body: Container(
         decoration: DesignSystem.radialGlowBackground(),
         child: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              // Header
-              _buildHeader(),
-
-              // Progress Bar
-              _buildProgressBar(progress, azkarItem),
-
-              // Main Content
-              Expanded(
-                child: _buildAzkarCard(azkarItem),
+              // Floating Particles
+              const Positioned.fill(
+                child: RepaintBoundary(
+                  child: FloatingParticles(
+                    numberOfParticles: 12,
+                    particleColor: DesignSystem.goldLight,
+                  ),
+                ),
               ),
 
-              // Navigation Buttons
-              _buildNavigationButtons(azkarItem),
+              Column(
+                children: [
+                  // Header
+                  _buildHeader(),
+
+                  // Progress Bar
+                  _buildProgressBar(progress, azkarItem),
+
+                  // Main Content
+                  Expanded(
+                    child: _buildAzkarCard(azkarItem),
+                  ),
+
+                  // Navigation Buttons
+                  _buildNavigationButtons(azkarItem),
+
+                  // Developer Rights Badge
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: DeveloperCreditsBadge(),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

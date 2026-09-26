@@ -153,13 +153,15 @@ class _InteractiveTasbihCardState extends State<InteractiveTasbihCard>
                     alignment: Alignment.center,
                     children: [
                       // Circular Rosary Beads Canvas
-                      SizedBox(
-                        width: 170,
-                        height: 170,
-                        child: CustomPaint(
-                          painter: _RosaryBeadsPainter(
-                            isLight: isLight,
-                            activeBeadIndex: _counter % 33,
+                      RepaintBoundary(
+                        child: SizedBox(
+                          width: 170,
+                          height: 170,
+                          child: CustomPaint(
+                            painter: _RosaryBeadsPainter(
+                              isLight: isLight,
+                              activeBeadIndex: _counter % 33,
+                            ),
                           ),
                         ),
                       ),
@@ -337,11 +339,11 @@ class _RosaryBeadsPainter extends CustomPainter {
       final isCurrent = i == activeBeadIndex;
       final beadRadius = isCurrent ? 6.5 : 5.0;
 
-      // Outer golden bead shadow
+      // Outer golden bead aura/glow (ultra-fast alpha circle, 0 GPU jank)
       final shadowPaint = Paint()
-        ..color = (isCurrent ? const Color(0xFFFFD56B) : const Color(0xFFC89B3C)).withValues(alpha: isCurrent ? 0.6 : 0.25)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, isCurrent ? 5.0 : 2.0);
-      canvas.drawCircle(beadCenter, beadRadius + 1, shadowPaint);
+        ..color = (isCurrent ? const Color(0xFFFFD56B) : const Color(0xFFC89B3C)).withValues(alpha: isCurrent ? 0.35 : 0.15)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(beadCenter, beadRadius + (isCurrent ? 2.5 : 1.2), shadowPaint);
 
       // Bead gradient sphere
       final beadGradient = RadialGradient(

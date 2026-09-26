@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 /// An animated glowing Islamic lantern with gentle pendulum sway and warm breathing ambient light cone.

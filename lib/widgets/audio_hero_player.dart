@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/audio_quran_service.dart';
 import '../utils/design_system.dart';
+import 'visual_effects/floating_particles.dart';
+import 'visual_effects/shimmer_sweep.dart';
 
 class AudioHeroPlayer extends StatefulWidget {
   final VoidCallback? onReciterChangeTap;
@@ -101,6 +103,16 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                   DesignSystem.bgDarkest.withValues(alpha: 0.98),
                 ],
                 stops: const [0.0, 0.45, 1.0],
+              ),
+            ),
+          ),
+
+          // Subtle Floating Golden Particles on Hero (GPU-isolated)
+          const Positioned.fill(
+            child: RepaintBoundary(
+              child: FloatingParticles(
+                numberOfParticles: 12,
+                particleColor: DesignSystem.goldLight,
               ),
             ),
           ),

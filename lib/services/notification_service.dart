@@ -43,6 +43,24 @@ class NotificationService extends ChangeNotifier {
   static const String missedPrayerChannelId = 'missed_prayer_channel_v5';
   static const String remindersChannelId = 'islamic_reminders_v5';
 
+  // Anti-duplicate notification deduplication cache (prevents duplicate spamming)
+  final Map<String, DateTime> _recentlyDispatchedReminders = {};
+
+  bool _isDuplicateSpam(String key, {Duration cooldown = const Duration(seconds: 45)}) {
+    final now = DateTime.now();
+    final lastTime = _recentlyDispatchedReminders[key];
+    if (lastTime != null && now.difference(lastTime) < cooldown) {
+      debugPrint('🛡️ Deduplication: Suppressed duplicate notification for "$key" (sent ${now.difference(lastTime).inSeconds}s ago)');
+      return true;
+    }
+    _recentlyDispatchedReminders[key] = now;
+    // Clean old entries
+    if (_recentlyDispatchedReminders.length > 50) {
+      _recentlyDispatchedReminders.removeWhere((_, time) => now.difference(time) > const Duration(minutes: 10));
+    }
+    return false;
+  }
+
   Future<void> initialize() async {
     if (_isInitialized) return;
 
@@ -196,6 +214,11 @@ class NotificationService extends ChangeNotifier {
   }) async {
     if (kIsWeb) {
       debugPrint('🌐 Web: Athan notification simulated for $arabicName');
+      return;
+    }
+
+    // Suppress duplicate athan notifications firing in rapid succession
+    if (_isDuplicateSpam('athan_$prayerName', cooldown: const Duration(minutes: 2))) {
       return;
     }
 
@@ -678,6 +701,10 @@ class NotificationService extends ChangeNotifier {
   }) async {
     if (kIsWeb) return;
 
+    if (_isDuplicateSpam('content_${title}_$body', cooldown: const Duration(seconds: 40))) {
+      return;
+    }
+
     try {
       final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
         remindersChannelId,
@@ -765,6 +792,17 @@ class NotificationService extends ChangeNotifier {
       await _flutterLocalNotificationsPlugin.cancel(id: id);
     } catch (e) {
       debugPrint('Error canceling notification $id: $e');
+    }
+  }
+
+  Future<void> cancelRange(int startId, int endId) async {
+    if (kIsWeb) return;
+    try {
+      for (int i = startId; i <= endId; i++) {
+        await _flutterLocalNotificationsPlugin.cancel(id: i);
+      }
+    } catch (e) {
+      debugPrint('Error canceling notification range $startId..$endId: $e');
     }
   }
 

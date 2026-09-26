@@ -7,6 +7,10 @@ import '../adapters/radio_adapter.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/audio_diagnostic_dialog.dart';
+import '../widgets/developer_credits_badge.dart';
+import '../widgets/visual_effects/floating_particles.dart';
+import '../widgets/visual_effects/interactive_motion_card.dart';
+import '../widgets/visual_effects/star_glint.dart';
 
 class RadioScreen extends StatefulWidget {
   const RadioScreen({super.key});
@@ -204,201 +208,233 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
     return Scaffold(
       backgroundColor: DesignSystem.bgDarkest,
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 850),
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                // 1. Header
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      DesignSystem.spacingL,
-                      DesignSystem.spacingM,
-                      DesignSystem.spacingL,
-                      DesignSystem.spacingS,
-                    ),
-                    child: _buildHeader(context),
-                  ),
+        child: Stack(
+          children: [
+            // Background subtle floating particles (GPU-isolated)
+            const Positioned.fill(
+              child: RepaintBoundary(
+                child: FloatingParticles(
+                  numberOfParticles: 14,
+                  particleColor: DesignSystem.goldLight,
                 ),
+              ),
+            ),
 
-                // Search Bar (if searching)
-                if (_isSearching)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL, vertical: 8),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: DesignSystem.bgCard,
-                          borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                          border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.4)),
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 850),
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    // 1. Header
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          DesignSystem.spacingL,
+                          DesignSystem.spacingM,
+                          DesignSystem.spacingL,
+                          DesignSystem.spacingS,
                         ),
-                        child: TextField(
-                          autofocus: true,
-                          style: const TextStyle(color: Colors.white, fontSize: 13),
-                          decoration: InputDecoration(
-                            hintText: 'ابحث عن اسم الإذاعة أو التلاوة...',
-                            hintStyle: const TextStyle(color: DesignSystem.textMuted, fontSize: 12),
-                            prefixIcon: const Icon(Icons.search_rounded, color: DesignSystem.goldLight, size: 20),
-                            suffixIcon: IconButton(
-                              icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 18),
-                              onPressed: () => setState(() {
-                                _isSearching = false;
-                                _searchQuery = '';
-                              }),
+                        child: _buildHeader(context),
+                      ),
+                    ),
+
+                    // Search Bar (if searching)
+                    if (_isSearching)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL, vertical: 8),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: DesignSystem.bgCard,
+                              borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
+                              border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.4)),
                             ),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                            child: TextField(
+                              autofocus: true,
+                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              decoration: InputDecoration(
+                                hintText: 'ابحث عن اسم الإذاعة أو التلاوة...',
+                                hintStyle: const TextStyle(color: DesignSystem.textMuted, fontSize: 12),
+                                prefixIcon: const Icon(Icons.search_rounded, color: DesignSystem.goldLight, size: 20),
+                                suffixIcon: IconButton(
+                                  icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 18),
+                                  onPressed: () => setState(() {
+                                    _isSearching = false;
+                                    _searchQuery = '';
+                                  }),
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                              onChanged: (val) => setState(() => _searchQuery = val),
+                            ),
                           ),
-                          onChanged: (val) => setState(() => _searchQuery = val),
+                        ),
+                      ),
+
+                    // 2. Hero Radio Player
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL, vertical: 12),
+                        child: _buildHeroRadioPlayer(context),
+                      ),
+                    ),
+
+                    // 3. Category Horizontal Pills
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: _buildCategoryPills(),
+                      ),
+                    ),
+
+                    // 4. Live Stations Section Header
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(DesignSystem.spacingL, 16, DesignSystem.spacingL, 8),
+                        child: Row(
+                          children: [
+                            StarGlint(color: DesignSystem.goldLight, size: 18),
+                            SizedBox(width: 8),
+                            Text(
+                              'المحطات المباشرة',
+                              style: TextStyle(
+                                color: DesignSystem.textWhite,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ),
 
-                // 2. Hero Radio Player
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL, vertical: 12),
-                    child: _buildHeroRadioPlayer(context),
-                  ),
-                ),
+                    // 5. Live Stations List
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final station = filteredStations[index];
+                            final isCurrent = _radioService.currentStation.id == station.id;
+                            final isPlayingThis = isCurrent && _radioService.isPlaying;
 
-                // 3. Category Horizontal Pills
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: _buildCategoryPills(),
-                  ),
-                ),
-
-                // 4. Live Stations Section Header
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(DesignSystem.spacingL, 16, DesignSystem.spacingL, 8),
-                    child: Text(
-                      'المحطات المباشرة',
-                      style: TextStyle(
-                        color: DesignSystem.textWhite,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // 5. Live Stations List
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final station = filteredStations[index];
-                        final isCurrent = _radioService.currentStation.id == station.id;
-                        final isPlayingThis = isCurrent && _radioService.isPlaying;
-
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: GlassCard(
-                            padding: const EdgeInsets.all(14),
-                            borderRadius: DesignSystem.radiusLarge,
-                            isSelected: isCurrent,
-                            hasGlow: isPlayingThis,
-                            glowColor: DesignSystem.gold,
-                            onTap: () => _radioService.selectStation(station),
-                            child: Row(
-                              children: [
-                                // Station Artwork Disc
-                                Container(
-                                  width: 52,
-                                  height: 52,
-                                  decoration: BoxDecoration(
-                                    gradient: DesignSystem.goldGradient,
-                                    shape: BoxShape.circle,
-                                    boxShadow: isPlayingThis ? DesignSystem.goldGlow : null,
-                                  ),
-                                  child: ClipOval(
-                                    child: station.photoUrl != null
-                                        ? Image.asset(
-                                            station.photoUrl!,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) => const Icon(Icons.radio_rounded, color: DesignSystem.bgDarkest, size: 26),
-                                          )
-                                        : Icon(
-                                            isPlayingThis ? Icons.radio_rounded : Icons.cell_tower_rounded,
-                                            color: DesignSystem.bgDarkest,
-                                            size: 26,
-                                          ),
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: InteractiveMotionCard(
+                                onTap: () => _radioService.selectStation(station),
+                                borderRadius: DesignSystem.radiusLarge,
+                                child: GlassCard(
+                                  padding: const EdgeInsets.all(14),
+                                  borderRadius: DesignSystem.radiusLarge,
+                                  isSelected: isCurrent,
+                                  hasGlow: isPlayingThis,
+                                  glowColor: DesignSystem.gold,
+                                  onTap: () => _radioService.selectStation(station),
+                                  child: Row(
                                     children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              station.name,
-                                              style: TextStyle(
-                                                color: isCurrent ? DesignSystem.goldLight : DesignSystem.textWhite,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                      // Station Artwork Disc
+                                      Container(
+                                        width: 52,
+                                        height: 52,
+                                        decoration: BoxDecoration(
+                                          gradient: DesignSystem.goldGradient,
+                                          shape: BoxShape.circle,
+                                          boxShadow: isPlayingThis ? DesignSystem.goldGlow : null,
+                                        ),
+                                        child: ClipOval(
+                                          child: station.photoUrl != null
+                                              ? Image.asset(
+                                                  station.photoUrl!,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (_, __, ___) => const Icon(Icons.radio_rounded, color: DesignSystem.bgDarkest, size: 26),
+                                                )
+                                              : Icon(
+                                                  isPlayingThis ? Icons.radio_rounded : Icons.cell_tower_rounded,
+                                                  color: DesignSystem.bgDarkest,
+                                                  size: 26,
+                                                ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 14),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    station.name,
+                                                    style: TextStyle(
+                                                      color: isCurrent ? DesignSystem.goldLight : DesignSystem.textWhite,
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(0xFF38B982).withValues(alpha: 0.15),
+                                                    borderRadius: BorderRadius.circular(6),
+                                                  ),
+                                                  child: const Text('مباشر', style: TextStyle(color: Color(0xFF38B982), fontSize: 9, fontWeight: FontWeight.bold)),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              station.origin,
+                                              style: const TextStyle(color: DesignSystem.textMuted, fontSize: 11),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              station.currentProgram,
+                                              style: const TextStyle(color: DesignSystem.goldLight, fontSize: 10),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
-                                          ),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF38B982).withValues(alpha: 0.15),
-                                              borderRadius: BorderRadius.circular(6),
-                                            ),
-                                            child: const Text('مباشر', style: TextStyle(color: Color(0xFF38B982), fontSize: 9, fontWeight: FontWeight.bold)),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        station.origin,
-                                        style: const TextStyle(color: DesignSystem.textMuted, fontSize: 11),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        station.currentProgram,
-                                        style: const TextStyle(color: DesignSystem.goldLight, fontSize: 10),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                      const SizedBox(width: 8),
+                                      IconButton(
+                                        icon: Icon(
+                                          _radioService.isFavorite(station.id) ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                                          color: _radioService.isFavorite(station.id) ? const Color(0xFFE11D48) : Colors.white30,
+                                          size: 20,
+                                        ),
+                                        onPressed: () => _radioService.toggleFavorite(station.id),
                                       ),
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                IconButton(
-                                  icon: Icon(
-                                    _radioService.isFavorite(station.id) ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                                    color: _radioService.isFavorite(station.id) ? const Color(0xFFE11D48) : Colors.white30,
-                                    size: 20,
-                                  ),
-                                  onPressed: () => _radioService.toggleFavorite(station.id),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                      childCount: filteredStations.length,
+                              ),
+                            );
+                          },
+                          childCount: filteredStations.length,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
 
-                const SliverToBoxAdapter(child: SizedBox(height: 90)),
-              ],
+                    // Developer Rights Badge
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: DesignSystem.spacingL, vertical: 16),
+                        child: DeveloperCreditsBadge(),
+                      ),
+                    ),
+
+                    const SliverToBoxAdapter(child: SizedBox(height: 90)),
+                  ],
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

@@ -6,6 +6,7 @@ import '../utils/design_system.dart';
 import '../widgets/hadith_card.dart';
 import '../widgets/hadith_details_sheet.dart';
 import '../widgets/hadith_hero_card.dart';
+import '../widgets/developer_credits_badge.dart';
 
 class HadithScreen extends StatefulWidget {
   const HadithScreen({super.key});
@@ -233,6 +234,19 @@ class _HadithScreenState extends State<HadithScreen> {
                             childCount: filteredAhadith.length,
                           ),
                         ),
+                ),
+
+                // Developer Credits Badge
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: DesignSystem.spacingL,
+                      vertical: DesignSystem.spacingM,
+                    ),
+                    child: Center(
+                      child: DeveloperCreditsBadge(),
+                    ),
+                  ),
                 ),
 
                 const SliverToBoxAdapter(

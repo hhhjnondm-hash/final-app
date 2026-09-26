@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/hadith_models.dart';
 import '../services/hadith_service.dart';
 import '../utils/design_system.dart';
+import 'visual_effects/interactive_motion_card.dart';
 
 class HadithCard extends StatelessWidget {
   final HadithItem hadith;
@@ -20,33 +21,17 @@ class HadithCard extends StatelessWidget {
     final service = HadithService();
     final isFav = service.isFavorite(hadith.id);
 
-    return Container(
+    return InteractiveMotionCard(
       margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: DesignSystem.bgCard.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-          width: 1.0,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: const EdgeInsets.all(DesignSystem.spacingM),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+      borderRadius: 20,
+      backgroundColor: DesignSystem.bgCard.withValues(alpha: 0.85),
+      borderColor: const Color(0xFFFFD56B).withValues(alpha: 0.22),
+      glowColor: const Color(0xFFFFD56B),
+      onTap: onTap,
+      padding: const EdgeInsets.all(DesignSystem.spacingM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
                 // Top Header: Number ornament & Book Badge
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -161,9 +146,6 @@ class HadithCard extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
     );
   }
 }

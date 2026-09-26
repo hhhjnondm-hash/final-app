@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/ai_models.dart';
 import '../services/ai_assistant_service.dart';
+import '../widgets/developer_credits_badge.dart';
+import '../widgets/visual_effects/floating_particles.dart';
+import '../widgets/visual_effects/interactive_motion_card.dart';
+import '../widgets/visual_effects/star_glint.dart';
 
 class AiAssistantScreen extends StatefulWidget {
   final AiContextAttachment? initialContext;
@@ -422,7 +426,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
           const SizedBox(height: 16),
 
           // Quick Question Bank Explorer Banner
-          InkWell(
+          InteractiveMotionCard(
             onTap: () => _openQuestionBrowserModal(),
             borderRadius: BorderRadius.circular(16),
             child: Container(
@@ -463,6 +467,10 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 20),
+
+          // Developer Rights Badge
+          const DeveloperCreditsBadge(),
           const SizedBox(height: 16),
         ],
       ),
@@ -496,6 +504,19 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
       child: Stack(
         alignment: Alignment.center,
         children: [
+          // Background floating dust particles (GPU-isolated)
+          const Positioned.fill(
+            child: RepaintBoundary(
+              child: FloatingParticles(
+                particleCount: 12,
+                particleColor: Color(0xFFFFD56B),
+                speed: 0.15,
+                minRadius: 1.0,
+                maxRadius: 2.2,
+              ),
+            ),
+          ),
+
           // Arch Frame Outline SVG/Path effect
           Positioned.fill(
             child: Container(
@@ -513,11 +534,11 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.light_mode_rounded, color: const Color(0xFFE8D29A).withValues(alpha: 0.8), size: 26),
+                const StarGlint(color: Color(0xFFE8D29A), size: 20),
                 const SizedBox(width: 24),
                 const Icon(Icons.nightlight_round, color: Color(0xFFFFD56B), size: 36),
                 const SizedBox(width: 24),
-                Icon(Icons.light_mode_rounded, color: const Color(0xFFE8D29A).withValues(alpha: 0.8), size: 26),
+                const StarGlint(color: Color(0xFFE8D29A), size: 20),
               ],
             ),
           ),
@@ -559,68 +580,64 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     required String category,
     required String query,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _handleQuickPrompt(query),
-        onLongPress: () => _openQuestionBrowserModal(category),
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: const Color(0xFF101722),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFFC89B3C).withValues(alpha: 0.25),
-              width: 1,
+    return InteractiveMotionCard(
+      onTap: () => _handleQuickPrompt(query),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF101722),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFFC89B3C).withValues(alpha: 0.25),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Icon(Icons.arrow_back_ios_rounded, color: Color(0xFF94A3B8), size: 12),
+                Icon(icon, color: const Color(0xFFE8D29A), size: 24),
+                const SizedBox(width: 12), // Balance symmetry
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Color(0xFFF6F8FA),
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Cairo',
               ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Icon(Icons.arrow_back_ios_rounded, color: Color(0xFF94A3B8), size: 12),
-                  Icon(icon, color: const Color(0xFFE8D29A), size: 24),
-                  const SizedBox(width: 12), // Balance symmetry
-                ],
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                color: Color(0xFF94A3B8),
+                fontSize: 10,
+                fontFamily: 'Cairo',
               ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Color(0xFFF6F8FA),
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Cairo',
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  color: Color(0xFF94A3B8),
-                  fontSize: 10,
-                  fontFamily: 'Cairo',
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );

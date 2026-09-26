@@ -7,6 +7,12 @@ import 'package:flutter_compass/flutter_compass.dart';
 import '../services/location_service.dart';
 import '../services/prayer_service.dart';
 import '../utils/design_system.dart';
+import '../widgets/visual_effects/floating_particles.dart';
+import '../widgets/visual_effects/shimmer_sweep.dart';
+import '../widgets/visual_effects/star_glint.dart';
+import '../widgets/visual_effects/pulsing_halo.dart';
+import '../widgets/visual_effects/interactive_motion_card.dart';
+import '../widgets/developer_credits_badge.dart';
 
 class QiblaScreen extends StatefulWidget {
   const QiblaScreen({super.key});
@@ -429,8 +435,18 @@ class _QiblaScreenState extends State<QiblaScreen> with SingleTickerProviderStat
                   // 6. Dua for Facing Qibla Card
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                       child: _buildDuaCard(),
+                    ),
+                  ),
+
+                  // 7. Developer Credits Badge
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(16, 0, 16, 40),
+                      child: Center(
+                        child: DeveloperCreditsBadge(),
+                      ),
                     ),
                   ),
                 ],

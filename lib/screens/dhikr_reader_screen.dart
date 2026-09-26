@@ -3,7 +3,11 @@ import '../data/all_azkar_data.dart';
 import '../models/azkar_models.dart';
 import '../services/azkar_service.dart';
 import '../utils/design_system.dart';
+import '../widgets/celebration_achievement_dialog.dart';
 import '../widgets/dhikr_card.dart';
+import '../widgets/developer_credits_badge.dart';
+import '../widgets/visual_effects/floating_particles.dart';
+import '../widgets/visual_effects/star_glint.dart';
 
 class DhikrReaderScreen extends StatefulWidget {
   final AzkarCategoryMeta category;
@@ -21,6 +25,7 @@ class _DhikrReaderScreenState extends State<DhikrReaderScreen> {
   final AzkarService _azkarService = AzkarService();
   bool _isFocusMode = false;
   int _focusIndex = 0;
+  bool _hasCelebrated = false;
 
   @override
   void initState() {
@@ -35,7 +40,30 @@ class _DhikrReaderScreenState extends State<DhikrReaderScreen> {
   }
 
   void _onServiceUpdate() {
-    if (mounted) setState(() {});
+    if (mounted) {
+      _checkCompletionCelebration();
+      setState(() {});
+    }
+  }
+
+  void _checkCompletionCelebration() {
+    if (_hasCelebrated) return;
+    final azkarList = AllAzkarData.getAzkarForCategory(widget.category.type);
+    final completedCount = azkarList.where((d) => _azkarService.isCompleted(d.id)).length;
+    if (azkarList.isNotEmpty && completedCount == azkarList.length) {
+      _hasCelebrated = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          CelebrationAchievementDialog.show(
+            context,
+            title: 'هنيئاً لك إتمام ${widget.category.titleArabic} ✨',
+            subtitle: '﴿وَسَبِّحْ بِحَمْدِ رَبِّكَ قَبْلَ طُلُوعِ الشَّمْسِ وَقَبْلَ غُرُوبِهَا﴾',
+            achievementText: 'أتممت جميع أذكار ${widget.category.titleArabic} بحمد الله وتوفيقه، حفظك الله وبارك في يومك.',
+            icon: Icons.workspace_premium_rounded,
+          );
+        }
+      });
+    }
   }
 
   @override
@@ -58,13 +86,20 @@ class _DhikrReaderScreenState extends State<DhikrReaderScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: DesignSystem.goldLight, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          widget.category.titleArabic,
-          style: const TextStyle(
-            color: DesignSystem.textWhite,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const StarGlint(color: DesignSystem.goldLight, size: 16),
+            const SizedBox(width: 6),
+            Text(
+              widget.category.titleArabic,
+              style: const TextStyle(
+                color: DesignSystem.textWhite,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ],
         ),
         centerTitle: true,
         actions: [
@@ -81,69 +116,89 @@ class _DhikrReaderScreenState extends State<DhikrReaderScreen> {
         ],
       ),
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            // Progress Header Banner
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL, vertical: 8),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: widget.category.accentColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
-                border: Border.all(color: widget.category.accentColor.withValues(alpha: 0.3)),
+            // Background particles
+            Positioned.fill(
+              child: RepaintBoundary(
+                child: FloatingParticles(
+                  numberOfParticles: 14,
+                  particleColor: widget.category.accentColor,
+                ),
               ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ),
+
+            Column(
+              children: [
+                // Progress Header Banner
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL, vertical: 8),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: widget.category.accentColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
+                    border: Border.all(color: widget.category.accentColor.withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
                     children: [
-                      Text(
-                        'إنجاز ${widget.category.titleArabic}',
-                        style: const TextStyle(
-                          color: DesignSystem.textWhite,
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'إنجاز ${widget.category.titleArabic}',
+                            style: const TextStyle(
+                              color: DesignSystem.textWhite,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '$completedCount من $totalCount أذكار',
+                            style: TextStyle(
+                              color: widget.category.accentColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        '$completedCount من $totalCount أذكار',
-                        style: TextStyle(
-                          color: widget.category.accentColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 6,
+                          backgroundColor: Colors.white.withValues(alpha: 0.08),
+                          valueColor: AlwaysStoppedAnimation<Color>(widget.category.accentColor),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      minHeight: 6,
-                      backgroundColor: Colors.white.withValues(alpha: 0.08),
-                      valueColor: AlwaysStoppedAnimation<Color>(widget.category.accentColor),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                ),
 
-            // Azkar List
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(DesignSystem.spacingL),
-                physics: const BouncingScrollPhysics(),
-                itemCount: azkarList.length,
-                itemBuilder: (context, index) {
-                  final dhikr = azkarList[index];
-                  return DhikrCard(
-                    dhikr: dhikr,
-                    index: index,
-                    onCountChanged: () => setState(() {}),
-                  );
-                },
-              ),
+                // Azkar List
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(DesignSystem.spacingL),
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: azkarList.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == azkarList.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: DeveloperCreditsBadge(),
+                        );
+                      }
+                      final dhikr = azkarList[index];
+                      return DhikrCard(
+                        dhikr: dhikr,
+                        index: index,
+                        onCountChanged: () => setState(() {}),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ],
         ),

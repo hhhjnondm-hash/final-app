@@ -66,9 +66,10 @@ class _DeveloperCreditsBadgeState extends State<DeveloperCreditsBadge>
   Widget build(BuildContext context) {
     final isLight = DesignSystem.isLightMode;
 
-    return Container(
-      margin: widget.margin ?? const EdgeInsets.symmetric(vertical: 12),
-      child: MouseRegion(
+    return RepaintBoundary(
+      child: Container(
+        margin: widget.margin ?? const EdgeInsets.symmetric(vertical: 12),
+        child: MouseRegion(
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
         cursor: SystemMouseCursors.click,
@@ -260,6 +261,7 @@ class _DeveloperCreditsBadgeState extends State<DeveloperCreditsBadge>
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }

@@ -97,8 +97,8 @@ class IslamicNotificationService extends ChangeNotifier {
 
       _isInitialized = true;
       notifyListeners();
-      // Auto-schedule loaded content
-      unawaited(scheduleAllActiveReminders());
+      // Auto-schedule loaded content with debouncing
+      scheduleRemindersDebounced();
     } catch (e) {
       debugPrint('Error loading notification datasets: $e');
     }
@@ -107,13 +107,13 @@ class IslamicNotificationService extends ChangeNotifier {
   void updatePreferences(NotificationPreferences newPrefs) {
     _preferences = newPrefs;
     notifyListeners();
-    unawaited(scheduleAllActiveReminders());
+    scheduleRemindersDebounced();
   }
 
   void toggleMaster(bool enabled) {
     _preferences = _preferences.copyWith(masterEnabled: enabled);
     notifyListeners();
-    unawaited(scheduleAllActiveReminders());
+    scheduleRemindersDebounced();
   }
 
   void toggleCategory(NotificationContentType type, bool enabled) {
@@ -122,7 +122,7 @@ class IslamicNotificationService extends ChangeNotifier {
       currentSchedules[type] = currentSchedules[type]!.copyWith(isEnabled: enabled);
       _preferences = _preferences.copyWith(schedules: currentSchedules);
       notifyListeners();
-      unawaited(scheduleAllActiveReminders());
+      scheduleRemindersDebounced();
     }
   }
 
@@ -132,7 +132,7 @@ class IslamicNotificationService extends ChangeNotifier {
       currentSchedules[type] = currentSchedules[type]!.copyWith(preferredTime: newTime);
       _preferences = _preferences.copyWith(schedules: currentSchedules);
       notifyListeners();
-      unawaited(scheduleAllActiveReminders());
+      scheduleRemindersDebounced();
     }
   }
 
@@ -232,14 +232,28 @@ class IslamicNotificationService extends ChangeNotifier {
     }
   }
 
+  Timer? _debounceTimer;
+
+  /// Trigger debounced reminder scheduling to avoid rapid re-runs and duplicate alerts
+  void scheduleRemindersDebounced({Duration delay = const Duration(milliseconds: 600)}) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(delay, () {
+      unawaited(scheduleAllActiveReminders());
+    });
+  }
+
   /// Schedule daily notifications with the system for active categories
   Future<void> scheduleAllActiveReminders() async {
     if (!_preferences.masterEnabled) {
       debugPrint('🔕 Islamic notifications master switch is OFF');
+      final notifService = NotificationService();
+      await notifService.cancelRange(1000, 9999);
       return;
     }
 
     final notifService = NotificationService();
+    // Clean up previous reminder range to ensure zero duplicate notifications
+    await notifService.cancelRange(1000, 9999);
     final now = DateTime.now();
     final List<Map<String, dynamic>> nativeReminders = [];
 

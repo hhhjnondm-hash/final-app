@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/hadith_models.dart';
 import '../services/hadith_service.dart';
 import '../utils/design_system.dart';
+import 'visual_effects/floating_particles.dart';
+import 'visual_effects/shimmer_sweep.dart';
+import 'visual_effects/star_glint.dart';
 
 class HadithHeroCard extends StatelessWidget {
   final HadithItem hadith;
@@ -20,38 +23,45 @@ class HadithHeroCard extends StatelessWidget {
     final service = HadithService();
     final isFav = service.isFavorite(hadith.id);
 
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF0D1D3A),
-            const Color(0xFF071324),
-            DesignSystem.bgDarkest,
+    return ShimmerSweep(
+      duration: const Duration(milliseconds: 3600),
+      pauseDuration: const Duration(milliseconds: 3000),
+      shimmerColor: const Color(0xFFFFD56B),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF0D1D3A),
+              const Color(0xFF071324),
+              DesignSystem.bgDarkest,
+            ],
+          ),
+          border: Border.all(
+            color: DesignSystem.gold.withValues(alpha: 0.4),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: DesignSystem.gold.withValues(alpha: 0.16),
+              blurRadius: 28,
+              offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.6),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
+            ),
           ],
         ),
-        border: Border.all(
-          color: DesignSystem.gold.withValues(alpha: 0.4),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: DesignSystem.gold.withValues(alpha: 0.16),
-            blurRadius: 28,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.6),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
+        child: FloatingParticles(
+          numberOfParticles: 12,
+          particleColor: const Color(0xFFFFD56B),
+          child: Stack(
+            children: [
           // Islamic Lantern & Mosque Night Artwork
           ClipRRect(
             borderRadius: BorderRadius.circular(28),
@@ -244,6 +254,8 @@ class HadithHeroCard extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 }

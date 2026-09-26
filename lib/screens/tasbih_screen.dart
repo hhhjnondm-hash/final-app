@@ -1,6 +1,10 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../widgets/celebration_achievement_dialog.dart';
+import '../widgets/developer_credits_badge.dart';
+import '../widgets/visual_effects/floating_particles.dart';
+import '../widgets/visual_effects/interactive_motion_card.dart';
 
 class TasbihScreen extends StatefulWidget {
   const TasbihScreen({super.key});
@@ -154,78 +158,17 @@ class _TasbihScreenState extends State<TasbihScreen> with SingleTickerProviderSt
   }
 
   void _showGoalCompletedDialog() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0D131E),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.5)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFFFD56B), Color(0xFFC89B3C)],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFFD56B).withValues(alpha: 0.4),
-                    blurRadius: 20,
-                  ),
-                ],
-              ),
-              child: const Icon(Icons.check_circle_rounded, color: Color(0xFF0D131E), size: 40),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'أحسنت! تقبل الله طاعتك ✨',
-              style: TextStyle(fontFamily: 'Cairo', color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'أتممت وردك ($_target تسبيحة) من ${_adhkar[_selectedDhikrIndex]['name']}',
-              style: const TextStyle(fontFamily: 'Cairo', color: Color(0xFFFFD56B), fontSize: 13),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFF334155)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('تم', style: TextStyle(fontFamily: 'Cairo', color: Colors.white)),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFC89B3C),
-                      foregroundColor: const Color(0xFF0D131E),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('جلسة جديدة', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+    CelebrationAchievementDialog.show(
+      context,
+      title: 'هنيئاً لك! تَقَبَّلَ اللَّهُ طَاعَتَك ✨',
+      subtitle: '﴿فَاذْكُرُونِي أَذْكُرْكُمْ وَاشْكُرُوا لِي وَلَا تَكْفُرُونِ﴾',
+      achievementText: 'أتممت هدف التسبيح بنجاح ($_target تسبيحة) من ${_adhkar[_selectedDhikrIndex]['name']}، جعلها الله في ميزان حسناتك ونوراً لك.',
+      icon: Icons.check_circle_rounded,
+      onContinue: () {
+        setState(() {
+          _counter = 0;
+        });
+      },
     );
   }
 
@@ -479,6 +422,16 @@ class _TasbihScreenState extends State<TasbihScreen> with SingleTickerProviderSt
             ),
           ),
 
+          // Background subtle golden floating dust particles (GPU-isolated)
+          const Positioned.fill(
+            child: RepaintBoundary(
+              child: FloatingParticles(
+                numberOfParticles: 16,
+                particleColor: Color(0xFFFFD56B),
+              ),
+            ),
+          ),
+
           // Main Scrollable Content
           SafeArea(
             child: SingleChildScrollView(
@@ -510,7 +463,10 @@ class _TasbihScreenState extends State<TasbihScreen> with SingleTickerProviderSt
                   // 5. Daily Goal Card: [الهدف اليومي للتسبيح] + [33 | 100 | 500 | 1000] + Progress Bar
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildDailyGoalCard(progress, percentInt),
+                    child: InteractiveMotionCard(
+                      borderRadius: 20,
+                      child: _buildDailyGoalCard(progress, percentInt),
+                    ),
                   ),
 
                   const SizedBox(height: 14),
@@ -518,7 +474,10 @@ class _TasbihScreenState extends State<TasbihScreen> with SingleTickerProviderSt
                   // 6. Statistics Card: [إحصائيات التسبيح] (1420 إجمالي | 142 اليوم | 300 أطول جلسة)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildStatisticsCard(),
+                    child: InteractiveMotionCard(
+                      borderRadius: 20,
+                      child: _buildStatisticsCard(),
+                    ),
                   ),
 
                   const SizedBox(height: 14),
@@ -526,13 +485,25 @@ class _TasbihScreenState extends State<TasbihScreen> with SingleTickerProviderSt
                   // 7. Customization Banner: [تخصيص التسبيح] (صوت التسبيح • اهتزاز • نوع العداد)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildCustomizationBanner(),
+                    child: InteractiveMotionCard(
+                      onTap: _showCustomizationSheet,
+                      borderRadius: 20,
+                      child: _buildCustomizationBanner(),
+                    ),
                   ),
 
                   const SizedBox(height: 20),
 
                   // 8. Bottom Islamic Ornament: ❖ واذكر ربك كثيراً ❖
                   _buildFooterOrnament(),
+
+                  const SizedBox(height: 16),
+
+                  // 9. Developer Rights Badge (Royal & Animated)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: DeveloperCreditsBadge(),
+                  ),
 
                   const SizedBox(height: 28),
                 ],

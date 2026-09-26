@@ -67,33 +67,30 @@ class _PulsingHaloState extends State<PulsingHalo>
       return widget.child;
     }
 
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final t = _pulseAnimation.value;
-        final blur = 10.0 + 12.0 * t;
-        final spread = 0.5 + 2.5 * t;
-        final opacity = 0.25 + 0.35 * t;
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          final t = _pulseAnimation.value;
+          final blur = 8.0 + 8.0 * t;
+          final opacity = 0.2 + 0.3 * t;
 
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.borderRadius),
-            boxShadow: [
-              BoxShadow(
-                color: widget.haloColor.withValues(alpha: opacity),
-                blurRadius: blur,
-                spreadRadius: spread,
-              ),
-              BoxShadow(
-                color: const Color(0xFFC89B3C).withValues(alpha: 0.2 * t),
-                blurRadius: blur * 1.5,
-              ),
-            ],
-          ),
-          child: widget.child,
-        );
-      },
-      child: widget.child,
+          return Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(widget.borderRadius),
+              boxShadow: [
+                BoxShadow(
+                  color: widget.haloColor.withValues(alpha: opacity),
+                  blurRadius: blur,
+                  spreadRadius: 1.0,
+                ),
+              ],
+            ),
+            child: child,
+          );
+        },
+        child: widget.child,
+      ),
     );
   }
 }

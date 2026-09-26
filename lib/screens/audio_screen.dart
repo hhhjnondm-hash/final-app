@@ -11,6 +11,10 @@ import '../widgets/audio_hero_player.dart';
 import '../widgets/audio_mini_player.dart';
 import '../widgets/reciter_card.dart';
 import '../widgets/audio_diagnostic_dialog.dart';
+import '../widgets/developer_credits_badge.dart';
+import '../widgets/visual_effects/floating_particles.dart';
+import '../widgets/visual_effects/interactive_motion_card.dart';
+import '../widgets/visual_effects/star_glint.dart';
 
 class AudioScreen extends StatefulWidget {
   const AudioScreen({super.key});
@@ -76,6 +80,16 @@ class _AudioScreenState extends State<AudioScreen> {
       body: SafeArea(
         child: Stack(
           children: [
+            // Background subtle floating golden particles (GPU-isolated)
+            const Positioned.fill(
+              child: RepaintBoundary(
+                child: FloatingParticles(
+                  numberOfParticles: 14,
+                  particleColor: DesignSystem.goldLight,
+                ),
+              ),
+            ),
+
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1000),
@@ -139,7 +153,10 @@ class _AudioScreenState extends State<AudioScreen> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.stars_rounded, color: DesignSystem.goldLight, size: 20),
+                              const StarGlint(
+                                color: DesignSystem.goldLight,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               const Text(
                                 'القراء المشهورون',
@@ -216,6 +233,14 @@ class _AudioScreenState extends State<AudioScreen> {
                           },
                           childCount: filteredReciters.length,
                         ),
+                      ),
+                    ),
+
+                    // Developer Rights Badge
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: DesignSystem.spacingL, vertical: 16),
+                        child: DeveloperCreditsBadge(),
                       ),
                     ),
 
@@ -411,26 +436,27 @@ class _AudioScreenState extends State<AudioScreen> {
   Widget _buildPopularReciterCard(ReciterProfile reciter) {
     final isCurrent = _audioService.currentReciter.id == reciter.id;
 
-    return InkWell(
-      onTap: () {
-        _audioService.selectReciter(reciter, autoPlay: true);
-      },
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        width: 130,
-        margin: const EdgeInsets.only(left: 12),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: DesignSystem.bgCard.withValues(alpha: 0.8),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isCurrent ? DesignSystem.gold : Colors.white.withValues(alpha: 0.08),
-            width: isCurrent ? 1.5 : 1.0,
+    return Container(
+      width: 130,
+      margin: const EdgeInsets.only(left: 12),
+      child: InteractiveMotionCard(
+        onTap: () {
+          _audioService.selectReciter(reciter, autoPlay: true);
+        },
+        borderRadius: 20,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: DesignSystem.bgCard.withValues(alpha: 0.8),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isCurrent ? DesignSystem.gold : Colors.white.withValues(alpha: 0.08),
+              width: isCurrent ? 1.5 : 1.0,
+            ),
+            boxShadow: isCurrent
+                ? [BoxShadow(color: DesignSystem.gold.withValues(alpha: 0.15), blurRadius: 14)]
+                : null,
           ),
-          boxShadow: isCurrent
-              ? [BoxShadow(color: DesignSystem.gold.withValues(alpha: 0.15), blurRadius: 14)]
-              : null,
-        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -470,8 +496,9 @@ class _AudioScreenState extends State<AudioScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _showSurahSelectorModal(BuildContext context) {
     showModalBottomSheet(

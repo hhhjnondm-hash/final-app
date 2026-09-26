@@ -53,35 +53,34 @@ class _ShimmerSweepState extends State<ShimmerSweep>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final progress = _controller.value;
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          final progress = _controller.value;
 
-        return ShaderMask(
-          blendMode: BlendMode.srcATop,
-          shaderCallback: (bounds) {
-            final double width = bounds.width;
-            final double xOffset = -width + (progress * width * 3);
-
-            return LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.transparent,
-                widget.shimmerColor.withValues(alpha: 0.08),
-                widget.shimmerColor.withValues(alpha: 0.35),
-                widget.shimmerColor.withValues(alpha: 0.08),
-                Colors.transparent,
-              ],
-              stops: const [0.0, 0.35, 0.5, 0.65, 1.0],
-              transform: _SlidingGradientTransform(slidePercent: progress),
-            ).createShader(bounds);
-          },
-          child: widget.child ?? const SizedBox.shrink(),
-        );
-      },
-      child: widget.child,
+          return ShaderMask(
+            blendMode: BlendMode.srcATop,
+            shaderCallback: (bounds) {
+              return LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.transparent,
+                  widget.shimmerColor.withValues(alpha: 0.06),
+                  widget.shimmerColor.withValues(alpha: 0.32),
+                  widget.shimmerColor.withValues(alpha: 0.06),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.35, 0.5, 0.65, 1.0],
+                transform: _SlidingGradientTransform(slidePercent: progress),
+              ).createShader(bounds);
+            },
+            child: child,
+          );
+        },
+        child: widget.child ?? const SizedBox.shrink(),
+      ),
     );
   }
 }

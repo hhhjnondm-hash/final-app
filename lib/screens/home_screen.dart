@@ -15,6 +15,8 @@ import '../widgets/visual_effects/shimmer_sweep.dart';
 import '../widgets/visual_effects/pulsing_halo.dart';
 import '../widgets/visual_effects/islamic_decorations.dart';
 import '../widgets/visual_effects/sound_wave_visualizer.dart';
+import '../widgets/visual_effects/interactive_motion_card.dart';
+import '../widgets/visual_effects/floating_particles.dart';
 import 'azkar_screen.dart';
 import 'audio_screen.dart';
 import 'dhikr_reader_screen.dart';
@@ -971,57 +973,76 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0F3B2C), Color(0xFF07241A)],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
+        InteractiveMotionCard(
+          borderRadius: 18,
+          borderColor: const Color(0xFF10B981).withValues(alpha: 0.5),
+          glowColor: const Color(0xFF10B981).withValues(alpha: 0.25),
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const PrayerTimesScreen()));
+          },
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0F3B2C), Color(0xFF07241A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.45)),
+              boxShadow: [
+                BoxShadow(
                   color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
                 ),
-                child: const Icon(Icons.access_time_rounded, color: Color(0xFF34D399), size: 22),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'الصلاة القادمة: ${_nextPrayer?.nameArabic ?? "الصلاة"}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
+              ],
+            ),
+            child: Row(
+              children: [
+                PulsingHalo(
+                  haloColor: const Color(0xFF34D399),
+                  borderRadius: 22,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF34D399).withValues(alpha: 0.6),
+                        width: 1.2,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'متبقي $_countdown بالثواني',
-                      style: const TextStyle(
-                        color: Color(0xFF34D399),
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                  ],
+                    child: const Icon(Icons.access_time_rounded, color: Color(0xFF34D399), size: 22),
+                  ),
                 ),
-              ),
-              InkWell(
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const PrayerTimesScreen()));
-                },
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'الصلاة القادمة: ${_nextPrayer?.nameArabic ?? "الصلاة"}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'متبقي $_countdown بالثواني',
+                        style: const TextStyle(
+                          color: Color(0xFF34D399),
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.15),
@@ -1032,8 +1053,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 10),
@@ -1800,215 +1821,456 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ==================== 3. PRAYER TIMES SECTION ====================
+  // ==================== 3. PRAYER TIMES SECTION (ROYAL 3D SPOTLIGHT) ====================
   Widget _buildPrayerSpotlightCard(BuildContext context) {
     final isLight = DesignSystem.isLightMode;
     final nextPrayerTitle = _nextPrayer?.nameArabic ?? 'الظهر';
     final nextPrayerTime = _nextPrayer?.formattedTimeArabic ?? '12:54 م';
 
-    return GlassCard(
-      padding: const EdgeInsets.all(20),
-      borderRadius: 24,
+    return InteractiveMotionCard(
+      borderRadius: 26,
+      borderColor: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.6 : 0.45),
+      glowColor: const Color(0xFFFFD56B).withValues(alpha: 0.25),
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const PrayerTimesScreen()),
         );
       },
-      child: Column(
-        children: [
-          // Next Prayer Header Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(26),
+          gradient: isLight
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFFFFFFF),
+                    Color(0xFFF6FAFD),
+                    Color(0xFFEAF2F8),
+                  ],
+                )
+              : const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF1E2B42),
+                    Color(0xFF121B2A),
+                    Color(0xFF090E17),
+                  ],
+                ),
+          border: Border.all(
+            color: isLight
+                ? const Color(0xFFC89B3C).withValues(alpha: 0.45)
+                : const Color(0xFFFFD56B).withValues(alpha: 0.4),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isLight
+                  ? const Color(0xFF102A43).withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.6),
+              blurRadius: 28,
+              offset: const Offset(0, 10),
+            ),
+            BoxShadow(
+              color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.12 : 0.22),
+              blurRadius: 22,
+              spreadRadius: 1,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(26),
+          child: Stack(
             children: [
-              // Left: Next Prayer Time & Countdown Pill
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    nextPrayerTime,
-                    style: TextStyle(
-                      color: isLight ? const Color(0xFF102A43) : const Color(0xFFF6F8FA),
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                    ),
+              // Atmospheric Floating Golden Dust Particles (60 FPS RepaintBoundary)
+              const Positioned.fill(
+                child: IgnorePointer(
+                  child: FloatingParticles(
+                    numberOfParticles: 12,
+                    particleColor: Color(0xFFFFD56B),
                   ),
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: isLight ? const Color(0xFFDCEAF4) : const Color(0xFF1C273C),
-                      borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                      border: Border.all(
-                        color: isLight ? Colors.transparent : const Color(0xFFFFD56B).withValues(alpha: 0.4),
-                      ),
-                      boxShadow: [
-                        if (!isLight)
-                          BoxShadow(
-                            color: const Color(0xFFFFD56B).withValues(alpha: 0.15),
-                            blurRadius: 8,
-                          ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.access_time_rounded,
-                          color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
-                          size: 12,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '$_countdown متبقي',
-                          style: TextStyle(
-                            color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
 
-              // Right: Label & Title ("الصلاة القادمة - الظهر")
-              Row(
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'الصلاة القادمة',
-                        style: TextStyle(
-                          color: isLight ? const Color(0xFF667085) : const Color(0xFF94A3B8),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        nextPrayerTitle,
-                        style: TextStyle(
-                          color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          shadows: [
-                            if (!isLight)
-                              const Shadow(
-                                color: Color(0xFFFFD56B),
-                                blurRadius: 10,
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
+              // Architectural pointed Islamic arch dual border
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: IslamicArchBorderPainter(
+                    primaryColor: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
+                    secondaryColor: const Color(0xFFC89B3C),
                   ),
-                  const SizedBox(width: 12),
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isLight ? const Color(0xFFF8F6F0) : const Color(0xFF161F2E),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFFFFD56B).withValues(alpha: 0.6),
-                            width: 1.2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFFD56B).withValues(alpha: 0.25),
-                              blurRadius: 10,
+                ),
+              ),
+
+              // Corner Shimmering Star Glints
+              const Positioned(
+                top: 14,
+                left: 18,
+                child: StarGlint(size: 16, color: Color(0xFFFFD56B)),
+              ),
+              const Positioned(
+                top: 16,
+                right: 22,
+                child: StarGlint(size: 14, color: Color(0xFFFFF2B2)),
+              ),
+
+              // Main Card Content
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    // Top Next Prayer Presentation
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Left: 3D Countdown Box & Pill
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 3D Monospace Live Countdown Dial
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: isLight
+                                      ? [const Color(0xFF102A43), const Color(0xFF0D1B2A)]
+                                      : [const Color(0xFF1C2C45), const Color(0xFF0F1A2A)],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: const Color(0xFFFFD56B).withValues(alpha: 0.6),
+                                  width: 1.2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFD56B).withValues(alpha: 0.25),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 7,
+                                    height: 7,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFF10B981),
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Color(0xFF10B981),
+                                          blurRadius: 6,
+                                          spreadRadius: 1,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _countdown,
+                                    style: const TextStyle(
+                                      fontFamily: 'Courier',
+                                      color: Color(0xFFFFD56B),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.hourglass_top_rounded,
+                                  color: Color(0xFFC89B3C),
+                                  size: 13,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'متبقي على الأذان',
+                                  style: TextStyle(
+                                    color: isLight ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                        child: const Icon(
-                          Icons.mosque_rounded,
-                          color: Color(0xFFFFD56B),
-                          size: 24,
+
+                        // Right: 3D Calligraphy & Glowing Mosque Medallion
+                        Row(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFD56B).withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: const Color(0xFFFFD56B).withValues(alpha: 0.35),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.stars_rounded, color: Color(0xFFFFD56B), size: 12),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'الصلاة القادمة',
+                                        style: TextStyle(
+                                          color: isLight ? const Color(0xFF0F2B48) : const Color(0xFFFFD56B),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                ShaderMask(
+                                  shaderCallback: (bounds) => const LinearGradient(
+                                    colors: [
+                                      Color(0xFFFFF7D6),
+                                      Color(0xFFFFD56B),
+                                      Color(0xFFE5B54F),
+                                      Color(0xFFC89B3C),
+                                    ],
+                                    begin: Alignment.topRight,
+                                    end: Alignment.bottomLeft,
+                                  ).createShader(bounds),
+                                  child: Text(
+                                    nextPrayerTitle,
+                                    style: TextStyle(
+                                      fontFamily: 'Amiri',
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      shadows: [
+                                        Shadow(
+                                          color: const Color(0xFFFFD56B).withValues(alpha: 0.5),
+                                          blurRadius: 16,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  'عند $nextPrayerTime',
+                                  style: TextStyle(
+                                    color: isLight ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 14),
+
+                            // 3D Glowing Mosque Medallion with PulsingHalo
+                            PulsingHalo(
+                              haloColor: const Color(0xFFFFD56B),
+                              borderRadius: 28,
+                              child: Container(
+                                width: 56,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFFFFE082),
+                                      Color(0xFFC89B3C),
+                                      Color(0xFF8D6210),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFFFD56B).withValues(alpha: 0.45),
+                                      blurRadius: 18,
+                                      spreadRadius: 2,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                  border: Border.all(
+                                    color: const Color(0xFFFFF7D6),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.mosque_rounded,
+                                  color: Color(0xFF0F172A),
+                                  size: 28,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // 6 Prayer Cards 3D Row (الفجر، الشروق، الظهر، العصر، المغرب، العشاء)
+                    if (_allPrayers.isNotEmpty)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: _allPrayers.map((prayer) {
+                          final isActive = _nextPrayer != null && _nextPrayer!.type == prayer.type;
+                          return Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                              child: _buildPrayerCard(
+                                prayer.nameArabic,
+                                prayer.formattedTimeArabic,
+                                prayer.icon,
+                                isActive,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      )
+                    else
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildPrayerCard('الفجر', '5:03 ص', Icons.wb_twilight_rounded, false),
+                          _buildPrayerCard('الشروق', '6:33 ص', Icons.wb_sunny_outlined, false),
+                          _buildPrayerCard('الظهر', '12:54 م', Icons.wb_sunny_rounded, true),
+                          _buildPrayerCard('العصر', '4:28 م', Icons.wb_sunny_outlined, false),
+                          _buildPrayerCard('المغرب', '7:15 م', Icons.wb_twilight_rounded, false),
+                          _buildPrayerCard('العشاء', '8:35 م', Icons.nightlight_round, false),
+                        ],
+                      ),
+
+                    const SizedBox(height: 14),
+
+                    // Bottom Spiritual Quote & Navigation Hint
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isLight
+                            ? const Color(0xFFC89B3C).withValues(alpha: 0.08)
+                            : Colors.white.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFFFFD56B).withValues(alpha: 0.2),
                         ),
                       ),
-                      const Positioned(
-                        top: 0,
-                        right: 0,
-                        child: StarGlint(size: 11),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.menu_book_rounded, color: Color(0xFFFFD56B), size: 14),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '﴿إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَوْقُوتًا﴾',
+                              style: TextStyle(
+                                fontFamily: 'Amiri',
+                                color: isLight ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'عرض الجدول',
+                                style: TextStyle(
+                                  color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
+                                size: 10,
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-
-          const SizedBox(height: 18),
-
-          // 6 Prayer Cards Row (الفجر، الشروق، الظهر، العصر، المغرب، العشاء)
-          if (_allPrayers.isNotEmpty)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: _allPrayers.map((prayer) {
-                final isActive = _nextPrayer != null && _nextPrayer!.type == prayer.type;
-                return _buildPrayerCard(
-                  prayer.nameArabic,
-                  prayer.formattedTimeArabic,
-                  prayer.icon,
-                  isActive,
-                );
-              }).toList(),
-            )
-          else
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildPrayerCard('الفجر', '5:03 ص', Icons.wb_twilight_rounded, false),
-                _buildPrayerCard('الشروق', '6:33 ص', Icons.wb_sunny_outlined, false),
-                _buildPrayerCard('الظهر', '12:54 م', Icons.wb_sunny_rounded, true),
-                _buildPrayerCard('العصر', '4:28 م', Icons.wb_sunny_outlined, false),
-                _buildPrayerCard('المغرب', '7:15 م', Icons.wb_twilight_rounded, false),
-                _buildPrayerCard('العشاء', '8:35 م', Icons.nightlight_round, false),
-              ],
-            ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildPrayerCard(String name, String time, IconData icon, bool isActive) {
+    final isLight = DesignSystem.isLightMode;
+
     if (isActive) {
-      // Highlighted Active State with Living Pulsing Golden Aura Halo
+      // 3D Elevated Active Prayer Tile with Pulsing Golden Aura Halo
       return PulsingHalo(
         isActive: true,
         haloColor: const Color(0xFFFFD56B),
-        borderRadius: 14,
+        borderRadius: 16,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color(0xFF1B2E4B),
-                Color(0xFF102A43),
-                Color(0xFF0C1D2F),
+                Color(0xFF283D5E),
+                Color(0xFF16243A),
+                Color(0xFF0D1726),
               ],
             ),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFFFD56B), width: 1.5),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFFFFD56B),
+              width: 1.8,
+            ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFFD56B).withValues(alpha: 0.35),
-                blurRadius: 14,
-                offset: const Offset(0, 3),
+                color: const Color(0xFFFFD56B).withValues(alpha: 0.45),
+                blurRadius: 16,
+                spreadRadius: 1,
+                offset: const Offset(0, 4),
+              ),
+              const BoxShadow(
+                color: Colors.black45,
+                blurRadius: 6,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: const Color(0xFFFFD56B), size: 16),
-              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD56B).withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: const Color(0xFFFFD56B), size: 16),
+              ),
+              const SizedBox(height: 5),
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
@@ -2017,26 +2279,39 @@ class _HomeScreenState extends State<HomeScreen> {
                     decoration: const BoxDecoration(
                       color: Color(0xFFFFD56B),
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0xFFFFD56B),
+                          blurRadius: 4,
+                          spreadRadius: 1,
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      color: Color(0xFFFFD56B),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(width: 3),
+                  Flexible(
+                    child: Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFFFFD56B),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 3),
               Text(
                 time,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: Color(0xFFFFFFFF),
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ],
@@ -2045,22 +2320,45 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    // Inactive Prayer Card: Clean White / Light Blue-Gray with Subtle Border
+    // 3D Inactive Prayer Card: Elevated Glass Tile with Top Highlight & Soft Shadow
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 9),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2F5F7),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFDCE3EC)),
+        color: isLight
+            ? const Color(0xFFFFFFFF)
+            : Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isLight
+              ? const Color(0xFFDCE3EC)
+              : Colors.white.withValues(alpha: 0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isLight
+                ? const Color(0xFF102A43).withValues(alpha: 0.04)
+                : Colors.black.withValues(alpha: 0.25),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: const Color(0xFF667085), size: 15),
+          Icon(
+            icon,
+            color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+            size: 15,
+          ),
           const SizedBox(height: 4),
           Text(
             name,
-            style: const TextStyle(
-              color: Color(0xFF172033),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: isLight ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
               fontSize: 11,
               fontWeight: FontWeight.w600,
             ),
@@ -2068,9 +2366,12 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 2),
           Text(
             time,
-            style: const TextStyle(
-              color: Color(0xFF667085),
-              fontSize: 10,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+              fontSize: 9.5,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],

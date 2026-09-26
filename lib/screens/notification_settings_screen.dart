@@ -6,6 +6,10 @@ import '../services/islamic_notification_service.dart';
 import '../services/notification_service.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/developer_credits_badge.dart';
+import '../widgets/visual_effects/floating_particles.dart';
+import '../widgets/visual_effects/interactive_motion_card.dart';
+import '../widgets/visual_effects/star_glint.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -62,74 +66,110 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: DesignSystem.textWhite, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'إعدادات الإشعارات والأذان',
-          style: TextStyle(
-            color: DesignSystem.textWhite,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            StarGlint(color: DesignSystem.goldLight, size: 16),
+            SizedBox(width: 6),
+            Text(
+              'إعدادات الإشعارات والأذان',
+              style: TextStyle(
+                color: DesignSystem.textWhite,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
         centerTitle: true,
       ),
       body: Directionality(
         textDirection: TextDirection.rtl,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Master Switch Card
-              _buildMasterSwitchCard(),
-              _buildTestNotificationRow(),
-
-              const SizedBox(height: 24),
-
-              // Content Categories
-              _buildSectionTitle('أقسام التذكير الإيماني اليومي', Icons.notifications_active_rounded),
-              const SizedBox(height: 12),
-              _buildCategoryTile(
-                type: NotificationContentType.ayah,
-                title: 'آيات قرآنية وتدبر',
-                subtitle: 'تذكير يومي بآيات محكمة من كتاب الله (${_notifService.totalAyatCount}+ آية متوفرة)',
-                icon: Icons.menu_book_rounded,
+        child: Stack(
+          children: [
+            // Background subtle floating particles
+            const Positioned.fill(
+              child: RepaintBoundary(
+                child: FloatingParticles(
+                  numberOfParticles: 14,
+                  particleColor: DesignSystem.goldLight,
+                ),
               ),
-              _buildCategoryTile(
-                type: NotificationContentType.dua,
-                title: 'أدعية مأثورة ومستجابة',
-                subtitle: 'أدعية نبوية وقرآنية جامعة (${_notifService.totalDuasCount}+ دعاء متوفر)',
-                icon: Icons.volunteer_activism_rounded,
+            ),
+
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Master Switch Card
+                  InteractiveMotionCard(
+                    borderRadius: 22,
+                    child: _buildMasterSwitchCard(),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTestNotificationRow(),
+
+                  const SizedBox(height: 24),
+
+                  // Content Categories
+                  _buildSectionTitle('أقسام التذكير الإيماني اليومي', Icons.notifications_active_rounded),
+                  const SizedBox(height: 12),
+                  _buildCategoryTile(
+                    type: NotificationContentType.ayah,
+                    title: 'آيات قرآنية وتدبر',
+                    subtitle: 'تذكير يومي بآيات محكمة من كتاب الله (${_notifService.totalAyatCount}+ آية متوفرة)',
+                    icon: Icons.menu_book_rounded,
+                  ),
+                  _buildCategoryTile(
+                    type: NotificationContentType.dua,
+                    title: 'أدعية مأثورة ومستجابة',
+                    subtitle: 'أدعية نبوية وقرآنية جامعة (${_notifService.totalDuasCount}+ دعاء متوفر)',
+                    icon: Icons.volunteer_activism_rounded,
+                  ),
+                  _buildCategoryTile(
+                    type: NotificationContentType.dhikr,
+                    title: 'أذكار وفوائد إيمانية',
+                    subtitle: 'أذكار الصباح والمساء والفضائل (${_notifService.totalAdhkarCount}+ ذكر متوفر)',
+                    icon: Icons.fingerprint_rounded,
+                  ),
+                  _buildCategoryTile(
+                    type: NotificationContentType.quote,
+                    title: 'درر وحكم من السلف',
+                    subtitle: 'مواعظ وخواطر إيمانية مضيئة (${_notifService.totalQuotesCount}+ حكمة متوفرة)',
+                    icon: Icons.auto_stories_rounded,
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // Adhan & Prayer Section
+                  _buildSectionTitle('الأذان ومواقيت الصلاة', Icons.mosque_rounded),
+                  const SizedBox(height: 12),
+                  InteractiveMotionCard(
+                    borderRadius: 22,
+                    child: _buildAdhanSettingsCard(),
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // Quiet Hours Section
+                  _buildSectionTitle('أوقات عدم الإزعاج (Quiet Hours)', Icons.bedtime_rounded),
+                  const SizedBox(height: 12),
+                  InteractiveMotionCard(
+                    borderRadius: 18,
+                    child: _buildQuietHoursCard(),
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // Developer Rights Badge
+                  const DeveloperCreditsBadge(),
+
+                  const SizedBox(height: 40),
+                ],
               ),
-              _buildCategoryTile(
-                type: NotificationContentType.dhikr,
-                title: 'أذكار وفوائد إيمانية',
-                subtitle: 'أذكار الصباح والمساء والفضائل (${_notifService.totalAdhkarCount}+ ذكر متوفر)',
-                icon: Icons.fingerprint_rounded,
-              ),
-              _buildCategoryTile(
-                type: NotificationContentType.quote,
-                title: 'درر وحكم من السلف',
-                subtitle: 'مواعظ وخواطر إيمانية مضيئة (${_notifService.totalQuotesCount}+ حكمة متوفرة)',
-                icon: Icons.auto_stories_rounded,
-              ),
-
-              const SizedBox(height: 28),
-
-              // Adhan & Prayer Section
-              _buildSectionTitle('الأذان ومواقيت الصلاة', Icons.mosque_rounded),
-              const SizedBox(height: 12),
-              _buildAdhanSettingsCard(),
-
-              const SizedBox(height: 28),
-
-              // Quiet Hours Section
-              _buildSectionTitle('أوقات عدم الإزعاج (Quiet Hours)', Icons.bedtime_rounded),
-              const SizedBox(height: 12),
-              _buildQuietHoursCard(),
-
-              const SizedBox(height: 40),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

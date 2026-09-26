@@ -14,9 +14,6 @@ import '../widgets/prayer_timeline_card.dart';
 import '../widgets/qibla_compass_sheet.dart';
 import 'dhikr_reader_screen.dart';
 import 'qibla_screen.dart';
-import '../widgets/visual_effects/star_glint.dart';
-import '../widgets/visual_effects/shimmer_sweep.dart';
-import '../widgets/visual_effects/interactive_motion_card.dart';
 import '../widgets/developer_credits_badge.dart';
 
 class PrayerTimesScreen extends StatefulWidget {

@@ -107,12 +107,12 @@ class CelebrationAchievementDialog extends StatelessWidget {
                   const Positioned(
                     top: 16,
                     left: 20,
-                    child: StarGlint(size: 20, glintColor: DesignSystem.gold),
+                    child: StarGlint(size: 20, color: DesignSystem.gold),
                   ),
                   const Positioned(
                     top: 24,
                     right: 24,
-                    child: StarGlint(size: 16, glintColor: DesignSystem.goldLight),
+                    child: StarGlint(size: 16, color: DesignSystem.goldLight),
                   ),
 
                   Padding(
@@ -179,7 +179,7 @@ class CelebrationAchievementDialog extends StatelessWidget {
 
                         // Achievement Details Card
                         InteractiveMotionCard(
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: 18,
                           child: ShimmerSweep(
                             shimmerColor: DesignSystem.gold.withValues(alpha: 0.12),
                             child: Container(
@@ -217,7 +217,7 @@ class CelebrationAchievementDialog extends StatelessWidget {
                                         fontSize: 13,
                                         height: 1.5,
                                         fontWeight: FontWeight.w500,
-                                        color: isDark ? Colors.white90 : DesignSystem.lightPrimaryText,
+                                        color: isDark ? Colors.white.withValues(alpha: 0.9) : DesignSystem.lightPrimaryText,
                                       ),
                                     ),
                                   ),

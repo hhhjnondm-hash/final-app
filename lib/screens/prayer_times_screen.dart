@@ -11,6 +11,7 @@ import '../widgets/prayer_alert_sheet.dart';
 import '../widgets/prayer_hero_card.dart';
 import '../widgets/prayer_settings_sheet.dart';
 import '../widgets/prayer_timeline_card.dart';
+import '../widgets/qibla_compass_sheet.dart';
 import 'dhikr_reader_screen.dart';
 import 'qibla_screen.dart';
 import '../widgets/visual_effects/star_glint.dart';

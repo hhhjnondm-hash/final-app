@@ -351,7 +351,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                 showModalBottomSheet(
                   context: context,
                   backgroundColor: Colors.transparent,
-                  builder: (_) => const QiblaCompassSheet(),
+                  builder: (_) => QiblaCompassSheet(),
                 );
               },
             ),

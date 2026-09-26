@@ -3,7 +3,7 @@ import '../services/prayer_service.dart';
 import '../utils/design_system.dart';
 
 class QiblaCompassSheet extends StatelessWidget {
-  const QiblaCompassSheet({super.key});
+  QiblaCompassSheet({super.key});
 
   @override
   Widget build(BuildContext context) {

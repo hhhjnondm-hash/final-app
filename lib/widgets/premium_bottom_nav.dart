@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/design_system.dart';
+import 'visual_effects/star_glint.dart';
 
 class PremiumBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -98,7 +99,9 @@ class PremiumBottomNav extends StatelessWidget {
             colors: [Color(0xFFE2E8F0), Color(0xFFCBD5E1)],
           )
         : const LinearGradient(
-            colors: [Color(0xFFFFD56B), Color(0xFFC89B3C)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFFFE082), Color(0xFFFFD56B), Color(0xFFC89B3C)],
           );
 
     return Padding(
@@ -122,8 +125,9 @@ class PremiumBottomNav extends StatelessWidget {
               boxShadow: isSelected && !isLight
                   ? [
                       BoxShadow(
-                        color: const Color(0xFFC89B3C).withValues(alpha: 0.4),
-                        blurRadius: 10,
+                        color: const Color(0xFFFFD56B).withValues(alpha: 0.5),
+                        blurRadius: 14,
+                        spreadRadius: 1,
                         offset: const Offset(0, 2),
                       ),
                     ]

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/design_system.dart';
+import 'visual_effects/star_glint.dart';
 
 class SectionHeader extends StatelessWidget {
   final String title;
@@ -32,30 +33,40 @@ class SectionHeader extends StatelessWidget {
           Row(
             children: [
               if (icon != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(DesignSystem.spacingS),
-                  decoration: BoxDecoration(
-                    color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF111722),
-                    borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
-                    border: Border.all(
-                      color: const Color(0xFFC89B3C).withValues(alpha: isLight ? 0.4 : 0.6),
-                      width: 1,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isLight
-                            ? const Color(0xFF102A43).withValues(alpha: 0.04)
-                            : const Color(0xFFC89B3C).withValues(alpha: 0.12),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(DesignSystem.spacingS),
+                      decoration: BoxDecoration(
+                        color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF111722),
+                        borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
+                        border: Border.all(
+                          color: const Color(0xFFC89B3C).withValues(alpha: isLight ? 0.4 : 0.6),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isLight
+                                ? const Color(0xFF102A43).withValues(alpha: 0.04)
+                                : const Color(0xFFC89B3C).withValues(alpha: 0.18),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Icon(
-                    icon,
-                    color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFE8D29A),
-                    size: 18,
-                  ),
+                      child: Icon(
+                        icon,
+                        color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFE8D29A),
+                        size: 18,
+                      ),
+                    ),
+                    const Positioned(
+                      top: -4,
+                      right: -4,
+                      child: StarGlint(size: 11),
+                    ),
+                  ],
                 ),
                 const SizedBox(width: DesignSystem.spacingM),
               ],

@@ -19,7 +19,7 @@ class PrayerAthanDialog extends StatefulWidget {
     required String prayerName,
     required String arabicName,
   }) async {
-    return showGeneralDialog(
+    await showGeneralDialog<void>(
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withValues(alpha: 0.95),

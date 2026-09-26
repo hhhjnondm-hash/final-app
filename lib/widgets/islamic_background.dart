@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../utils/design_system.dart';
+import 'visual_effects/glowing_lantern.dart';
 
 class IslamicBackground extends StatelessWidget {
   final Widget child;
@@ -55,18 +56,28 @@ class IslamicBackground extends StatelessWidget {
           ),
         ),
 
-        // 3. Left Hanging Golden Lantern with Radiant Gold Glow
+        // 3. Left Hanging Golden Lantern with Radiant Gold Glow & Pendulum Sway
         Positioned(
           top: 0,
           left: 36,
-          child: _buildLantern(height: 140, isLeft: true, isLight: isLight),
+          child: GlowingLantern(
+            height: 140,
+            chainHeight: 38,
+            isLeft: true,
+            isLight: isLight,
+          ),
         ),
 
-        // 4. Right Hanging Golden Lantern with Radiant Gold Glow
+        // 4. Right Hanging Golden Lantern with Radiant Gold Glow & Pendulum Sway
         Positioned(
           top: 0,
           right: 36,
-          child: _buildLantern(height: 140, isLeft: false, isLight: isLight),
+          child: GlowingLantern(
+            height: 140,
+            chainHeight: 38,
+            isLeft: false,
+            isLight: isLight,
+          ),
         ),
 
         // 5. Left Architectural Arch Silhouette & Text: "كل خطوة تقربك من الله"

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/global_audio_manager.dart';
 import '../utils/design_system.dart';
+import 'visual_effects/sound_wave_visualizer.dart';
 
 class UnifiedMiniPlayer extends StatelessWidget {
   const UnifiedMiniPlayer({super.key});
@@ -79,14 +80,31 @@ class UnifiedMiniPlayer extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          title,
-                          style: TextStyle(
-                            fontFamily: 'Amiri',
-                            color: isLight ? const Color(0xFF0F172A) : Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              title,
+                              style: TextStyle(
+                                fontFamily: 'Amiri',
+                                color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (isPlaying) ...[
+                              const SizedBox(width: 8),
+                              SoundWaveVisualizer(
+                                isPlaying: true,
+                                barCount: 4,
+                                maxHeight: 12,
+                                minHeight: 3,
+                                barWidth: 2,
+                                spacing: 2,
+                                activeColor: const Color(0xFFFFD56B),
+                              ),
+                            ],
+                          ],
                         ),
                         Text(
                           subtitle,
@@ -117,25 +135,36 @@ class UnifiedMiniPlayer extends StatelessWidget {
                     Expanded(
                       child: Row(
                         children: [
-                          // Progress Bar
+                          // Progress Bar with live waveform visualizer below
                           Expanded(
-                            child: Container(
-                              height: 3,
-                              decoration: BoxDecoration(
-                                color: isLight ? const Color(0xFFCBD5E1) : const Color(0xFF1E293B),
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Container(
-                                  width: 60,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
                                   height: 3,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFFFD56B),
+                                    color: isLight ? const Color(0xFFCBD5E1) : const Color(0xFF1E293B),
                                     borderRadius: BorderRadius.circular(3),
                                   ),
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Container(
+                                      width: 60,
+                                      height: 3,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFD56B),
+                                        borderRadius: BorderRadius.circular(3),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFFFFD56B).withValues(alpha: 0.4),
+                                            blurRadius: 4,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                           ),
 
@@ -159,7 +188,7 @@ class UnifiedMiniPlayer extends StatelessWidget {
 
                           const SizedBox(width: 10),
 
-                          // Play / Pause Circle (Gold Solid)
+                          // Play / Pause Circle (Gold Solid with breathing aura)
                           InkWell(
                             onTap: () {
                               if (isPlaying) {
@@ -172,9 +201,24 @@ class UnifiedMiniPlayer extends StatelessWidget {
                             child: Container(
                               width: 38,
                               height: 38,
-                              decoration: const BoxDecoration(
+                              decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Color(0xFFFFD56B),
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFFFFE082),
+                                    Color(0xFFFFD56B),
+                                    Color(0xFFC89B3C),
+                                  ],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFD56B).withValues(alpha: isPlaying ? 0.45 : 0.2),
+                                    blurRadius: isPlaying ? 12 : 6,
+                                    spreadRadius: isPlaying ? 1.5 : 0,
+                                  ),
+                                ],
                               ),
                               child: Icon(
                                 isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,

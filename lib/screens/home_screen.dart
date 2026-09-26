@@ -10,6 +10,11 @@ import '../services/quran_storage_service.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/section_header.dart';
+import '../widgets/visual_effects/star_glint.dart';
+import '../widgets/visual_effects/shimmer_sweep.dart';
+import '../widgets/visual_effects/pulsing_halo.dart';
+import '../widgets/visual_effects/islamic_decorations.dart';
+import '../widgets/visual_effects/sound_wave_visualizer.dart';
 import 'azkar_screen.dart';
 import 'audio_screen.dart';
 import 'dhikr_reader_screen.dart';
@@ -268,12 +273,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // 4. Quick Access Section (الوصول السريع)
-              const SliverToBoxAdapter(
-                child: SectionHeader(
-                  title: 'الوصول السريع',
-                  subtitle: 'تصفح الخدمات والعبادات اليومية',
-                  icon: Icons.grid_view_rounded,
+              // 4. Quick Access Section (الوصول السريع with celestial diagonal light beam)
+              SliverToBoxAdapter(
+                child: CustomPaint(
+                  painter: DiagonalLightBeamPainter(
+                    beamColor: const Color(0xFFFFD56B),
+                    opacity: DesignSystem.isLightMode ? 0.05 : 0.14,
+                  ),
+                  child: const SectionHeader(
+                    title: 'الوصول السريع',
+                    subtitle: 'تصفح الخدمات والعبادات اليومية',
+                    icon: Icons.grid_view_rounded,
+                  ),
                 ),
               ),
 
@@ -1434,160 +1445,189 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHeroCard(BuildContext context) {
     final isLight = DesignSystem.isLightMode;
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: isLight
-            ? const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFDCEAF4), // Soft sky blue
-                  Color(0xFFF3F8FB), // Very pale blue-white
-                ],
-              )
-            : const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF182234), // Luminous midnight
-                  Color(0xFF0F1522), // Deep charcoal
-                  Color(0xFF090D15),
-                ],
-              ),
-        border: Border.all(
-          color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFC89B3C).withValues(alpha: 0.35),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isLight
-                ? const Color(0xFF102A43).withValues(alpha: 0.06)
-                : Colors.black.withValues(alpha: 0.5),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
+    return ShimmerSweep(
+      duration: const Duration(milliseconds: 2800),
+      pauseDuration: const Duration(milliseconds: 3500),
+      shimmerColor: const Color(0xFFFFD56B),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: isLight
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFDCEAF4), // Soft sky blue
+                    Color(0xFFF3F8FB), // Very pale blue-white
+                  ],
+                )
+              : const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF182234), // Luminous midnight
+                    Color(0xFF0F1522), // Deep charcoal
+                    Color(0xFF090D15),
+                  ],
+                ),
+          border: Border.all(
+            color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFC89B3C).withValues(alpha: 0.45),
+            width: 1.2,
           ),
-          if (!isLight)
+          boxShadow: [
             BoxShadow(
-              color: const Color(0xFFC89B3C).withValues(alpha: 0.12),
-              blurRadius: 16,
-              offset: const Offset(0, 2),
+              color: isLight
+                  ? const Color(0xFF102A43).withValues(alpha: 0.06)
+                  : Colors.black.withValues(alpha: 0.5),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
             ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Stack(
-          children: [
-            // Background Mosque Sunset Artwork
-            Positioned.fill(
-              child: Image.asset(
-                'assets/home_hero_mosque.jpg',
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox(),
+            if (!isLight)
+              BoxShadow(
+                color: const Color(0xFFFFD56B).withValues(alpha: 0.15),
+                blurRadius: 18,
+                offset: const Offset(0, 2),
               ),
-            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Stack(
+            children: [
+              // Background Mosque Sunset Artwork
+              Positioned.fill(
+                child: Image.asset(
+                  'assets/home_hero_mosque.jpg',
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox(),
+                ),
+              ),
 
-            // Deep Royal Gradient Overlay to ensure crisp readability for text
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerRight,
-                    end: Alignment.centerLeft,
-                    colors: isLight
-                        ? [
-                            const Color(0xFFFFFFFF).withValues(alpha: 0.95),
-                            const Color(0xFFFFFFFF).withValues(alpha: 0.82),
-                            const Color(0xFFFFFFFF).withValues(alpha: 0.20),
-                          ]
-                        : [
-                            const Color(0xFF07090E).withValues(alpha: 0.96),
-                            const Color(0xFF07090E).withValues(alpha: 0.85),
-                            const Color(0xFF07090E).withValues(alpha: 0.30),
-                          ],
+              // Deep Royal Gradient Overlay to ensure crisp readability for text
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerRight,
+                      end: Alignment.centerLeft,
+                      colors: isLight
+                          ? [
+                              const Color(0xFFFFFFFF).withValues(alpha: 0.95),
+                              const Color(0xFFFFFFFF).withValues(alpha: 0.82),
+                              const Color(0xFFFFFFFF).withValues(alpha: 0.20),
+                            ]
+                          : [
+                              const Color(0xFF07090E).withValues(alpha: 0.96),
+                              const Color(0xFF07090E).withValues(alpha: 0.85),
+                              const Color(0xFF07090E).withValues(alpha: 0.30),
+                            ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // Right Content: Verse & Welcome Note
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  // "كلمة اليوم ★" Pill
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF131A26),
-                      borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                      border: Border.all(
-                        color: const Color(0xFFC89B3C),
-                        width: 1.0,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFC89B3C).withValues(alpha: 0.2),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.star_rounded, color: Color(0xFFC89B3C), size: 14),
-                        SizedBox(width: 4),
-                        Text(
-                          'كلمة اليوم',
-                          style: TextStyle(
-                            color: Color(0xFFC89B3C),
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
+              // Architectural pointed Islamic arch dual border
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: IslamicArchBorderPainter(
+                    primaryColor: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
+                    secondaryColor: const Color(0xFFC89B3C),
                   ),
-                  const SizedBox(height: 12),
-
-                  // Main Quranic Verse
-                  Text(
-                    'أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ',
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                      fontFamily: 'Amiri',
-                      color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.3,
-                      shadows: [
-                        Shadow(
-                          color: isLight ? Colors.white.withValues(alpha: 0.8) : Colors.black,
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-
-                  // Subtitle
-                  Text(
-                    'مرحباً بك في رفيق — رفيقك الإيماني للقرآن، الأذكار، ومواقيت الصلاة بدقة وطمأنينة.',
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      color: isLight ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
-                      fontSize: 12.5,
-                      height: 1.5,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+
+              // Top-left corner radiant sparkle glint
+              const Positioned(
+                top: 8,
+                left: 12,
+                child: StarGlint(size: 20),
+              ),
+
+              // Right Content: Verse & Welcome Note
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // "كلمة اليوم ★" Pill with corner sparkle
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF131A26),
+                        borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
+                        border: Border.all(
+                          color: const Color(0xFFFFD56B),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFFD56B).withValues(alpha: 0.25),
+                            blurRadius: 10,
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          StarGlint(size: 14),
+                          SizedBox(width: 4),
+                          Text(
+                            'كلمة اليوم',
+                            style: TextStyle(
+                              color: Color(0xFFC89B3C),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Main Quranic Verse with layered 3D golden bloom
+                    Text(
+                      'أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ',
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontFamily: 'Amiri',
+                        color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.3,
+                        shadows: [
+                          Shadow(
+                            color: isLight
+                                ? const Color(0xFFC89B3C).withValues(alpha: 0.45)
+                                : const Color(0xFFFFD56B).withValues(alpha: 0.75),
+                            blurRadius: 16,
+                          ),
+                          Shadow(
+                            color: isLight ? Colors.white.withValues(alpha: 0.9) : Colors.black,
+                            blurRadius: 8,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+
+                    // Subtitle
+                    Text(
+                      'مرحباً بك في رفيق — رفيقك الإيماني للقرآن، الأذكار، ومواقيت الصلاة بدقة وطمأنينة.',
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        color: isLight ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                        fontSize: 12.5,
+                        height: 1.5,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1597,129 +1637,152 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildDailyAyahCard(BuildContext context) {
     final isLight = DesignSystem.isLightMode;
 
-    return GlassCard(
-      padding: const EdgeInsets.all(20),
-      borderRadius: 22,
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const SurahViewerScreen(
-              surahNumber: 2,
-              surahName: 'البقرة',
-            ),
-          ),
-        );
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Row: Tag + Share / Bookmark icon
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF1B2332),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: const Color(0xFFFFD56B).withValues(alpha: 0.5),
-                    width: 1,
-                  ),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        GlassCard(
+          padding: const EdgeInsets.all(20),
+          borderRadius: 22,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const SurahViewerScreen(
+                  surahNumber: 2,
+                  surahName: 'البقرة',
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.menu_book_rounded,
-                      size: 14,
-                      color: const Color(0xFFFFD56B),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'آية اليوم وتدبّر',
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: isLight ? const Color(0xFF0F172A) : const Color(0xFFFFD56B),
+              ),
+            );
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header Row: Tag + Share / Bookmark icon
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF1B2332),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFFFFD56B).withValues(alpha: 0.5),
+                        width: 1,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFD56B).withValues(alpha: 0.15),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.menu_book_rounded,
+                          size: 14,
+                          color: Color(0xFFFFD56B),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'آية اليوم وتدبّر',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: isLight ? const Color(0xFF0F172A) : const Color(0xFFFFD56B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.bookmark_border_rounded,
+                        size: 20,
+                        color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.share_outlined,
+                        size: 18,
+                        color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 14),
+
+              // Quranic Ayah Text in Amiri calligraphy with luminous warmth
+              Text(
+                '﴿ وَإِذَا سَأَلَكَ عِبَادِي عَنِّي فَإِنِّي قَرِيبٌ ۖ أُجِيبُ دَعْوَةَ الدَّاعِ إِذَا دَعَانِ ﴾',
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontFamily: 'Amiri',
+                  fontSize: 21,
+                  fontWeight: FontWeight.bold,
+                  height: 1.6,
+                  color: isLight ? const Color(0xFF0F172A) : const Color(0xFFFFD56B),
+                  shadows: [
+                    Shadow(
+                      color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.2 : 0.4),
+                      blurRadius: 10,
                     ),
                   ],
                 ),
               ),
+
+              const SizedBox(height: 10),
+
+              // Ayah Surah Ref + Meaning / Tadabbur
               Row(
-                children: [
-                  Icon(
-                    Icons.bookmark_border_rounded,
-                    size: 20,
-                    color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.share_outlined,
-                    size: 18,
-                    color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 14),
-
-          // Quranic Ayah Text in Amiri calligraphy
-          Text(
-            '﴿ وَإِذَا سَأَلَكَ عِبَادِي عَنِّي فَإِنِّي قَرِيبٌ ۖ أُجِيبُ دَعْوَةَ الدَّاعِ إِذَا دَعَانِ ﴾',
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              fontFamily: 'Amiri',
-              fontSize: 21,
-              fontWeight: FontWeight.bold,
-              height: 1.6,
-              color: isLight ? const Color(0xFF0F172A) : const Color(0xFFFFD56B),
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // Ayah Surah Ref + Meaning / Tadabbur
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'سورة البقرة • الآية 186',
-                style: TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: isLight ? const Color(0xFF0F6B78) : const Color(0xFF38BDF8),
-                ),
-              ),
-              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'قراءة وتفسير الآية',
+                    'سورة البقرة • الآية 186',
                     style: TextStyle(
                       fontFamily: 'Cairo',
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isLight ? const Color(0xFF0F6B78) : const Color(0xFF38BDF8),
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 11,
-                    color: const Color(0xFFFFD56B),
+                  Row(
+                    children: [
+                      Text(
+                        'قراءة وتفسير الآية',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 11,
+                        color: Color(0xFFFFD56B),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ],
           ),
-        ],
-      ),
+        ),
+        // Corner Star Sparkle Glint
+        const Positioned(
+          top: -6,
+          left: 12,
+          child: StarGlint(size: 20),
+        ),
+      ],
     );
   }
 
@@ -1763,22 +1826,29 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: isLight ? const Color(0xFFDCEAF4) : const Color(0xFF1C273C),
                       borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
                       border: Border.all(
-                        color: isLight ? Colors.transparent : const Color(0xFFC89B3C).withValues(alpha: 0.3),
+                        color: isLight ? Colors.transparent : const Color(0xFFFFD56B).withValues(alpha: 0.4),
                       ),
+                      boxShadow: [
+                        if (!isLight)
+                          BoxShadow(
+                            color: const Color(0xFFFFD56B).withValues(alpha: 0.15),
+                            blurRadius: 8,
+                          ),
+                      ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           Icons.access_time_rounded,
-                          color: isLight ? const Color(0xFF102A43) : const Color(0xFFE8D29A),
+                          color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
                           size: 12,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           '$_countdown متبقي',
                           style: TextStyle(
-                            color: isLight ? const Color(0xFF102A43) : const Color(0xFFE8D29A),
+                            color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                           ),
@@ -1809,23 +1879,49 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
+                          shadows: [
+                            if (!isLight)
+                              const Shadow(
+                                color: Color(0xFFFFD56B),
+                                blurRadius: 10,
+                              ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(width: 12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isLight ? const Color(0xFFF8F6F0) : const Color(0xFF161F2E),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.4)),
-                    ),
-                    child: const Icon(
-                      Icons.mosque_rounded,
-                      color: Color(0xFFC89B3C),
-                      size: 24,
-                    ),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isLight ? const Color(0xFFF8F6F0) : const Color(0xFF161F2E),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFFFFD56B).withValues(alpha: 0.6),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD56B).withValues(alpha: 0.25),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.mosque_rounded,
+                          color: Color(0xFFFFD56B),
+                          size: 24,
+                        ),
+                      ),
+                      const Positioned(
+                        top: 0,
+                        right: 0,
+                        child: StarGlint(size: 11),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -1867,43 +1963,70 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildPrayerCard(String name, String time, IconData icon, bool isActive) {
     if (isActive) {
-      // Highlighted Active State: Dark Navy #102A43 + Gold #C89B3C Border & Typography
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: const Color(0xFF102A43),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFC89B3C), width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFC89B3C).withValues(alpha: 0.25),
-              blurRadius: 12,
-              offset: const Offset(0, 3),
+      // Highlighted Active State with Living Pulsing Golden Aura Halo
+      return PulsingHalo(
+        isActive: true,
+        haloColor: const Color(0xFFFFD56B),
+        borderRadius: 14,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF1B2E4B),
+                Color(0xFF102A43),
+                Color(0xFF0C1D2F),
+              ],
             ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: const Color(0xFFE8D29A), size: 16),
-            const SizedBox(height: 4),
-            Text(
-              name,
-              style: const TextStyle(
-                color: Color(0xFFE8D29A),
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFFFD56B), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFD56B).withValues(alpha: 0.35),
+                blurRadius: 14,
+                offset: const Offset(0, 3),
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              time,
-              style: const TextStyle(
-                color: Color(0xFFFFFFFF),
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
+            ],
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: const Color(0xFFFFD56B), size: 16),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 5,
+                    height: 5,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFFD56B),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      color: Color(0xFFFFD56B),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 2),
+              Text(
+                time,
+                style: const TextStyle(
+                  color: Color(0xFFFFFFFF),
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -2007,6 +2130,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color accentColor,
     required VoidCallback onTap,
   }) {
+    final isLight = DesignSystem.isLightMode;
+
     return GlassCard(
       padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
       borderRadius: 22,
@@ -2014,22 +2139,37 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Circular Icon Container
+          // Circular Icon Container with glowing ring
           Container(
-            width: 48,
-            height: 48,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
-              color: iconBg,
+              color: isLight ? iconBg : iconBg.withValues(alpha: 0.16),
               shape: BoxShape.circle,
+              border: Border.all(
+                color: accentColor.withValues(alpha: 0.35),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: accentColor.withValues(alpha: isLight ? 0.15 : 0.28),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            child: Icon(icon, color: accentColor, size: 24),
+            child: Icon(
+              icon,
+              color: isLight ? accentColor : const Color(0xFFFFD56B),
+              size: 24,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Color(0xFF172033),
+            style: TextStyle(
+              color: isLight ? const Color(0xFF172033) : Colors.white,
               fontSize: 13,
               fontWeight: FontWeight.bold,
             ),
@@ -2038,8 +2178,8 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Color(0xFF667085),
+            style: TextStyle(
+              color: isLight ? const Color(0xFF667085) : const Color(0xFF94A3B8),
               fontSize: 11,
             ),
           ),
@@ -2050,6 +2190,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ==================== 5. QURAN READING PROGRESS ====================
   Widget _buildContinueReadingCard(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
     final stopMark = _quranStorage.readingStopMark;
     final progress = _quranStorage.readingProgress;
     final surahNum = stopMark?.surahNumber ?? progress.surahNumber;
@@ -2078,13 +2219,21 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF7E6),
+              color: isLight ? const Color(0xFFFFF7E6) : const Color(0xFF1E2738),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.3)),
+              border: Border.all(
+                color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.35 : 0.5),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFFD56B).withValues(alpha: 0.15),
+                  blurRadius: 8,
+                ),
+              ],
             ),
             child: const Icon(
               Icons.bookmark_rounded,
-              color: Color(0xFFC89B3C),
+              color: Color(0xFFFFD56B),
               size: 24,
             ),
           ),
@@ -2100,8 +2249,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text(
                       'سورة $surahName',
-                      style: const TextStyle(
-                        color: Color(0xFF172033),
+                      style: TextStyle(
+                        color: isLight ? const Color(0xFF172033) : Colors.white,
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
@@ -2109,7 +2258,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       '$percent%',
                       style: const TextStyle(
-                        color: Color(0xFFC89B3C),
+                        color: Color(0xFFFFD56B),
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
@@ -2121,18 +2270,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   stopMark != null
                       ? 'موضع التوقف: الآية $ayahNum • الجزء ${progress.juz}'
                       : 'الآية $ayahNum • الجزء ${progress.juz}',
-                  style: const TextStyle(color: Color(0xFF667085), fontSize: 11),
+                  style: TextStyle(
+                    color: isLight ? const Color(0xFF667085) : const Color(0xFF94A3B8),
+                    fontSize: 11,
+                  ),
                 ),
                 const SizedBox(height: 8),
 
-                // Thin Elegant Progress Bar (Navy -> Teal -> Gold indicator)
+                // Thin Elegant Progress Bar with golden shimmer glow
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: progress.progress.clamp(0.01, 1.0),
                     minHeight: 4,
-                    backgroundColor: const Color(0xFFDCE3EC),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF102A43)),
+                    backgroundColor: isLight ? const Color(0xFFDCE3EC) : const Color(0xFF1E293B),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFD56B)),
                   ),
                 ),
               ],
@@ -2183,6 +2335,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required bool isCurrent,
     required VoidCallback onTap,
   }) {
+    final isLight = DesignSystem.isLightMode;
+
     return GlassCard(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       borderRadius: 18,
@@ -2201,13 +2355,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isCurrent ? const Color(0xFFC89B3C) : const Color(0xFFDCE3EC),
-                      width: 2,
+                      color: isCurrent ? const Color(0xFFFFD56B) : const Color(0xFFDCE3EC),
+                      width: isCurrent ? 2.5 : 1.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF102A43).withValues(alpha: 0.06),
-                        blurRadius: 8,
+                        color: isCurrent
+                            ? const Color(0xFFFFD56B).withValues(alpha: 0.35)
+                            : const Color(0xFF102A43).withValues(alpha: 0.06),
+                        blurRadius: isCurrent ? 12 : 8,
+                        spreadRadius: isCurrent ? 1.0 : 0,
                         offset: const Offset(0, 2),
                       ),
                     ],
@@ -2238,17 +2395,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   bottom: -2,
                   left: -2,
                   child: Container(
-                    padding: const EdgeInsets.all(3),
+                    padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: isCurrent ? const Color(0xFFC89B3C) : const Color(0xFF102A43),
+                      color: isCurrent ? const Color(0xFFFFD56B) : const Color(0xFF102A43),
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 1.5),
                     ),
-                    child: const Icon(
-                      Icons.play_arrow_rounded,
-                      color: Colors.white,
-                      size: 11,
-                    ),
+                    child: isCurrent
+                        ? const SoundWaveVisualizer(
+                            isPlaying: true,
+                            barCount: 3,
+                            maxHeight: 8,
+                            minHeight: 2,
+                            barWidth: 1.5,
+                            spacing: 1.5,
+                            activeColor: Color(0xFF07090E),
+                          )
+                        : const Icon(
+                            Icons.play_arrow_rounded,
+                            color: Colors.white,
+                            size: 11,
+                          ),
                   ),
                 ),
               ],
@@ -2259,8 +2426,8 @@ class _HomeScreenState extends State<HomeScreen> {
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF172033),
+              style: TextStyle(
+                color: isLight ? const Color(0xFF172033) : Colors.white,
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
               ),
@@ -2271,8 +2438,8 @@ class _HomeScreenState extends State<HomeScreen> {
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF667085),
+              style: TextStyle(
+                color: isLight ? const Color(0xFF667085) : const Color(0xFF94A3B8),
                 fontSize: 9,
               ),
             ),

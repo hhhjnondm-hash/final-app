@@ -13,11 +13,13 @@ import '../widgets/iqra_tafsir_sheet.dart';
 class SurahViewerScreen extends StatefulWidget {
   final int surahNumber;
   final String surahName;
+  final int? initialAyah;
 
   const SurahViewerScreen({
     super.key,
     required this.surahNumber,
     required this.surahName,
+    this.initialAyah,
   });
 
   @override
@@ -49,7 +51,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
   bool _isFullscreen = false;
   double _fontSize = 22.0;
   double _lineHeight = 2.1;
-  String _selectedFont = 'Amiri';
+  final String _selectedFont = 'Amiri';
   String _currentTheme = 'داكن'; // 'داكن', 'كحلي', 'ورقي', 'أخضر', 'أبيض'
 
   // Theme definitions
@@ -92,13 +94,18 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
     super.initState();
     _currentSurahNumber = widget.surahNumber;
     _currentSurahName = widget.surahName;
+    if (widget.initialAyah != null && widget.initialAyah! > 0) {
+      _activeAyahNumber = widget.initialAyah!;
+    }
     _audioService.addListener(_onAudioStateChanged);
+    _storage.addListener(_onStorageChanged);
     _loadSurahData();
   }
 
   @override
   void dispose() {
     _audioService.removeListener(_onAudioStateChanged);
+    _storage.removeListener(_onStorageChanged);
     _scrollController.dispose();
     _searchController.dispose();
     if (_isFullscreen) {
@@ -108,6 +115,10 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
   }
 
   void _onAudioStateChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _onStorageChanged() {
     if (mounted) setState(() {});
   }
 
@@ -122,7 +133,9 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
         _ayahs = list;
         _currentSurahName = meta.nameArabic;
         _isLoading = false;
-        if (_activeAyahNumber > meta.ayahCount || _activeAyahNumber < 1) {
+        if (widget.initialAyah != null && widget.initialAyah! > 0 && widget.initialAyah! <= meta.ayahCount) {
+          _activeAyahNumber = widget.initialAyah!;
+        } else if (_activeAyahNumber > meta.ayahCount || _activeAyahNumber < 1) {
           _activeAyahNumber = 1;
         }
       });
@@ -848,11 +861,62 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
     );
   }
 
-  /// Individual Ayah Item with Gold Rosette and Active Gold Encasement matching media_1789448573582.png
+  /// Individual Ayah Item with Calm Color Highlights, Stop Mark & Action Sheet
   Widget _buildAyahItem(int ayahNum, String text, bool isActive) {
+    final highlightColorKey = _storage.getAyahHighlight(_currentSurahNumber, ayahNum);
+    final isStopMark = _storage.readingStopMark?.surahNumber == _currentSurahNumber &&
+        _storage.readingStopMark?.ayahNumber == ayahNum;
+
+    Color ayahBgColor = Colors.transparent;
+    Color ayahBorderColor = Colors.transparent;
+    List<BoxShadow>? ayahShadow;
+
+    if (highlightColorKey == 'emerald') {
+      ayahBgColor = const Color(0xFF10B981).withValues(alpha: 0.16);
+      ayahBorderColor = const Color(0xFF10B981).withValues(alpha: 0.65);
+      ayahShadow = [
+        BoxShadow(
+          color: const Color(0xFF10B981).withValues(alpha: 0.12),
+          blurRadius: 10,
+        ),
+      ];
+    } else if (highlightColorKey == 'amber') {
+      ayahBgColor = const Color(0xFFF59E0B).withValues(alpha: 0.18);
+      ayahBorderColor = const Color(0xFFF59E0B).withValues(alpha: 0.70);
+      ayahShadow = [
+        BoxShadow(
+          color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+          blurRadius: 10,
+        ),
+      ];
+    } else if (highlightColorKey == 'sky') {
+      ayahBgColor = const Color(0xFF38BDF8).withValues(alpha: 0.16);
+      ayahBorderColor = const Color(0xFF38BDF8).withValues(alpha: 0.65);
+      ayahShadow = [
+        BoxShadow(
+          color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
+          blurRadius: 10,
+        ),
+      ];
+    } else if (isActive) {
+      ayahBgColor = _goldDimColor.withValues(alpha: 0.12);
+      ayahBorderColor = _goldColor;
+      ayahShadow = [
+        BoxShadow(
+          color: _goldColor.withValues(alpha: 0.15),
+          blurRadius: 16,
+          spreadRadius: 1,
+        ),
+      ];
+    }
+
     return InkWell(
       onTap: () {
         setState(() => _activeAyahNumber = ayahNum);
+        _showAyahActionSheet(ayahNum, text);
+      },
+      onLongPress: () {
+        _showAyahActionSheet(ayahNum, text);
       },
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
@@ -860,21 +924,13 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
         margin: const EdgeInsets.symmetric(vertical: 4),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isActive ? _goldDimColor.withValues(alpha: 0.12) : Colors.transparent,
+          color: ayahBgColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isActive ? _goldColor : Colors.transparent,
+            color: ayahBorderColor,
             width: 1.2,
           ),
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: _goldColor.withValues(alpha: 0.15),
-                    blurRadius: 16,
-                    spreadRadius: 1,
-                  ),
-                ]
-              : null,
+          boxShadow: ayahShadow,
         ),
         child: Stack(
           alignment: Alignment.center,
@@ -912,6 +968,42 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
               ),
             ],
 
+            // Reading Stop Badge ribbon if marked
+            if (isStopMark)
+              Positioned(
+                top: -8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: _goldColor,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _goldColor.withValues(alpha: 0.4),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.bookmark_rounded, color: Color(0xFF070B11), size: 12),
+                      SizedBox(width: 4),
+                      Text(
+                        'موضع التوقف',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF070B11),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
             // Verse Content Row
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -946,6 +1038,408 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                 // Left Ornate Islamic Ayah Rosette Medallion
                 _buildAyahRosetteBadge(ayahNum, isActive: isActive),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAyahActionSheet(int ayahNum, String text) {
+    final currentHighlight = _storage.getAyahHighlight(_currentSurahNumber, ayahNum);
+    final isStopMark = _storage.readingStopMark?.surahNumber == _currentSurahNumber &&
+        _storage.readingStopMark?.ayahNumber == ayahNum;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0D1522),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border.all(color: _goldColor.withValues(alpha: 0.3)),
+          ),
+          child: SafeArea(
+            child: Directionality(
+              textDirection: TextDirection.rtl,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Drag handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF64748B).withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Ayah Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _goldColor.withValues(alpha: 0.15),
+                              border: Border.all(color: _goldColor),
+                            ),
+                            child: Text(
+                              _toArabicDigits(ayahNum),
+                              style: TextStyle(
+                                fontFamily: 'Amiri',
+                                fontWeight: FontWeight.bold,
+                                color: _goldColor,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'الآية $ayahNum من سورة $_currentSurahName',
+                                style: const TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                isStopMark ? '📍 موضع التوقف الحالي' : 'خيارات الآية والتمييز',
+                                style: TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 12,
+                                  color: isStopMark ? _goldColor : const Color(0xFF94A3B8),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Snippet
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.03),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                    ),
+                    child: Text(
+                      text,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: _selectedFont,
+                        fontSize: 15,
+                        color: _textColor.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Colors Section Title
+                  const Text(
+                    'تلوين وتمييز الآية (ألوان هادئة للعين)',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFE2E8F0),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // 3 Calm Soothing Color Options
+                  Row(
+                    children: [
+                      // 1. Emerald / Sage
+                      Expanded(
+                        child: _buildColorSelectCard(
+                          title: 'أخضر هادئ',
+                          color: const Color(0xFF10B981),
+                          isSelected: currentHighlight == 'emerald',
+                          onTap: () async {
+                            Navigator.pop(context);
+                            await _storage.highlightAyah(_currentSurahNumber, ayahNum, 'emerald');
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // 2. Warm Amber / Sand
+                      Expanded(
+                        child: _buildColorSelectCard(
+                          title: 'عنبري دافئ',
+                          color: const Color(0xFFF59E0B),
+                          isSelected: currentHighlight == 'amber',
+                          onTap: () async {
+                            Navigator.pop(context);
+                            await _storage.highlightAyah(_currentSurahNumber, ayahNum, 'amber');
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // 3. Sky / Celestial Blue
+                      Expanded(
+                        child: _buildColorSelectCard(
+                          title: 'سماوي رقيق',
+                          color: const Color(0xFF38BDF8),
+                          isSelected: currentHighlight == 'sky',
+                          onTap: () async {
+                            Navigator.pop(context);
+                            await _storage.highlightAyah(_currentSurahNumber, ayahNum, 'sky');
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Remove highlight button if highlighted
+                  if (currentHighlight != null) ...[
+                    const SizedBox(height: 8),
+                    InkWell(
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await _storage.removeAyahHighlight(_currentSurahNumber, ayahNum);
+                      },
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        alignment: Alignment.center,
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.format_color_reset_rounded, color: Color(0xFFEF4444), size: 16),
+                            SizedBox(width: 6),
+                            Text(
+                              'إزالة التلوين عن الآية',
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                fontSize: 12,
+                                color: Color(0xFFEF4444),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 14),
+                  const Divider(color: Colors.white12),
+                  const SizedBox(height: 10),
+
+                  // Reading Stop Mark Button
+                  InkWell(
+                    onTap: () async {
+                      Navigator.pop(context);
+                      await _storage.saveReadingStopMark(_currentSurahNumber, _currentSurahName, ayahNum);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('📍 تم حفظ موضع التوقف عند الآية $ayahNum من سورة $_currentSurahName بنجاح'),
+                            backgroundColor: const Color(0xFF0F766E),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        );
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isStopMark ? _goldColor.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isStopMark ? _goldColor : Colors.white.withValues(alpha: 0.1),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isStopMark ? Icons.bookmark_added_rounded : Icons.bookmark_add_rounded,
+                            color: isStopMark ? _goldColor : const Color(0xFFCBD5E1),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isStopMark ? 'موضع التوقف الحالي (محفوظ)' : 'تحديد كموضع التوقف (علامة الوقف)',
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: isStopMark ? _goldColor : Colors.white,
+                                  ),
+                                ),
+                                const Text(
+                                  'لحفظ مكان وقوفك والعودة إليه مباشرة من الصفحة الرئيسية',
+                                  style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Color(0xFF94A3B8)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Quick Action Buttons (Copy, Tafseer)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildSecondaryActionButton(
+                          icon: Icons.copy_rounded,
+                          label: 'نسخ الآية',
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: text));
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('تم نسخ الآية الكريمة إلى الحافظة')),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildSecondaryActionButton(
+                          icon: Icons.menu_book_rounded,
+                          label: 'تفسير الآية',
+                          onTap: () {
+                            Navigator.pop(context);
+                            showModalBottomSheet(
+                              context: context,
+                              backgroundColor: Colors.transparent,
+                              isScrollControlled: true,
+                              builder: (_) => IqraTafsirSheet(
+                                surahNumber: _currentSurahNumber,
+                                ayahNumber: ayahNum,
+                                ayahText: text,
+                                surahName: _currentSurahName,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildColorSelectCard({
+    required String title,
+    required Color color,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withValues(alpha: 0.25) : Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? color : color.withValues(alpha: 0.3),
+            width: isSelected ? 1.8 : 1.0,
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: isSelected ? 2 : 0),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.5),
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
+              child: isSelected ? const Icon(Icons.check, color: Colors.white, size: 14) : null,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              title,
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? Colors.white : const Color(0xFFCBD5E1),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSecondaryActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: _goldColor, size: 16),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(fontFamily: 'Cairo', fontSize: 12, color: Colors.white),
             ),
           ],
         ),

@@ -35,6 +35,18 @@ class AthanPlaybackService : Service() {
     private var dismissHandler: Handler? = null
     private var dismissRunnable: Runnable? = null
     private var currentArabicName: String = "الصلاة"
+    private var isReceiverRegistered = false
+
+    private val volumeChangeReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val action = intent?.action ?: return
+            if (action == "android.media.VOLUME_CHANGED_ACTION" ||
+                action == AudioManager.RINGER_MODE_CHANGED_ACTION) {
+                Log.d(TAG, "Volume or ringer changed during Athan: Silencing and stopping Athan immediately")
+                stopAthanPlayback(userInitiated = true)
+            }
+        }
+    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -47,7 +59,21 @@ class AthanPlaybackService : Service() {
             PowerManager.PARTIAL_WAKE_LOCK,
             "Islamiyat:AthanPlaybackServiceWakeLock"
         )?.apply {
-            acquire(5 * 60 * 1000L /* 5 minutes max */)
+            acquire(3 * 60 * 1000L /* 3 minutes max */)
+        }
+
+        if (!isReceiverRegistered) {
+            val filter = android.content.IntentFilter().apply {
+                addAction("android.media.VOLUME_CHANGED_ACTION")
+                addAction(AudioManager.RINGER_MODE_CHANGED_ACTION)
+            }
+            try {
+                registerReceiver(volumeChangeReceiver, filter)
+                isReceiverRegistered = true
+                Log.d(TAG, "Registered volumeChangeReceiver for instant silence on volume buttons")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error registering volumeChangeReceiver: ${e.message}")
+            }
         }
 
         createNotificationChannels()
@@ -164,12 +190,11 @@ class AthanPlaybackService : Service() {
                 NotificationCompat.BigTextStyle()
                     .bigText("حان الآن موعد أذان صلاة $arabicName - أقم صلاتك يرحمك الله.\nقال الله تعالى: ﴿وَأَقِمِ الصَّلَاةَ لِذِكْرِي﴾")
             )
-            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOngoing(true)
             .setAutoCancel(false)
-            .setFullScreenIntent(openAppPendingIntent, true)
             .setContentIntent(openAppPendingIntent)
             .addAction(R.mipmap.ic_launcher, "إيقاف الأذان 🔕", stopPendingIntent)
             .addAction(R.mipmap.ic_launcher, "هيا إلى الصلاة 🧎", openAppPendingIntent)
@@ -193,6 +218,16 @@ class AthanPlaybackService : Service() {
             Log.e(TAG, "Error releasing MediaPlayer: ${e.message}")
         }
 
+        // Release WakeLock immediately so CPU goes to sleep and phone stays cool
+        try {
+            if (wakeLock?.isHeld == true) {
+                wakeLock?.release()
+            }
+            wakeLock = null
+        } catch (e: Exception) {
+            // ignore
+        }
+
         // Remove foreground notification
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -201,8 +236,10 @@ class AthanPlaybackService : Service() {
             stopForeground(true)
         }
 
-        // Show Missed Prayer Reminder follow-up notification
-        showMissedPrayerReminder(currentArabicName)
+        // Show Missed Prayer Reminder follow-up notification only if stopped naturally or after timeout
+        if (!userInitiated) {
+            showMissedPrayerReminder(currentArabicName)
+        }
 
         stopSelf()
     }
@@ -280,6 +317,17 @@ class AthanPlaybackService : Service() {
         super.onDestroy()
         Log.d(TAG, "onDestroy: Cleaning up resources")
         dismissRunnable?.let { dismissHandler?.removeCallbacks(it) }
+
+        if (isReceiverRegistered) {
+            try {
+                unregisterReceiver(volumeChangeReceiver)
+                isReceiverRegistered = false
+                Log.d(TAG, "Unregistered volumeChangeReceiver")
+            } catch (e: Exception) {
+                // ignore
+            }
+        }
+
         try {
             mediaPlayer?.release()
             mediaPlayer = null

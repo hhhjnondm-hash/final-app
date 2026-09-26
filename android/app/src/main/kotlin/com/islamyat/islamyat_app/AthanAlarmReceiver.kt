@@ -26,7 +26,7 @@ class AthanAlarmReceiver : BroadcastReceiver() {
                     PowerManager.PARTIAL_WAKE_LOCK,
                     "Islamiyat:AthanAlarmReceiverWakeLock"
                 )
-                wakeLock?.acquire(3 * 60 * 1000L /* 3 minutes */)
+                wakeLock?.acquire(10 * 1000L /* 10 seconds */)
 
                 val serviceIntent = Intent(context, AthanPlaybackService::class.java).apply {
                     putExtras(intent)

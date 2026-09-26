@@ -54,9 +54,23 @@ object IslamicReminderScheduler {
                     val showIntent = Intent(context, MainActivity::class.java)
                     val showPendingIntent = PendingIntent.getActivity(context, id + 90000, showIntent, flags)
 
-                    val alarmClockInfo = AlarmManager.AlarmClockInfo(timestampMs, showPendingIntent)
-                    alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
-                    Log.d(TAG, "Scheduled AlarmClock for reminder $id ($title) at $timestampMs")
+                    try {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            if (alarmManager.canScheduleExactAlarms()) {
+                                val alarmClockInfo = AlarmManager.AlarmClockInfo(timestampMs, showPendingIntent)
+                                alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
+                            } else {
+                                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timestampMs, pendingIntent)
+                            }
+                        } else {
+                            val alarmClockInfo = AlarmManager.AlarmClockInfo(timestampMs, showPendingIntent)
+                            alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
+                        }
+                        Log.d(TAG, "Scheduled reminder $id ($title) at $timestampMs")
+                    } catch (se: SecurityException) {
+                        Log.w(TAG, "Exact alarm permission denied for reminder $id, falling back to setAndAllowWhileIdle: ${se.message}")
+                        alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timestampMs, pendingIntent)
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -90,9 +104,23 @@ object IslamicReminderScheduler {
         val showIntent = Intent(context, MainActivity::class.java)
         val showPendingIntent = PendingIntent.getActivity(context, id + 90000, showIntent, flags)
 
-        val alarmClockInfo = AlarmManager.AlarmClockInfo(timestampMs, showPendingIntent)
-        alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
-        Log.d(TAG, "Scheduled single AlarmClock for reminder $id ($title) at $timestampMs")
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (alarmManager.canScheduleExactAlarms()) {
+                    val alarmClockInfo = AlarmManager.AlarmClockInfo(timestampMs, showPendingIntent)
+                    alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
+                } else {
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timestampMs, pendingIntent)
+                }
+            } else {
+                val alarmClockInfo = AlarmManager.AlarmClockInfo(timestampMs, showPendingIntent)
+                alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
+            }
+            Log.d(TAG, "Scheduled single reminder $id ($title) at $timestampMs")
+        } catch (se: SecurityException) {
+            Log.w(TAG, "Exact alarm permission denied for single reminder $id, falling back: ${se.message}")
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timestampMs, pendingIntent)
+        }
     }
 
     private fun cancelSingleReminder(context: Context, alarmManager: AlarmManager, id: Int) {

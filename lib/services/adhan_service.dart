@@ -64,8 +64,8 @@ class AdhanService extends ChangeNotifier {
 
   void _startPrayerMonitoring() {
     _monitoringTimer?.cancel();
-    // Only monitor if not in flutter test environment
-    _monitoringTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    if (!_adhanSoundEnabled) return;
+    _monitoringTimer = Timer.periodic(const Duration(seconds: 60), (timer) {
       _checkPrayerTimes();
     });
   }

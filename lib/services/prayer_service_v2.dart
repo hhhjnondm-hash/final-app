@@ -9,7 +9,6 @@ class PrayerServiceV2 extends ChangeNotifier {
   static final PrayerServiceV2 _instance = PrayerServiceV2._internal();
   factory PrayerServiceV2() => _instance;
   PrayerServiceV2._internal() {
-    _startTimer();
     _athanService = AthanService();
     _athanService.initialize();
     _calculator.loadUserAdjustments();

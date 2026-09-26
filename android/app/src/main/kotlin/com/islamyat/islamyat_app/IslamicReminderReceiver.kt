@@ -31,7 +31,7 @@ class IslamicReminderReceiver : BroadcastReceiver() {
                     PowerManager.PARTIAL_WAKE_LOCK,
                     "Islamiyat:IslamicReminderWakeLock"
                 )
-                wakeLock?.acquire(15 * 1000L /* 15 seconds */)
+                wakeLock?.acquire(5 * 1000L /* 5 seconds */)
 
                 try {
                     val id = intent.getIntExtra("id", 9999)
@@ -99,12 +99,11 @@ class IslamicReminderReceiver : BroadcastReceiver() {
             .setContentTitle(title)
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body).setSummaryText(category))
-            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setAutoCancel(true)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
-            .setFullScreenIntent(pendingIntent, false)
             .setContentIntent(pendingIntent)
             .build()
 

@@ -29,6 +29,11 @@ object AthanAlarmScheduler {
             val jsonArray = JSONArray(alarmsJson)
             val now = System.currentTimeMillis()
 
+            // Cancel any prior alarms across all possible slots
+            for (k in 0..30) {
+                cancelSingleAlarm(context, alarmManager, BASE_REQUEST_CODE + k)
+            }
+
             for (i in 0 until jsonArray.length()) {
                 val obj = jsonArray.getJSONObject(i)
                 val prayerName = obj.optString("prayer", "")
@@ -37,11 +42,8 @@ object AthanAlarmScheduler {
                 val isFajr = obj.optBoolean("isFajr", false)
                 val requestCode = BASE_REQUEST_CODE + i
 
-                // Cancel any existing alarm for this slot
-                cancelSingleAlarm(context, alarmManager, requestCode)
-
-                // Schedule if in the future
-                if (timestampMs > now) {
+                // Schedule strictly if in the future (at least 2 seconds ahead to avoid immediate misfire)
+                if (timestampMs > now + 2000L) {
                     val triggerIntent = Intent(context, AthanAlarmReceiver::class.java).apply {
                         action = AthanAlarmReceiver.ACTION_TRIGGER_ATHAN
                         putExtra("prayer_name", prayerName)
@@ -62,9 +64,23 @@ object AthanAlarmScheduler {
                     val showIntent = Intent(context, MainActivity::class.java)
                     val showPendingIntent = PendingIntent.getActivity(context, requestCode + 500, showIntent, flags)
 
-                    val alarmClockInfo = AlarmManager.AlarmClockInfo(timestampMs, showPendingIntent)
-                    alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
-                    Log.d(TAG, "Scheduled AlarmClock for $prayerName ($arabicName) at $timestampMs")
+                    try {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            if (alarmManager.canScheduleExactAlarms()) {
+                                val alarmClockInfo = AlarmManager.AlarmClockInfo(timestampMs, showPendingIntent)
+                                alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
+                            } else {
+                                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timestampMs, pendingIntent)
+                            }
+                        } else {
+                            val alarmClockInfo = AlarmManager.AlarmClockInfo(timestampMs, showPendingIntent)
+                            alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
+                        }
+                        Log.d(TAG, "Scheduled alarm for $prayerName ($arabicName) at $timestampMs")
+                    } catch (se: SecurityException) {
+                        Log.w(TAG, "Exact alarm permission denied, falling back to setAndAllowWhileIdle: ${se.message}")
+                        alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timestampMs, pendingIntent)
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -94,7 +110,7 @@ object AthanAlarmScheduler {
 
     fun cancelAllAlarms(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
-        for (i in 0..10) {
+        for (i in 0..30) {
             cancelSingleAlarm(context, alarmManager, BASE_REQUEST_CODE + i)
         }
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

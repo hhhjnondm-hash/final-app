@@ -9,6 +9,7 @@ import '../models/canonical_identities.dart';
 import '../models/audio_playback.dart';
 import 'global_audio_manager.dart';
 import 'notification_service.dart';
+import 'storage_service.dart';
 import '../widgets/prayer_athan_dialog.dart';
 
 enum AthanMethod {
@@ -182,6 +183,30 @@ class AthanService extends ChangeNotifier {
       }
     });
 
+    // Listen for native Android volume key / service stop commands
+    _nativeAthanChannel.setMethodCallHandler((call) async {
+      if (call.method == 'stopAthanSound') {
+        debugPrint('🔕 Native stopAthanSound signal received (volume key / background action)');
+        await stopAthan();
+      }
+    });
+
+    // Intercept hardware volume keys when Flutter app is active
+    HardwareKeyboard.instance.addHandler((KeyEvent event) {
+      if (event is KeyDownEvent) {
+        if (event.logicalKey == LogicalKeyboardKey.audioVolumeDown ||
+            event.logicalKey == LogicalKeyboardKey.audioVolumeUp ||
+            event.logicalKey == LogicalKeyboardKey.audioVolumeMute) {
+          if (isPlayingAthan) {
+            debugPrint('🔕 Hardware volume key pressed in Flutter UI: Stopping Athan');
+            stopAthan();
+            return true; // Key event handled, stop adhan cleanly
+          }
+        }
+      }
+      return false;
+    });
+
     // Listen to audio manager completion
     _audioManager.playbackStateStream.listen((state) {
       if (state == PlaybackState.completed && _currentlyPlayingPrayer != null) {
@@ -274,10 +299,44 @@ class AthanService extends ChangeNotifier {
     final requestDate = date ?? DateTime.now();
     final dateKey = '${requestDate.year}-${requestDate.month}-${requestDate.day}';
 
+    // 1. Check in-memory cache
     if (_offlinePrayerCache.containsKey(dateKey)) {
       return _offlinePrayerCache[dateKey]!;
     }
 
+    // 2. Check 30-day persistent storage cache (synchronized with PrayerServiceV2)
+    try {
+      final storage = StorageService();
+      await storage.init();
+      final storageData = storage.getPrayerCache(dateKey);
+      if (storageData != null && storageData.isNotEmpty) {
+        final pMap = <String, DateTime>{};
+        final prayerNameMap = {
+          'fajr': 'Fajr',
+          'dhuhr': 'Dhuhr',
+          'asr': 'Asr',
+          'maghrib': 'Maghrib',
+          'isha': 'Isha',
+        };
+        storageData.forEach((k, v) {
+          final mappedKey = prayerNameMap[k.toLowerCase()];
+          if (mappedKey != null && v is String) {
+            final parsed = DateTime.tryParse(v);
+            if (parsed != null) {
+              pMap[mappedKey] = parsed;
+            }
+          }
+        });
+        if (pMap.length >= 5) {
+          _offlinePrayerCache[dateKey] = pMap;
+          return pMap;
+        }
+      }
+    } catch (e) {
+      debugPrint('Note: Error checking storage cache in athan service: $e');
+    }
+
+    // 3. Query AlAdhan API if not in local storage cache
     try {
       final url = Uri.parse(
         'https://api.aladhan.com/v1/timings/${requestDate.day}-${requestDate.month}-${requestDate.year}',
@@ -289,7 +348,7 @@ class AthanService extends ChangeNotifier {
         },
       );
 
-      final response = await http.get(url);
+      final response = await http.get(url).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final timings = data['data']['timings'] as Map<String, dynamic>;
@@ -316,24 +375,29 @@ class AthanService extends ChangeNotifier {
         await _saveOfflineCache();
 
         return prayerTimes;
-      } else {
-        throw Exception('Failed to fetch prayer times');
       }
     } catch (e) {
-      debugPrint('❌ Error fetching prayer times: $e');
-      if (_offlinePrayerCache.isNotEmpty) {
-        final lastCacheKey = _offlinePrayerCache.keys.last;
-        return _offlinePrayerCache[lastCacheKey]!;
-      }
-      // Safe offline fallback prayer times for Middle East / Cairo
-      return {
-        'Fajr': DateTime(requestDate.year, requestDate.month, requestDate.day, 4, 45),
-        'Dhuhr': DateTime(requestDate.year, requestDate.month, requestDate.day, 12, 0),
-        'Asr': DateTime(requestDate.year, requestDate.month, requestDate.day, 15, 25),
-        'Maghrib': DateTime(requestDate.year, requestDate.month, requestDate.day, 18, 5),
-        'Isha': DateTime(requestDate.year, requestDate.month, requestDate.day, 19, 25),
-      };
+      debugPrint('❌ Error fetching prayer times from API: $e');
     }
+
+    // 4. Fallback: Use last available cache adjusted to request date
+    if (_offlinePrayerCache.isNotEmpty) {
+      final lastCacheKey = _offlinePrayerCache.keys.last;
+      final cachedTimes = _offlinePrayerCache[lastCacheKey]!;
+      return cachedTimes.map((k, v) => MapEntry(
+        k,
+        DateTime(requestDate.year, requestDate.month, requestDate.day, v.hour, v.minute),
+      ));
+    }
+
+    // Baseline astronomical calculation times for Cairo / Middle East if totally empty
+    return {
+      'Fajr': DateTime(requestDate.year, requestDate.month, requestDate.day, 5, 0),
+      'Dhuhr': DateTime(requestDate.year, requestDate.month, requestDate.day, 12, 54),
+      'Asr': DateTime(requestDate.year, requestDate.month, requestDate.day, 16, 20),
+      'Maghrib': DateTime(requestDate.year, requestDate.month, requestDate.day, 18, 55),
+      'Isha': DateTime(requestDate.year, requestDate.month, requestDate.day, 20, 15),
+    };
   }
 
   /// Schedule upcoming notifications in the OS so they trigger even if the app is closed
@@ -356,6 +420,42 @@ class AthanService extends ChangeNotifier {
         final isFajr = prayer.toLowerCase() == 'fajr';
         final arabicName = _getArabicPrayerName(prayer);
         final prayerIndex = _getPrayerIndex(prayer);
+
+        // 1. ⏰ Pre-prayer Reminder: 60 minutes before
+        final timeMinus60 = prayerTime.subtract(const Duration(minutes: 60));
+        if (timeMinus60.isAfter(now)) {
+          await _notificationService.schedulePrePrayerReminder(
+            id: prayerIndex * 100 + 60,
+            prayerName: prayer,
+            arabicName: arabicName,
+            scheduledDate: timeMinus60,
+            minutesBefore: 60,
+          );
+        }
+
+        // 2. ⏰ Pre-prayer Reminder: 30 minutes before
+        final timeMinus30 = prayerTime.subtract(const Duration(minutes: 30));
+        if (timeMinus30.isAfter(now)) {
+          await _notificationService.schedulePrePrayerReminder(
+            id: prayerIndex * 100 + 30,
+            prayerName: prayer,
+            arabicName: arabicName,
+            scheduledDate: timeMinus30,
+            minutesBefore: 30,
+          );
+        }
+
+        // 3. ⏰ Pre-prayer Reminder: 3 minutes before
+        final timeMinus3 = prayerTime.subtract(const Duration(minutes: 3));
+        if (timeMinus3.isAfter(now)) {
+          await _notificationService.schedulePrePrayerReminder(
+            id: prayerIndex * 100 + 3,
+            prayerName: prayer,
+            arabicName: arabicName,
+            scheduledDate: timeMinus3,
+            minutesBefore: 3,
+          );
+        }
 
         // Schedule Athan exact alarm
         await _notificationService.schedulePrayerAthan(
@@ -391,6 +491,7 @@ class AthanService extends ChangeNotifier {
     if (kIsWeb) return;
     try {
       final List<Map<String, dynamic>> alarmsList = [];
+      final List<Map<String, dynamic>> nativePreReminders = [];
       final now = DateTime.now();
 
       for (final entry in prayerTimes.entries) {
@@ -398,14 +499,51 @@ class AthanService extends ChangeNotifier {
         final prayerTime = entry.value;
 
         if (_settings.enabledPrayers[prayer] == false) continue;
+        final arabicName = _getArabicPrayerName(prayer);
+        final prayerIndex = _getPrayerIndex(prayer);
 
         if (prayerTime.isAfter(now)) {
+          // Exact Athan alarm
           alarmsList.add({
             'prayer': prayer,
-            'arabicName': _getArabicPrayerName(prayer),
+            'arabicName': arabicName,
             'timestampMs': prayerTime.millisecondsSinceEpoch,
             'isFajr': prayer.toLowerCase() == 'fajr',
           });
+
+          // Pre-prayer native exact alarms (60m, 30m, 3m)
+          final m60 = prayerTime.subtract(const Duration(minutes: 60));
+          if (m60.isAfter(now)) {
+            nativePreReminders.add({
+              'id': prayerIndex * 1000 + 60,
+              'title': '⏰ اقتراب صلاة $arabicName (متبقي ساعة)',
+              'body': 'فاضل ساعة واحدة على أذان صلاة $arabicName، استعد وتجهز للقاء الله.',
+              'category': 'تذكير صلاة',
+              'timestampMs': m60.millisecondsSinceEpoch,
+            });
+          }
+
+          final m30 = prayerTime.subtract(const Duration(minutes: 30));
+          if (m30.isAfter(now)) {
+            nativePreReminders.add({
+              'id': prayerIndex * 1000 + 30,
+              'title': '⏰ اقتراب موعد صلاة $arabicName (نصف ساعة)',
+              'body': 'فاضل نصف ساعة على صلاة $arabicName، أسبغ الوضوء وتأهب للصلاة.',
+              'category': 'تذكير صلاة',
+              'timestampMs': m30.millisecondsSinceEpoch,
+            });
+          }
+
+          final m3 = prayerTime.subtract(const Duration(minutes: 3));
+          if (m3.isAfter(now)) {
+            nativePreReminders.add({
+              'id': prayerIndex * 1000 + 3,
+              'title': '🕌 حان وقت صلاة $arabicName تقريباً (3 دقائق)',
+              'body': 'فاضل 3 دقائق على رفع أذان صلاة $arabicName، استعد لتكبيرة الإحرام.',
+              'category': 'تذكير صلاة',
+              'timestampMs': m3.millisecondsSinceEpoch,
+            });
+          }
         }
       }
 
@@ -415,6 +553,14 @@ class AthanService extends ChangeNotifier {
           'respectSilentMode': _settings.respectSilentMode,
         });
         debugPrint('⏰ Native AlarmClock scheduled for ${alarmsList.length} prayers (Screen locked / App killed)');
+      }
+
+      if (nativePreReminders.isNotEmpty) {
+        const nativeReminderChannel = MethodChannel('com.islamyat.islamyat_app/reminders_native');
+        await nativeReminderChannel.invokeMethod('scheduleRemindersList', {
+          'remindersJson': jsonEncode(nativePreReminders),
+        });
+        debugPrint('⏰ Native pre-prayer reminders scheduled: ${nativePreReminders.length} alarms');
       }
     } catch (e) {
       debugPrint('⚠️ Error scheduling native athan alarms: $e');
@@ -427,8 +573,8 @@ class AthanService extends ChangeNotifier {
   }) {
     _athanTimer?.cancel();
     
-    // Check frequently (every 5 seconds) to guarantee the prayer time is NEVER missed
-    _athanTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+    // Check periodically (every 30 seconds) to ensure minimal CPU and battery usage
+    _athanTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
       if (!_settings.enabled) return;
 
       try {
@@ -437,16 +583,25 @@ class AthanService extends ChangeNotifier {
         if (_lastTimerCheckedDate != todayStr) {
           _triggeredPrayersToday.removeWhere((k) => !k.startsWith(todayStr));
           _lastTimerCheckedDate = todayStr;
+          _hasScheduledUpcomingToday = false;
         }
 
-        final prayerTimes = await fetchPrayerTimes(
-          latitude: latitude,
-          longitude: longitude,
-          date: now,
-        );
+        // Only fetch if today's times are not already loaded in memory
+        if (!_offlinePrayerCache.containsKey(todayStr)) {
+          await fetchPrayerTimes(
+            latitude: latitude,
+            longitude: longitude,
+            date: now,
+          );
+        }
 
-        // Schedule upcoming notifications for when app is closed
-        await scheduleUpcomingNotifications(prayerTimes);
+        final prayerTimes = _offlinePrayerCache[todayStr];
+        if (prayerTimes == null || prayerTimes.isEmpty) return;
+
+        // Schedule upcoming notifications for when app is closed (once per day or on change)
+        if (!_hasScheduledUpcomingToday || _lastScheduledDate != todayStr) {
+          await scheduleUpcomingNotifications(prayerTimes);
+        }
 
         final prayerNames = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
         

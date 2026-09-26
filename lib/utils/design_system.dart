@@ -233,6 +233,19 @@ class DesignSystem {
             ),
     );
   }
+
+  static BoxDecoration glassCard([BuildContext? context]) {
+    final isLight = isLightMode;
+    return BoxDecoration(
+      color: isLight ? lightCardBg : darkCardBg,
+      borderRadius: BorderRadius.circular(radiusMedium),
+      border: Border.all(
+        color: isLight ? lightBorder : darkBorder.withValues(alpha: 0.6),
+        width: 1,
+      ),
+      boxShadow: softCardShadow,
+    );
+  }
 }
 
 

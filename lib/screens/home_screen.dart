@@ -1,20 +1,31 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../data/all_azkar_data.dart';
+import '../data/reciters_data.dart';
+import '../models/azkar_models.dart';
+import '../models/prayer_models.dart';
+import '../services/audio_quran_service.dart';
+import '../services/prayer_service_v2.dart';
+import '../services/quran_storage_service.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/section_header.dart';
-import '../models/prayer_models.dart';
-import '../services/prayer_service_v2.dart';
-import '../services/audio_quran_service.dart';
-import '../data/reciters_data.dart';
 import 'azkar_screen.dart';
 import 'audio_screen.dart';
+import 'dhikr_reader_screen.dart';
 import 'iqra_screen.dart';
 import 'notification_settings_screen.dart';
 import 'prayer_times_screen.dart';
 import 'qibla_screen.dart';
 import 'radio_screen.dart';
 import 'surah_viewer_screen.dart';
+
+enum SpiritualTimeContext {
+  morning,
+  prayerFocus,
+  evening,
+  sleep,
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,11 +36,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final PrayerServiceV2 _prayerService = PrayerServiceV2();
+  final QuranStorageService _quranStorage = QuranStorageService();
 
   PrayerTiming? _nextPrayer;
   String _countdown = '00:00:00';
   List<PrayerTiming> _allPrayers = [];
   Timer? _liveTimer;
+  SpiritualTimeContext? _previewTimeContext;
 
   @override
   void initState() {
@@ -37,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _initDefaultPrayerTimes();
     _startLiveTimer();
     _prayerService.addListener(_onServiceUpdate);
+    _quranStorage.addListener(_onQuranStorageUpdate);
     _loadPrayerData();
   }
 
@@ -44,7 +58,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _liveTimer?.cancel();
     _prayerService.removeListener(_onServiceUpdate);
+    _quranStorage.removeListener(_onQuranStorageUpdate);
     super.dispose();
+  }
+
+  void _onQuranStorageUpdate() {
+    if (mounted) setState(() {});
   }
 
   void _initDefaultPrayerTimes() {
@@ -202,6 +221,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     DesignSystem.spacingS,
                   ),
                   child: _buildTopBar(context),
+                ),
+              ),
+
+              // 1.5 Dynamic Spiritual Companion (« رفيق يفهم وقتك »)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: DesignSystem.spacingL,
+                    vertical: DesignSystem.spacingXS,
+                  ),
+                  child: _buildDynamicSpiritualCompanion(context),
                 ),
               ),
 
@@ -526,6 +556,877 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ],
+    );
+  }
+
+  // ==================== 1.5 DYNAMIC SPIRITUAL COMPANION (« رفيق يفهم وقتك ») ====================
+  SpiritualTimeContext _getActiveTimeContext() {
+    if (_previewTimeContext != null) return _previewTimeContext!;
+    final now = DateTime.now();
+    final minutes = now.hour * 60 + now.minute;
+    if (minutes >= 270 && minutes < 690) {
+      // 04:30 AM to 11:30 AM -> الصباح
+      return SpiritualTimeContext.morning;
+    } else if (minutes >= 690 && minutes < 990) {
+      // 11:30 AM to 04:30 PM -> وقت الصلاة
+      return SpiritualTimeContext.prayerFocus;
+    } else if (minutes >= 990 && minutes < 1290) {
+      // 04:30 PM to 09:30 PM -> المساء
+      return SpiritualTimeContext.evening;
+    } else {
+      // 09:30 PM to 04:30 AM -> قبل النوم
+      return SpiritualTimeContext.sleep;
+    }
+  }
+
+  Widget _buildDynamicSpiritualCompanion(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+    final activeContext = _getActiveTimeContext();
+    final isAuto = _previewTimeContext == null;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: isLight
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFFFFFFF),
+                  Color(0xFFF7F9FC),
+                  Color(0xFFEEF3F8),
+                ],
+              )
+            : const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF0D1E2D),
+                  Color(0xFF13283B),
+                  Color(0xFF091420),
+                ],
+              ),
+        border: Border.all(
+          color: const Color(0xFFC89B3C).withValues(alpha: isLight ? 0.35 : 0.28),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isLight
+                ? const Color(0xFF102A43).withValues(alpha: 0.06)
+                : const Color(0xFF050B11).withValues(alpha: 0.5),
+            blurRadius: 16,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header Row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Companion Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFC89B3C).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFC89B3C).withValues(alpha: 0.35),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.auto_awesome_rounded, color: Color(0xFFC89B3C), size: 14),
+                    SizedBox(width: 5),
+                    Text(
+                      '« رفيق يفهم وقتك »',
+                      style: TextStyle(
+                        color: Color(0xFFC89B3C),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Cairo',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Live Indicator / Reset to Live
+              if (!isAuto)
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _previewTimeContext = null;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isLight ? const Color(0xFFE2E8F0) : Colors.white.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.refresh_rounded, color: isLight ? const Color(0xFF475569) : const Color(0xFF94A3B8), size: 12),
+                        const SizedBox(width: 4),
+                        Text(
+                          'استعادة التلقائي',
+                          style: TextStyle(
+                            color: isLight ? const Color(0xFF475569) : const Color(0xFF94A3B8),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.access_time_filled_rounded, color: Color(0xFF10B981), size: 11),
+                      SizedBox(width: 4),
+                      Text(
+                        'مباشر حسب الوقت',
+                        style: TextStyle(
+                          color: Color(0xFF10B981),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Context Selector Tabs
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: [
+                _buildTimeTab(
+                  type: SpiritualTimeContext.morning,
+                  label: '🌅 الصبح',
+                  isSelected: activeContext == SpiritualTimeContext.morning,
+                ),
+                const SizedBox(width: 6),
+                _buildTimeTab(
+                  type: SpiritualTimeContext.prayerFocus,
+                  label: '☀️ وقت الصلاة',
+                  isSelected: activeContext == SpiritualTimeContext.prayerFocus,
+                ),
+                const SizedBox(width: 6),
+                _buildTimeTab(
+                  type: SpiritualTimeContext.evening,
+                  label: '🌙 المساء',
+                  isSelected: activeContext == SpiritualTimeContext.evening,
+                ),
+                const SizedBox(width: 6),
+                _buildTimeTab(
+                  type: SpiritualTimeContext.sleep,
+                  label: '🌌 قبل النوم',
+                  isSelected: activeContext == SpiritualTimeContext.sleep,
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // Dynamic Body
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: KeyedSubtree(
+              key: ValueKey(activeContext),
+              child: _buildContextBody(context, activeContext),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeTab({
+    required SpiritualTimeContext type,
+    required String label,
+    required bool isSelected,
+  }) {
+    final isLight = DesignSystem.isLightMode;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (_previewTimeContext == type) {
+            _previewTimeContext = null;
+          } else {
+            _previewTimeContext = type;
+          }
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFFC89B3C)
+              : (isLight ? const Color(0xFFEDF2F7) : Colors.white.withValues(alpha: 0.06)),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFFE5B54F)
+                : Colors.transparent,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected
+                ? const Color(0xFF0B1724)
+                : (isLight ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
+            fontSize: 11.5,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            fontFamily: 'Cairo',
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContextBody(BuildContext context, SpiritualTimeContext timeCtx) {
+    switch (timeCtx) {
+      case SpiritualTimeContext.morning:
+        return _buildMorningCompanion(context);
+      case SpiritualTimeContext.prayerFocus:
+        return _buildPrayerFocusCompanion(context);
+      case SpiritualTimeContext.evening:
+        return _buildEveningCompanion(context);
+      case SpiritualTimeContext.sleep:
+        return _buildSleepCompanion(context);
+    }
+  }
+
+  Widget _buildMorningCompanion(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+    final stopMark = _quranStorage.readingStopMark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'صباح مبارك بذكر الله 🌅',
+          style: TextStyle(
+            color: isLight ? const Color(0xFF102A43) : Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          'ابدأ يومك بنور الذكر والتحصين وقراءة وردك القرآني اليومي',
+          style: TextStyle(
+            color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+            fontSize: 11.5,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionPillCard(
+                icon: Icons.wb_sunny_rounded,
+                iconColor: const Color(0xFFF59E0B),
+                bgColor: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                borderColor: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                title: 'أذكار الصباح',
+                subtitle: '25 ذكراً للتحصين والبركة',
+                btnText: 'ابدأ الأذكار ←',
+                onTap: () {
+                  final cat = AllAzkarData.categories.firstWhere(
+                    (c) => c.type == AzkarCategoryType.morning,
+                    orElse: () => AllAzkarData.categories.first,
+                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => DhikrReaderScreen(category: cat)));
+                },
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildActionPillCard(
+                icon: Icons.menu_book_rounded,
+                iconColor: const Color(0xFF10B981),
+                bgColor: const Color(0xFF10B981).withValues(alpha: 0.12),
+                borderColor: const Color(0xFF10B981).withValues(alpha: 0.35),
+                title: stopMark != null ? 'ورد: سورة ${stopMark.surahName}' : 'ورد القرآن',
+                subtitle: stopMark != null ? 'موضع التوقف: الآية ${stopMark.ayahNumber}' : 'اقرأ القرآن فإنه شفيع لأهله',
+                btnText: 'متابعة الورد ←',
+                onTap: () {
+                  if (stopMark != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SurahViewerScreen(
+                          surahNumber: stopMark.surahNumber,
+                          surahName: stopMark.surahName,
+                          initialAyah: stopMark.ayahNumber,
+                        ),
+                      ),
+                    );
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const IqraScreen()));
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isLight ? const Color(0xFFF1F5F9) : Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.wb_twilight_rounded, color: Color(0xFFE5B54F), size: 16),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '🕊️ صلاة الضحى: صلاة الأوابين • ركعتان تجزئان عن صدقة 360 مفصل في جسدك',
+                  style: TextStyle(
+                    color: isLight ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPrayerFocusCompanion(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'حيّ على الصلاة والفلاح ☀️',
+          style: TextStyle(
+            color: isLight ? const Color(0xFF102A43) : Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          'الصلاة عماد الدين وأحب الأعمال إلى الله في وقتها',
+          style: TextStyle(
+            color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+            fontSize: 11.5,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF0F3B2C), Color(0xFF07241A)],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.access_time_rounded, color: Color(0xFF34D399), size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'الصلاة القادمة: ${_nextPrayer?.nameArabic ?? "الصلاة"}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'متبقي $_countdown بالثواني',
+                      style: const TextStyle(
+                        color: Color(0xFF34D399),
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const PrayerTimesScreen()));
+                },
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Text(
+                    'المواقيت ←',
+                    style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _buildMiniToolTile(
+                icon: Icons.explore_rounded,
+                title: 'اتجاه القبلة',
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QiblaScreen())),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildMiniToolTile(
+                icon: Icons.mosque_rounded,
+                title: 'أذكار الصلاة',
+                onTap: () {
+                  final cat = AllAzkarData.categories.firstWhere(
+                    (c) => c.type == AzkarCategoryType.afterPrayer,
+                    orElse: () => AllAzkarData.categories.first,
+                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => DhikrReaderScreen(category: cat)));
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildMiniToolTile(
+                icon: Icons.notifications_active_rounded,
+                title: 'تنبيه الأذان',
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationSettingsScreen())),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEveningCompanion(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+    final stopMark = _quranStorage.readingStopMark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'مساء مبارك بالسكينة 🌙',
+          style: TextStyle(
+            color: isLight ? const Color(0xFF102A43) : Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          'حصنك المسائي وراحة لقلبك في ختام اليوم وتجديد العهد مع القرآن',
+          style: TextStyle(
+            color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+            fontSize: 11.5,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionPillCard(
+                icon: Icons.nightlight_round,
+                iconColor: const Color(0xFF60A5FA),
+                bgColor: const Color(0xFF60A5FA).withValues(alpha: 0.12),
+                borderColor: const Color(0xFF60A5FA).withValues(alpha: 0.35),
+                title: 'أذكار المساء',
+                subtitle: '24 ذكراً لطمأنينة النفس',
+                btnText: 'قراءة الأذكار ←',
+                onTap: () {
+                  final cat = AllAzkarData.categories.firstWhere(
+                    (c) => c.type == AzkarCategoryType.evening,
+                    orElse: () => AllAzkarData.categories.first,
+                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => DhikrReaderScreen(category: cat)));
+                },
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildActionPillCard(
+                icon: Icons.menu_book_rounded,
+                iconColor: const Color(0xFF38BDF8),
+                bgColor: const Color(0xFF38BDF8).withValues(alpha: 0.12),
+                borderColor: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                title: stopMark != null ? 'ورد: سورة ${stopMark.surahName}' : 'وردك القرآني',
+                subtitle: stopMark != null ? 'موضع التوقف: الآية ${stopMark.ayahNumber}' : 'أتمم ورد اليوم بطمأنينة',
+                btnText: 'متابعة الورد ←',
+                onTap: () {
+                  if (stopMark != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SurahViewerScreen(
+                          surahNumber: stopMark.surahNumber,
+                          surahName: stopMark.surahName,
+                          initialAyah: stopMark.ayahNumber,
+                        ),
+                      ),
+                    );
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const IqraScreen()));
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isLight ? const Color(0xFFF1F5F9) : Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.star_rounded, color: Color(0xFFE5B54F), size: 16),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '🌙 سنن المساء: صلاة المغرب والعشاء في جماعة وأداء سنة الوتر ونيل بركة الليل',
+                  style: TextStyle(
+                    color: isLight ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSleepCompanion(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'طابت ليلتك بذكر الله 🌌',
+          style: TextStyle(
+            color: isLight ? const Color(0xFF102A43) : Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          'حصّن نفسك بأذكار النوم ونوّر ليلتك وقبرك بسورة الملك المنجية',
+          style: TextStyle(
+            color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+            fontSize: 11.5,
+          ),
+        ),
+        const SizedBox(height: 12),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const SurahViewerScreen(
+                  surahNumber: 67,
+                  surahName: 'الملك',
+                  initialAyah: 1,
+                ),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2A1C0A), Color(0xFF181005)],
+              ),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFFE5B54F), width: 1.4),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFC89B3C).withValues(alpha: 0.22),
+                  blurRadius: 12,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFC89B3C).withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFFE5B54F), size: 24),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'سورة الملك (المانعة من عذاب القبر)',
+                            style: TextStyle(
+                              color: Color(0xFFFFE082),
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 3),
+                      Text(
+                        '٣٠ آية تشفع لصاحبها • افتح واقرأ بنقرة واحدة',
+                        style: TextStyle(
+                          color: Color(0xFFE2E8F0),
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5B54F),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'اقرأ الآن',
+                        style: TextStyle(
+                          color: Color(0xFF1E1303),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF1E1303), size: 10),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        _buildActionPillCard(
+          icon: Icons.bedtime_rounded,
+          iconColor: const Color(0xFFA78BFA),
+          bgColor: const Color(0xFFA78BFA).withValues(alpha: 0.12),
+          borderColor: const Color(0xFFA78BFA).withValues(alpha: 0.35),
+          title: 'أذكار النوم والتحصين',
+          subtitle: 'سنة الحبيب المصطفى ﷺ قبل إغماض عينيك لطمأنينة وراحة المنام',
+          btnText: 'قراءة أذكار النوم ←',
+          onTap: () {
+            final cat = AllAzkarData.categories.firstWhere(
+              (c) => c.type == AzkarCategoryType.sleep,
+              orElse: () => AllAzkarData.categories.first,
+            );
+            Navigator.push(context, MaterialPageRoute(builder: (_) => DhikrReaderScreen(category: cat)));
+          },
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isLight ? const Color(0xFFF1F5F9) : Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.nightlight_outlined, color: Color(0xFFE5B54F), size: 16),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '🌌 صلاة الوتر: اجعلوا آخر صلاتكم بالليل وتراً • ركعة واحدة تكفيك وتكتبك من القائمين',
+                  style: TextStyle(
+                    color: isLight ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionPillCard({
+    required IconData icon,
+    required Color iconColor,
+    required Color bgColor,
+    required Color borderColor,
+    required String title,
+    required String subtitle,
+    required String btnText,
+    required VoidCallback onTap,
+  }) {
+    final isLight = DesignSystem.isLightMode;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isLight ? const Color(0xFFFFFFFF) : bgColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor),
+          boxShadow: [
+            if (isLight)
+              BoxShadow(
+                color: const Color(0xFF102A43).withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: iconColor, size: 18),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isLight ? const Color(0xFF172033) : Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                fontSize: 10.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              btnText,
+              style: TextStyle(
+                color: iconColor,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMiniToolTile({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    final isLight = DesignSystem.isLightMode;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isLight ? const Color(0xFFFFFFFF) : Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isLight ? const Color(0xFFE2E8F0) : Colors.white.withValues(alpha: 0.1),
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: const Color(0xFFC89B3C), size: 18),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: isLight ? const Color(0xFF172033) : Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1149,6 +2050,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ==================== 5. QURAN READING PROGRESS ====================
   Widget _buildContinueReadingCard(BuildContext context) {
+    final stopMark = _quranStorage.readingStopMark;
+    final progress = _quranStorage.readingProgress;
+    final surahNum = stopMark?.surahNumber ?? progress.surahNumber;
+    final surahName = stopMark?.surahName ?? progress.surahName;
+    final ayahNum = stopMark?.ayahNumber ?? progress.ayahNumber;
+    final percent = (progress.progress * 100).clamp(1, 100).toInt();
+
     return GlassCard(
       padding: const EdgeInsets.all(18),
       borderRadius: 22,
@@ -1156,9 +2064,10 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => const SurahViewerScreen(
-              surahNumber: 2,
-              surahName: 'البقرة',
+            builder: (_) => SurahViewerScreen(
+              surahNumber: surahNum,
+              surahName: surahName,
+              initialAyah: ayahNum,
             ),
           ),
         );
@@ -1186,20 +2095,20 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'سورة البقرة',
-                      style: TextStyle(
+                      'سورة $surahName',
+                      style: const TextStyle(
                         color: Color(0xFF172033),
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      '12%',
-                      style: TextStyle(
+                      '$percent%',
+                      style: const TextStyle(
                         color: Color(0xFFC89B3C),
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -1208,9 +2117,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'الآية 42 • الجزء الأول',
-                  style: TextStyle(color: Color(0xFF667085), fontSize: 11),
+                Text(
+                  stopMark != null
+                      ? 'موضع التوقف: الآية $ayahNum • الجزء ${progress.juz}'
+                      : 'الآية $ayahNum • الجزء ${progress.juz}',
+                  style: const TextStyle(color: Color(0xFF667085), fontSize: 11),
                 ),
                 const SizedBox(height: 8),
 
@@ -1218,7 +2129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
-                    value: 0.12,
+                    value: progress.progress.clamp(0.01, 1.0),
                     minHeight: 4,
                     backgroundColor: const Color(0xFFDCE3EC),
                     valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF102A43)),

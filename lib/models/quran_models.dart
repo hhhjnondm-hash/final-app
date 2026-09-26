@@ -83,6 +83,12 @@ class ReadingProgress {
     required this.lastReadTime,
   });
 
+  int get surahNumber => lastSurahNumber;
+  String get surahName => lastSurahName;
+  int get ayahNumber => lastAyahNumber;
+  int get juz => lastJuz;
+  double get progress => progressPercentage;
+
   Map<String, dynamic> toJson() => {
     'lastSurahNumber': lastSurahNumber,
     'lastSurahName': lastSurahName,

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/notification_models.dart';
 import 'notification_service.dart';
+import 'storage_service.dart';
 
 class IslamicNotificationService extends ChangeNotifier {
   static final IslamicNotificationService _instance = IslamicNotificationService._internal();
@@ -34,12 +35,21 @@ class IslamicNotificationService extends ChangeNotifier {
 
   Future<void> _loadAllDatasets() async {
     try {
+      final storage = StorageService();
+      await storage.init();
+      final stats = storage.getJson('notification_item_stats') ?? {};
+
       final ayatRaw = await rootBundle.loadString('assets/data/notifications/ayat.json');
       final ayatMap = json.decode(ayatRaw);
       if (ayatMap['items'] is List) {
         _ayat.clear();
         for (final item in ayatMap['items']) {
-          _ayat.add(NotificationContentItem.fromJson(item));
+          final parsed = NotificationContentItem.fromJson(item);
+          final stat = stats[parsed.id] as Map<String, dynamic>?;
+          _ayat.add(parsed.copyWith(
+            timesShown: (stat?['timesShown'] as int?) ?? parsed.timesShown,
+            lastShownAt: stat?['lastShownAt'] != null ? DateTime.tryParse(stat!['lastShownAt']) : parsed.lastShownAt,
+          ));
         }
       }
 
@@ -48,7 +58,12 @@ class IslamicNotificationService extends ChangeNotifier {
       if (duasMap['items'] is List) {
         _duas.clear();
         for (final item in duasMap['items']) {
-          _duas.add(NotificationContentItem.fromJson(item));
+          final parsed = NotificationContentItem.fromJson(item);
+          final stat = stats[parsed.id] as Map<String, dynamic>?;
+          _duas.add(parsed.copyWith(
+            timesShown: (stat?['timesShown'] as int?) ?? parsed.timesShown,
+            lastShownAt: stat?['lastShownAt'] != null ? DateTime.tryParse(stat!['lastShownAt']) : parsed.lastShownAt,
+          ));
         }
       }
 
@@ -57,7 +72,12 @@ class IslamicNotificationService extends ChangeNotifier {
       if (adhkarMap['items'] is List) {
         _adhkar.clear();
         for (final item in adhkarMap['items']) {
-          _adhkar.add(NotificationContentItem.fromJson(item));
+          final parsed = NotificationContentItem.fromJson(item);
+          final stat = stats[parsed.id] as Map<String, dynamic>?;
+          _adhkar.add(parsed.copyWith(
+            timesShown: (stat?['timesShown'] as int?) ?? parsed.timesShown,
+            lastShownAt: stat?['lastShownAt'] != null ? DateTime.tryParse(stat!['lastShownAt']) : parsed.lastShownAt,
+          ));
         }
       }
 
@@ -66,7 +86,12 @@ class IslamicNotificationService extends ChangeNotifier {
       if (quotesMap['items'] is List) {
         _quotes.clear();
         for (final item in quotesMap['items']) {
-          _quotes.add(NotificationContentItem.fromJson(item));
+          final parsed = NotificationContentItem.fromJson(item);
+          final stat = stats[parsed.id] as Map<String, dynamic>?;
+          _quotes.add(parsed.copyWith(
+            timesShown: (stat?['timesShown'] as int?) ?? parsed.timesShown,
+            lastShownAt: stat?['lastShownAt'] != null ? DateTime.tryParse(stat!['lastShownAt']) : parsed.lastShownAt,
+          ));
         }
       }
 
@@ -183,9 +208,28 @@ class IslamicNotificationService extends ChangeNotifier {
     if (_recentNotifications.length > 30) {
       _recentNotifications.removeLast();
     }
+    
+    // Persist updated item stats to StorageService
+    _saveItemStats(updated.id, updated.timesShown, updated.lastShownAt);
+
     notifyListeners();
 
     return updated;
+  }
+
+  Future<void> _saveItemStats(String id, int timesShown, DateTime? lastShownAt) async {
+    try {
+      final storage = StorageService();
+      await storage.init();
+      final stats = storage.getJson('notification_item_stats') ?? {};
+      stats[id] = {
+        'timesShown': timesShown,
+        'lastShownAt': lastShownAt?.toIso8601String(),
+      };
+      await storage.setJson('notification_item_stats', stats);
+    } catch (e) {
+      debugPrint('Error saving notification stat: $e');
+    }
   }
 
   /// Schedule daily notifications with the system for active categories
@@ -260,6 +304,69 @@ class IslamicNotificationService extends ChangeNotifier {
           'title': title,
           'body': item.text,
           'category': item.category,
+          'timestampMs': scheduleTime.millisecondsSinceEpoch,
+        });
+      }
+    }
+
+    // Schedule dedicated daily Contextual Adhkar Reminders for the next 3 days
+    final contextualReminders = [
+      {
+        'idBase': 7000,
+        'hour': 6,
+        'minute': 30,
+        'title': '🌅 صباح الخير والبركة',
+        'body': 'حان وقت أذكار الصباح، ابدأ يومك بذكر الله وتوكل عليه ليحفظك ويبارك في رزقك.',
+        'category': 'أذكار الصباح',
+      },
+      {
+        'idBase': 7100,
+        'hour': 17,
+        'minute': 0,
+        'title': '🌙 مساء الخير والسكينة',
+        'body': 'مساء الخير، حان وقت أذكار المساء، ألا بذكر الله تطمئن القلوب وتنجلي الهموم.',
+        'category': 'أذكار المساء',
+      },
+      {
+        'idBase': 7200,
+        'hour': 22,
+        'minute': 30,
+        'title': '🌌 سكون الليل وراحة النفس',
+        'body': 'حان وقت أذكار النوم وتلاوة سورة الملك المنجية من عذاب القبر.',
+        'category': 'أذكار النوم',
+      },
+    ];
+
+    for (final cr in contextualReminders) {
+      final hour = cr['hour'] as int;
+      final minute = cr['minute'] as int;
+      final idBase = cr['idBase'] as int;
+      final title = cr['title'] as String;
+      final body = cr['body'] as String;
+      final category = cr['category'] as String;
+
+      var targetDate = DateTime(now.year, now.month, now.day, hour, minute);
+      if (targetDate.isBefore(now)) {
+        targetDate = targetDate.add(const Duration(days: 1));
+      }
+
+      for (int dayOffset = 0; dayOffset < 3; dayOffset++) {
+        final scheduleTime = targetDate.add(Duration(days: dayOffset));
+        final notifId = idBase + dayOffset;
+
+        await notifService.scheduleIslamicContentNotification(
+          id: notifId,
+          title: title,
+          body: body,
+          scheduledDate: scheduleTime,
+          category: category,
+        );
+
+        nativeReminders.add({
+          'id': notifId,
+          'title': title,
+          'body': body,
+          'category': category,
           'timestampMs': scheduleTime.millisecondsSinceEpoch,
         });
       }

@@ -171,4 +171,25 @@ class MainActivity : FlutterActivity() {
         IconSwitchReceiver.updateLauncherIcon(this)
         IconSwitchReceiver.scheduleNextAlarm(this)
     }
+
+    override fun onKeyDown(keyCode: Int, event: android.view.KeyEvent?): Boolean {
+        if (keyCode == android.view.KeyEvent.KEYCODE_VOLUME_DOWN ||
+            keyCode == android.view.KeyEvent.KEYCODE_VOLUME_UP ||
+            keyCode == android.view.KeyEvent.KEYCODE_VOLUME_MUTE) {
+            try {
+                val stopIntent = Intent(this, AthanPlaybackService::class.java).apply {
+                    action = AthanPlaybackService.ACTION_STOP_ATHAN
+                }
+                startService(stopIntent)
+
+                flutterEngine?.dartExecutor?.binaryMessenger?.let {
+                    val channel = MethodChannel(it, ATHAN_NATIVE_CHANNEL)
+                    channel.invokeMethod("stopAthanSound", null)
+                }
+            } catch (e: Exception) {
+                // ignore
+            }
+        }
+        return super.onKeyDown(keyCode, event)
+    }
 }

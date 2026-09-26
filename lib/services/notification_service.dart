@@ -207,7 +207,7 @@ class NotificationService extends ChangeNotifier {
         channelId,
         isFajr ? 'أذان صلاة الفجر' : 'أذان الصلوات المفروضة',
         channelDescription: 'حان الآن موعد الصلاة',
-        importance: Importance.max,
+        importance: Importance.high,
         priority: Priority.high,
         sound: RawResourceAndroidNotificationSound(rawSoundName),
         playSound: true,
@@ -215,7 +215,6 @@ class NotificationService extends ChangeNotifier {
         audioAttributesUsage: AudioAttributesUsage.notification,
         category: AndroidNotificationCategory.alarm,
         visibility: NotificationVisibility.public,
-        fullScreenIntent: true,
         styleInformation: BigTextStyleInformation(
           'حان الآن موعد أذان صلاة $arabicName - قال تعالى: ﴿وَأَقِمِ الصَّلَاةَ لِذِكْرِي﴾',
           contentTitle: '🕌 حان الآن أَذَان $arabicName',
@@ -281,7 +280,7 @@ class NotificationService extends ChangeNotifier {
         channelId,
         isFajr ? 'أذان صلاة الفجر' : 'أذان الصلوات المفروضة',
         channelDescription: 'حان الآن موعد الصلاة',
-        importance: Importance.max,
+        importance: Importance.high,
         priority: Priority.high,
         sound: RawResourceAndroidNotificationSound(rawSoundName),
         playSound: true,
@@ -289,7 +288,6 @@ class NotificationService extends ChangeNotifier {
         audioAttributesUsage: AudioAttributesUsage.notification,
         category: AndroidNotificationCategory.alarm,
         visibility: NotificationVisibility.public,
-        fullScreenIntent: true,
         actions: <AndroidNotificationAction>[
           const AndroidNotificationAction(
             'stop_athan',
@@ -350,6 +348,80 @@ class NotificationService extends ChangeNotifier {
       debugPrint('⏰ Scheduled Athan notification for $arabicName at $scheduledDate (ID: $id)');
     } catch (e) {
       debugPrint('❌ Error scheduling prayer athan: $e');
+    }
+  }
+
+  /// Schedule pre-prayer reminder (e.g. 60m, 30m, 3m before prayer)
+  Future<void> schedulePrePrayerReminder({
+    required int id,
+    required String prayerName,
+    required String arabicName,
+    required DateTime scheduledDate,
+    required int minutesBefore,
+  }) async {
+    if (kIsWeb) return;
+
+    try {
+      final tzDateTime = tz.TZDateTime.from(scheduledDate, tz.local);
+      if (tzDateTime.isBefore(tz.TZDateTime.now(tz.local))) {
+        return;
+      }
+
+      String title;
+      String body;
+
+      if (minutesBefore >= 60) {
+        title = '⏰ اقتراب صلاة $arabicName (متبقي ساعة)';
+        body = 'فاضل ساعة واحدة على أذان صلاة $arabicName، استعد وتجهز للقاء الله.';
+      } else if (minutesBefore >= 30) {
+        title = '⏰ اقتراب موعد صلاة $arabicName (نصف ساعة)';
+        body = 'فاضل نصف ساعة على صلاة $arabicName، أسبغ الوضوء وتأهب للصلاة.';
+      } else {
+        title = '🕌 حان وقت صلاة $arabicName تقريباً (3 دقائق)';
+        body = 'فاضل 3 دقائق على رفع أذان صلاة $arabicName، استعد لتكبيرة الإحرام.';
+      }
+
+      const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+        remindersChannelId,
+        'تذكيرات الصلاة والأذكار',
+        channelDescription: 'تنبيهات مسبقة قبل مواعيد الصلاة والأذكار اليومية',
+        importance: Importance.max,
+        priority: Priority.high,
+        enableVibration: true,
+        visibility: NotificationVisibility.public,
+        category: AndroidNotificationCategory.reminder,
+      );
+
+      const NotificationDetails notificationDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: DarwinNotificationDetails(presentAlert: true, presentSound: true),
+      );
+
+      try {
+        await _flutterLocalNotificationsPlugin.zonedSchedule(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: tzDateTime,
+          notificationDetails: notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.alarmClock,
+          payload: 'pre_prayer_${prayerName}_$minutesBefore',
+        );
+      } catch (_) {
+        await _flutterLocalNotificationsPlugin.zonedSchedule(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: tzDateTime,
+          notificationDetails: notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          payload: 'pre_prayer_${prayerName}_$minutesBefore',
+        );
+      }
+
+      debugPrint('⏰ Scheduled pre-prayer reminder ($minutesBefore min) for $arabicName at $scheduledDate (ID: $id)');
+    } catch (e) {
+      debugPrint('⚠️ Error scheduling pre-prayer reminder: $e');
     }
   }
 
@@ -519,13 +591,12 @@ class NotificationService extends ChangeNotifier {
         remindersChannelId,
         'التذكيرات الإيمانية اليومية',
         channelDescription: 'آيات وأدعية وأذكار يومية مباركة تظهر حتى مع قفل الشاشة',
-        importance: Importance.max,
+        importance: Importance.high,
         priority: Priority.high,
         playSound: true,
         enableVibration: true,
         category: AndroidNotificationCategory.reminder,
         visibility: NotificationVisibility.public,
-        fullScreenIntent: true,
         styleInformation: BigTextStyleInformation(
           body,
           contentTitle: title,
@@ -612,13 +683,12 @@ class NotificationService extends ChangeNotifier {
         remindersChannelId,
         'التذكيرات الإيمانية اليومية',
         channelDescription: 'آيات وأدعية وأذكار يومية مباركة تظهر حتى مع قفل الشاشة',
-        importance: Importance.max,
+        importance: Importance.high,
         priority: Priority.high,
         playSound: true,
         enableVibration: true,
         category: AndroidNotificationCategory.reminder,
         visibility: NotificationVisibility.public,
-        fullScreenIntent: true,
         styleInformation: BigTextStyleInformation(
           body,
           contentTitle: title,

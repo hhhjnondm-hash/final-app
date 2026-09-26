@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../services/athan_service.dart';
-import '../services/notification_service.dart';
-import '../utils/design_system.dart';
+import '../services/global_audio_manager.dart';
+import '../screens/notification_settings_screen.dart';
 
 class PrayerAthanDialog extends StatefulWidget {
   final String prayerName;
@@ -19,14 +19,21 @@ class PrayerAthanDialog extends StatefulWidget {
     required String prayerName,
     required String arabicName,
   }) async {
-    return showDialog(
+    return showGeneralDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withValues(alpha: 0.82),
-      builder: (context) => PrayerAthanDialog(
+      barrierColor: Colors.black.withValues(alpha: 0.95),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, anim1, anim2) => PrayerAthanDialog(
         prayerName: prayerName,
         arabicName: arabicName,
       ),
+      transitionBuilder: (context, anim1, anim2, child) {
+        return FadeTransition(
+          opacity: anim1,
+          child: child,
+        );
+      },
     );
   }
 
@@ -40,16 +47,18 @@ class _PrayerAthanDialogState extends State<PrayerAthanDialog>
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   bool _isMuted = false;
+  double _volume = 0.9;
 
   @override
   void initState() {
     super.initState();
+    _volume = _athanService.settings.volume;
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
 
-    _pulseAnimation = Tween<double>(begin: 0.94, end: 1.08).animate(
+    _pulseAnimation = Tween<double>(begin: 0.95, end: 1.08).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
     );
   }
@@ -78,615 +87,662 @@ class _PrayerAthanDialogState extends State<PrayerAthanDialog>
     }
   }
 
-  void _snoozeReminder() {
-    _athanService.stopAthan();
-    NotificationService().scheduleMissedPrayerReminder(
-      id: 999,
-      prayerName: widget.prayerName,
-      arabicName: widget.arabicName,
-      prayerTime: DateTime.now(),
-      delayMinutes: 15,
-    );
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'سيتم تذكيرك بصلاة ${widget.arabicName} بعد 15 دقيقة إن شاء الله',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          backgroundColor: DesignSystem.gold,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-      Navigator.of(context, rootNavigator: true).pop();
+  void _volumeUp() {
+    setState(() {
+      _volume = (_volume + 0.15).clamp(0.0, 1.0);
+      _isMuted = false;
+    });
+    _athanService.updateSettings(_athanService.settings.copyWith(volume: _volume));
+    GlobalAudioManager().setVolume(_volume);
+  }
+
+  void _volumeDown() {
+    setState(() {
+      _volume = (_volume - 0.15).clamp(0.0, 1.0);
+    });
+    _athanService.updateSettings(_athanService.settings.copyWith(volume: _volume));
+    GlobalAudioManager().setVolume(_volume);
+  }
+
+  String _getPrayerBgImage(String prayer) {
+    switch (prayer.toLowerCase()) {
+      case 'fajr':
+        return 'assets/images/athan/athan_bg_fajr.png';
+      case 'dhuhr':
+        return 'assets/images/athan/athan_bg_dhuhr.jpg';
+      case 'asr':
+        return 'assets/images/athan/athan_bg_asr.jpg';
+      case 'maghrib':
+        return 'assets/images/athan/athan_bg_maghrib.png';
+      case 'isha':
+      default:
+        return 'assets/images/athan/athan_bg_isha.jpg';
     }
   }
 
-  void _muteToday() {
-    _athanService.stopAthan();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'تم إيقاف صوت الإشعارات لبقية صلوات اليوم',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          backgroundColor: Color(0xFF1E293B),
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 3),
-        ),
-      );
-      Navigator.of(context, rootNavigator: true).pop();
+  Map<String, String> _getPrayerAyah(String prayer) {
+    switch (prayer.toLowerCase()) {
+      case 'fajr':
+        return {
+          'text': 'وَأَقِمِ الصَّلَوةَ لِذِكْرِي',
+          'surah': '[ طه : 14 ]',
+          'hasBookIcon': 'true',
+        };
+      case 'dhuhr':
+      case 'asr':
+        return {
+          'text': 'حَافِظُوا عَلَى الصَّلَوَاتِ وَالصَّلَاةِ الْوُسْطَى',
+          'surah': '[ البقرة : 238 ]',
+          'hasBookIcon': 'false',
+        };
+      case 'maghrib':
+        return {
+          'text': 'وَأَقِمِ الصَّلَوةَ لِذِكْرِي',
+          'surah': '[ طه : 14 ]',
+          'hasBookIcon': 'false',
+        };
+      case 'isha':
+      default:
+        return {
+          'text': 'إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَوْقُوتًا',
+          'surah': '[ النساء : 103 ]',
+          'hasBookIcon': 'false',
+        };
     }
+  }
+
+  String _getArabicDate() {
+    final now = DateTime.now();
+    const days = ['الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
+    const months = [
+      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+    ];
+    final dayName = days[now.weekday - 1];
+    final monthName = months[now.month - 1];
+    return '$dayName\n${now.day} $monthName ${now.year}';
+  }
+
+  String _getFormattedPrayerTime() {
+    final pTime = _athanService.prayerTimes[widget.prayerName] ??
+        _athanService.lastPrayerTime ??
+        DateTime.now();
+    final h = pTime.hour.toString().padLeft(2, '0');
+    final m = pTime.minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+
+  String _getSubtitle() {
+    if (widget.prayerName.toLowerCase() == 'fajr') {
+      return 'الصلاة خير من النوم';
+    }
+    return 'حي على الصلاة';
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isFajr = widget.prayerName.toLowerCase() == 'fajr';
+    final ayahInfo = _getPrayerAyah(widget.prayerName);
+
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 390),
-          decoration: BoxDecoration(
-            color: const Color(0xFF090D14),
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(
-              color: const Color(0xFFC89B3C).withValues(alpha: 0.38),
-              width: 1.2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFC89B3C).withValues(alpha: 0.16),
-                blurRadius: 36,
-                spreadRadius: 2,
-                offset: const Offset(0, 8),
-              ),
-              const BoxShadow(
-                color: Colors.black,
-                blurRadius: 24,
-                offset: Offset(0, 10),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(30),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // 1. Top Bar: Sound Bell (animated pulsing soundwaves) & Close Button (X)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Sound Bell Button (( 🔔 ))
-                      _buildSoundBellButton(),
-
-                      // Close X Button
-                      _buildCloseButton(),
-                    ],
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  // 2. Islamic Arch Window with Clean Mosque Sunset Scenery
-                  _buildIslamicArchScenery(),
-
-                  const SizedBox(height: 12),
-
-                  // 3. 'حان الآن'
-                  const Text(
-                    'حان الآن',
-                    style: TextStyle(
-                      color: Color(0xFFD6C5A2),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.4,
-                    ),
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  // 4. '❖ أذان الفجر ❖' with glowing gold calligraphy
-                  _buildPrayerTitle(),
-
-                  const SizedBox(height: 4),
-
-                  // 5. 'حان وقت الصلاة'
-                  const Text(
-                    'حان وقت الصلاة',
-                    style: TextStyle(
-                      color: Color(0xFF909EAE),
-                      fontSize: 14,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // 6. Delicate Geometric Diamond Divider: ──── ◈ ────
-                  _buildGeometricDivider(),
-
-                  const SizedBox(height: 14),
-
-                  // 7. Framed Ayah Card
-                  _buildAyahCard(),
-
-                  const SizedBox(height: 16),
-
-                  // 8. Main Action Button: [ 🧎 هيا إلى الصلاة ]
-                  _buildMainActionButton(),
-
-                  const SizedBox(height: 10),
-
-                  // 9. Secondary Capsule Buttons: [ تذكّرني لاحقاً ] & [ إيقاف الإشعار لـ اليوم ]
-                  _buildSecondaryActionButtons(),
-
-                  const SizedBox(height: 14),
-
-                  // 10. Footer with Heart: ────── 💛 الصلاة نور لحياتك ──────
-                  _buildFooter(),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Top Left Sound Bell Button with animated golden acoustic waves: (( 🔔 ))
-  Widget _buildSoundBellButton() {
-    return GestureDetector(
-      onTap: _toggleMute,
-      child: Container(
-        color: Colors.transparent,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+      child: Scaffold(
+        backgroundColor: const Color(0xFF07090E),
+        body: Stack(
           children: [
-            // Left acoustic waves
-            CustomPaint(
-              size: const Size(12, 28),
-              painter: _AcousticWavePainter(isLeft: true, isMuted: _isMuted),
-            ),
-            const SizedBox(width: 4),
-            // Central glowing circular bell
-            ScaleTransition(
-              scale: _pulseAnimation,
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFF131924),
-                  border: Border.all(
-                    color: _isMuted
-                        ? Colors.white24
-                        : const Color(0xFFE5C066).withValues(alpha: 0.7),
-                    width: 1.4,
-                  ),
-                  boxShadow: [
-                    if (!_isMuted)
-                      BoxShadow(
-                        color: const Color(0xFFC89B3C).withValues(alpha: 0.4),
-                        blurRadius: 12,
-                        spreadRadius: 1,
-                      ),
-                  ],
-                ),
-                child: Icon(
-                  _isMuted
-                      ? Icons.notifications_off_rounded
-                      : Icons.notifications_active_rounded,
-                  color: _isMuted ? Colors.white54 : const Color(0xFFF3E7C4),
-                  size: 20,
-                ),
-              ),
-            ),
-            const SizedBox(width: 4),
-            // Right acoustic waves
-            CustomPaint(
-              size: const Size(12, 28),
-              painter: _AcousticWavePainter(isLeft: false, isMuted: _isMuted),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Top Right Circular Close Button (X)
-  Widget _buildCloseButton() {
-    return GestureDetector(
-      onTap: _stopAndDismiss,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: const Color(0xFF131924),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.18),
-            width: 1.0,
-          ),
-        ),
-        child: const Icon(
-          Icons.close_rounded,
-          color: Colors.white70,
-          size: 19,
-        ),
-      ),
-    );
-  }
-
-  /// Islamic Arch Window with Clean Mosque Artwork & Custom Border
-  Widget _buildIslamicArchScenery() {
-    return SizedBox(
-      height: 180,
-      width: double.infinity,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Background subtle arabesque glow on the sides
-          Positioned(
-            top: 20,
-            left: 10,
-            child: Icon(
-              Icons.stars_rounded,
-              color: const Color(0xFFC89B3C).withValues(alpha: 0.15),
-              size: 24,
-            ),
-          ),
-          Positioned(
-            top: 20,
-            right: 10,
-            child: Icon(
-              Icons.stars_rounded,
-              color: const Color(0xFFC89B3C).withValues(alpha: 0.15),
-              size: 24,
-            ),
-          ),
-
-          // The Clipped Arch Scenery
-          SizedBox(
-            width: 270,
-            height: 180,
-            child: ClipPath(
-              clipper: IslamicArchClipper(),
+            // Background Arch Scenery
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: size.height * 0.44,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Clean mosque image
                   Image.asset(
-                    'assets/images/athan_mosque_clean.jpg',
+                    _getPrayerBgImage(widget.prayerName),
                     fit: BoxFit.cover,
-                    alignment: const Alignment(0.0, -0.3),
+                    alignment: Alignment.topCenter,
                     errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: const Color(0xFF131924),
-                        child: const Center(
-                          child: Icon(
-                            Icons.mosque_rounded,
-                            size: 70,
-                            color: Color(0xFFC89B3C),
-                          ),
-                        ),
+                      return Image.asset(
+                        'assets/home_hero_mosque.jpg',
+                        fit: BoxFit.cover,
+                        alignment: Alignment.topCenter,
                       );
                     },
                   ),
-
-                  // Dark bottom gradient overlay to blend into the card
+                  // Dark bottom gradient overlay to merge into deep black background
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
+                          Colors.black.withValues(alpha: 0.15),
                           Colors.transparent,
-                          const Color(0xFF090D14).withValues(alpha: 0.4),
-                          const Color(0xFF090D14).withValues(alpha: 0.95),
+                          const Color(0xFF07090E).withValues(alpha: 0.85),
+                          const Color(0xFF07090E),
                         ],
-                        stops: const [0.55, 0.8, 1.0],
+                        stops: const [0.0, 0.35, 0.80, 1.0],
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
 
-          // The Golden Ornamental Arch Border Painter
-          SizedBox(
-            width: 270,
-            height: 180,
-            child: CustomPaint(
-              painter: IslamicArchBorderPainter(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+            // Main Content Layout
+            SafeArea(
+              child: Column(
+                children: [
+                  // 1. Top Bar: Close (X) & Settings (Gear)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Left: Close (X)
+                        _buildTopCircularButton(
+                          icon: Icons.close_rounded,
+                          onTap: _stopAndDismiss,
+                        ),
+                        // Right: Settings (Gear)
+                        _buildTopCircularButton(
+                          icon: Icons.settings_rounded,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const NotificationSettingsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
 
-  /// Big Glowing Golden Title: ❖ أَذَان الفَجْر ❖
-  Widget _buildPrayerTitle() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text(
-          '❖',
-          style: TextStyle(
-            color: Color(0xFFC89B3C),
-            fontSize: 16,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          'أَذَان ${widget.arabicName}',
-          style: const TextStyle(
-            color: Color(0xFFF9EED4),
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.6,
-            shadows: [
-              Shadow(
-                color: Color(0xFFD49E3D),
-                blurRadius: 18,
+                  // 2. Mosque Icon & Golden Header Title Over Arch
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 32,
+                        height: 1,
+                        color: const Color(0xFFC89B3C).withValues(alpha: 0.6),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 6),
+                        child: Icon(
+                          Icons.mosque_rounded,
+                          color: Color(0xFFE8D29A),
+                          size: 16,
+                        ),
+                      ),
+                      const Text(
+                        'حان الآن وقت',
+                        style: TextStyle(
+                          color: Color(0xFFE8D29A),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 6),
+                        child: Text(
+                          '♦',
+                          style: TextStyle(color: Color(0xFFC89B3C), fontSize: 10),
+                        ),
+                      ),
+                      Container(
+                        width: 32,
+                        height: 1,
+                        color: const Color(0xFFC89B3C).withValues(alpha: 0.6),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Big Glowing Calligraphy Title: أَذَانُ المَغْرِب / أَذَانُ الفَجْر
+                  Text(
+                    'أَذَانُ ${widget.arabicName}',
+                    style: const TextStyle(
+                      fontFamily: 'Cairo',
+                      color: Color(0xFFFFF4D4),
+                      fontSize: 38,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.0,
+                      shadows: [
+                        Shadow(
+                          color: Color(0xFFC89B3C),
+                          blurRadius: 28,
+                          offset: Offset(0, 2),
+                        ),
+                        Shadow(
+                          color: Colors.black87,
+                          blurRadius: 16,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  // Subtitle: ♦ الصلاة خير من النوم ♦ / ♦ حي على الصلاة ♦
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('♦', style: TextStyle(color: Color(0xFFC89B3C), fontSize: 11)),
+                      const SizedBox(width: 8),
+                      Text(
+                        _getSubtitle(),
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          color: isFajr ? const Color(0xFFF0DAAA) : const Color(0xFFD6C5A2),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text('♦', style: TextStyle(color: Color(0xFFC89B3C), fontSize: 11)),
+                    ],
+                  ),
+
+                  const Spacer(flex: 2),
+
+                  // 3. Middle Capsule Bar: Location & Time | Center Mosque Visualizer | Date
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _buildInfoCapsule(),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // 4. Quranic Verse Card
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _buildAyahCard(ayahInfo),
+                  ),
+
+                  const Spacer(flex: 3),
+
+                  // 5. Large Central Glowing Stop Controller & Waveform Bars
+                  _buildCenterStopSection(),
+
+                  const Spacer(flex: 3),
+
+                  // 6. Bottom Row Controls: خفض الصوت | كتم الأذان | رفع الصوت
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
+                    child: _buildBottomControlsRow(),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 8),
-        const Text(
-          '❖',
-          style: TextStyle(
-            color: Color(0xFFC89B3C),
-            fontSize: 16,
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Delicate Geometric Diamond Divider: ──── ◈ ────
-  Widget _buildGeometricDivider() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 44,
-          height: 0.8,
-          color: const Color(0xFFC89B3C).withValues(alpha: 0.35),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8),
-          child: Text(
-            '◈',
-            style: TextStyle(
-              color: Color(0xFFC89B3C),
-              fontSize: 11,
-            ),
-          ),
-        ),
-        Container(
-          width: 44,
-          height: 0.8,
-          color: const Color(0xFFC89B3C).withValues(alpha: 0.35),
-        ),
-      ],
-    );
-  }
-
-  /// Framed Quranic Ayah Card
-  Widget _buildAyahCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF101622),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFFC89B3C).withValues(alpha: 0.28),
-          width: 1.0,
-        ),
-      ),
-      child: Column(
-        children: [
-          const Text(
-            'قال الله تعالى:',
-            style: TextStyle(
-              color: Color(0xFFC5B494),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '«',
-                style: TextStyle(
-                  color: const Color(0xFFC89B3C).withValues(alpha: 0.8),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(width: 6),
-              const Text(
-                'وَأَقِمِ الصَّلَاةَ لِذِكْرِي',
-                style: TextStyle(
-                  color: Color(0xFFF9EED4),
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '»',
-                style: TextStyle(
-                  color: const Color(0xFFC89B3C).withValues(alpha: 0.8),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            '[ طه : 14 ]',
-            style: TextStyle(
-              color: Color(0xFF7E8B9B),
-              fontSize: 11,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Main Action Button: [ 🧎 هيا إلى الصلاة ]
-  Widget _buildMainActionButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(25),
-          gradient: const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFF3C775),
-              Color(0xFFD49E3D),
-            ],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFD49E3D).withValues(alpha: 0.42),
-              blurRadius: 18,
-              offset: const Offset(0, 5),
             ),
           ],
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(25),
-            onTap: _stopAndDismiss,
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.mosque_rounded,
-                  color: Color(0xFF1E1404),
-                  size: 20,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  'هيا إلى الصلاة',
-                  style: TextStyle(
-                    color: Color(0xFF1E1404),
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
+      ),
+    );
+  }
+
+  /// Top Left / Right Circular Golden Outlined Buttons
+  Widget _buildTopCircularButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: const Color(0xFF131924).withValues(alpha: 0.85),
+          border: Border.all(
+            color: const Color(0xFFC89B3C).withValues(alpha: 0.45),
+            width: 1.0,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          color: const Color(0xFFFFF2D1),
+          size: 19,
         ),
       ),
     );
   }
 
-  /// Secondary Capsule Buttons: [ تذكّرني لاحقاً ] & [ إيقاف الإشعار لـ اليوم ]
-  Widget _buildSecondaryActionButtons() {
-    return Row(
-      children: [
-        // Right: تذكّرني لاحقاً
-        Expanded(
-          child: Container(
-            height: 42,
-            decoration: BoxDecoration(
-              color: const Color(0xFF121824),
-              borderRadius: BorderRadius.circular(21),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.12),
-                width: 1.0,
+  /// Middle Capsule Bar (Location & Time | Center Mosque Visualizer | Day & Date)
+  Widget _buildInfoCapsule() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F1520).withValues(alpha: 0.90),
+        borderRadius: BorderRadius.circular(35),
+        border: Border.all(
+          color: const Color(0xFFC89B3C).withValues(alpha: 0.45),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFC89B3C).withValues(alpha: 0.12),
+            blurRadius: 20,
+            spreadRadius: 1,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.7),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Left: Location & Time
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFC89B3C).withValues(alpha: 0.15),
+                ),
+                child: const Icon(
+                  Icons.location_on_rounded,
+                  color: Color(0xFFE8D29A),
+                  size: 16,
+                ),
               ),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(21),
-                onTap: _snoozeReminder,
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.access_time_rounded,
-                      color: Color(0xFFB0BCC9),
-                      size: 15,
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'القاهرة',
+                    style: TextStyle(
+                      color: Color(0xFFFFF4D4),
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
                     ),
-                    SizedBox(width: 6),
-                    Text(
-                      'تذكّرني لاحقاً',
-                      style: TextStyle(
-                        color: Color(0xFFD3DDE7),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  ),
+                  Text(
+                    _getFormattedPrayerTime(),
+                    style: const TextStyle(
+                      color: Color(0xFFB4C2D1),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          // Center: Glowing Golden Mosque Silhouette Circle + Equalizer Wings
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildMiniWaveform(isLeft: true),
+              const SizedBox(width: 6),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const RadialGradient(
+                    colors: [
+                      Color(0xFFF3D99E),
+                      Color(0xFFC89B3C),
+                      Color(0xFF8A6517),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFC89B3C).withValues(alpha: 0.55),
+                      blurRadius: 14,
+                      spreadRadius: 1,
                     ),
                   ],
                 ),
+                child: const Center(
+                  child: Icon(
+                    Icons.mosque_rounded,
+                    color: Color(0xFF161003),
+                    size: 24,
+                  ),
+                ),
               ),
+              const SizedBox(width: 6),
+              _buildMiniWaveform(isLeft: false),
+            ],
+          ),
+
+          // Right: Day & Date
+          Row(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _getArabicDate().split('\n').first,
+                    style: const TextStyle(
+                      color: Color(0xFFFFF4D4),
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    _getArabicDate().split('\n').last,
+                    style: const TextStyle(
+                      color: Color(0xFFB4C2D1),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFC89B3C).withValues(alpha: 0.15),
+                ),
+                child: const Icon(
+                  Icons.calendar_today_rounded,
+                  color: Color(0xFFE8D29A),
+                  size: 15,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Quranic Ayah Card with Ornamental Corner Brackets
+  Widget _buildAyahCard(Map<String, String> ayahInfo) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F1520).withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: const Color(0xFFC89B3C).withValues(alpha: 0.38),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.6),
+            blurRadius: 18,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header: قال الله تعالى:
+          const Text(
+            'قال الله تعالى:',
+            style: TextStyle(
+              color: Color(0xFFD6C5A2),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
             ),
           ),
-        ),
-        const SizedBox(width: 10),
-        // Left: إيقاف الإشعار لـ اليوم
-        Expanded(
-          child: Container(
-            height: 42,
-            decoration: BoxDecoration(
-              color: const Color(0xFF121824),
-              borderRadius: BorderRadius.circular(21),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.12),
-                width: 1.0,
+          const SizedBox(height: 8),
+
+          // Quranic Verse Text
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text(
+                '❖',
+                style: TextStyle(color: Color(0xFFC89B3C), fontSize: 13),
               ),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(21),
-                onTap: _muteToday,
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.notifications_off_outlined,
-                      color: Color(0xFFB0BCC9),
-                      size: 15,
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      'إيقاف إشعار اليوم',
-                      style: TextStyle(
-                        color: Color(0xFFD3DDE7),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+              const SizedBox(width: 10),
+              Flexible(
+                child: Text(
+                  ayahInfo['text'] ?? 'وَأَقِمِ الصَّلَوةَ لِذِكْرِي',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontFamily: 'Cairo',
+                    color: Color(0xFFFFF8E5),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.3,
+                  ),
                 ),
               ),
+              const SizedBox(width: 10),
+              const Text(
+                '❖',
+                style: TextStyle(color: Color(0xFFC89B3C), fontSize: 13),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 6),
+
+          // Surah Reference: [ طه : 14 ]
+          Text(
+            ayahInfo['surah'] ?? '[ طه : 14 ]',
+            style: const TextStyle(
+              color: Color(0xFF94A3B8),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Large Central Glowing Stop Controller & Waveform Bars
+  Widget _buildCenterStopSection() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Left Equalizer Soundwave Bars
+            _buildEqualizerBars(isLeft: true),
+
+            const SizedBox(width: 18),
+
+            // Pulsing Concentric Glowing Stop Button
+            ScaleTransition(
+              scale: _pulseAnimation,
+              child: GestureDetector(
+                onTap: _stopAndDismiss,
+                child: Container(
+                  width: 86,
+                  height: 86,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const RadialGradient(
+                      colors: [
+                        Color(0xFF221706),
+                        Color(0xFF130E05),
+                        Color(0xFF090D14),
+                      ],
+                    ),
+                    border: Border.all(
+                      color: const Color(0xFFE8D29A),
+                      width: 2.4,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFC89B3C).withValues(alpha: 0.45),
+                        blurRadius: 28,
+                        spreadRadius: 3,
+                      ),
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.9),
+                        blurRadius: 18,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF4D4),
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFC89B3C).withValues(alpha: 0.8),
+                            blurRadius: 10,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 18),
+
+            // Right Equalizer Soundwave Bars
+            _buildEqualizerBars(isLeft: false),
+          ],
+        ),
+
+        const SizedBox(height: 12),
+
+        // Text below button: إيقاف الأذان / جاري تشغيل الأذان...
+        GestureDetector(
+          onTap: _stopAndDismiss,
+          child: const Text(
+            'إيقاف الأذان',
+            style: TextStyle(
+              color: Color(0xFFE8D29A),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.4,
             ),
           ),
         ),
@@ -694,188 +750,158 @@ class _PrayerAthanDialogState extends State<PrayerAthanDialog>
     );
   }
 
-  /// Footer with Heart: ────── 💛 الصلاة نور لحياتك ──────
-  Widget _buildFooter() {
+  /// Animated Vertical Equalizer Bars around the Stop Button
+  Widget _buildEqualizerBars({required bool isLeft}) {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        final t = _pulseController.value;
+        const heights = [10.0, 16.0, 24.0, 32.0, 20.0, 14.0];
+        final list = isLeft ? heights.reversed.toList() : heights;
+
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(list.length, (i) {
+            final wave = (math.sin(t * math.pi * 2 + (i * 0.9)) + 1.0) / 2.0;
+            final h = (list[i] * (0.35 + wave * 0.65)).clamp(6.0, 34.0);
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2.2),
+              width: 3.2,
+              height: h,
+              decoration: BoxDecoration(
+                color: const Color(0xFFC89B3C).withValues(alpha: 0.4 + wave * 0.55),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            );
+          }),
+        );
+      },
+    );
+  }
+
+  /// Mini Acoustic Waveform for Middle Capsule
+  Widget _buildMiniWaveform({required bool isLeft}) {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        final t = _pulseController.value;
+        const heights = [8.0, 14.0, 20.0, 12.0];
+        final list = isLeft ? heights.reversed.toList() : heights;
+
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(list.length, (i) {
+            final wave = (math.sin(t * math.pi * 2 + (i * 0.8)) + 1.0) / 2.0;
+            final h = (list[i] * (0.4 + wave * 0.6)).clamp(5.0, 22.0);
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 1.5),
+              width: 2.2,
+              height: h,
+              decoration: BoxDecoration(
+                color: const Color(0xFFC89B3C).withValues(alpha: 0.5 + wave * 0.5),
+                borderRadius: BorderRadius.circular(1.5),
+              ),
+            );
+          }),
+        );
+      },
+    );
+  }
+
+  /// Bottom Row of 3 Capsule Buttons: [ خفض الصوت ] - [ كتم الأذان ] - [ رفع الصوت ]
+  Widget _buildBottomControlsRow() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        // 1. خفض الصوت (Volume Down)
         Expanded(
-          child: Container(
-            height: 0.8,
-            color: Colors.white.withValues(alpha: 0.08),
+          child: _buildControlPillButton(
+            icon: Icons.volume_down_rounded,
+            label: 'خفض الصوت',
+            onTap: _volumeDown,
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10),
+
+        const SizedBox(width: 10),
+
+        // 2. كتم الأذان (Mute Adhan)
+        Expanded(
+          child: _buildControlPillButton(
+            icon: _isMuted ? Icons.volume_off_rounded : Icons.notifications_off_rounded,
+            label: _isMuted ? 'إلغاء الكتم' : 'كتم الأذان',
+            onTap: _toggleMute,
+            isActive: _isMuted,
+          ),
+        ),
+
+        const SizedBox(width: 10),
+
+        // 3. رفع الصوت (Volume Up)
+        Expanded(
+          child: _buildControlPillButton(
+            icon: Icons.volume_up_rounded,
+            label: 'رفع الصوت',
+            onTap: _volumeUp,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Single Capsule Control Button
+  Widget _buildControlPillButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isActive = false,
+  }) {
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        color: isActive
+            ? const Color(0xFF8A6517).withValues(alpha: 0.35)
+            : const Color(0xFF111722).withValues(alpha: 0.90),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isActive
+              ? const Color(0xFFF3D99E)
+              : const Color(0xFFC89B3C).withValues(alpha: 0.55),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.45),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: onTap,
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                '💛',
-                style: TextStyle(fontSize: 11),
+              Icon(
+                icon,
+                color: isActive ? const Color(0xFFFFF2D1) : const Color(0xFFE8D29A),
+                size: 19,
               ),
-              SizedBox(width: 6),
+              const SizedBox(width: 6),
               Text(
-                'الصلاة نور لحياتك',
+                label,
                 style: TextStyle(
-                  color: Color(0xFF728090),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+                  fontFamily: 'Cairo',
+                  color: isActive ? const Color(0xFFFFF2D1) : const Color(0xFFF6F8FA),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
         ),
-        Expanded(
-          child: Container(
-            height: 0.8,
-            color: Colors.white.withValues(alpha: 0.08),
-          ),
-        ),
-      ],
+      ),
     );
   }
-}
-
-/// Custom Clipper for pointed Islamic Moroccan/Moorish Trefoil Arch
-class IslamicArchClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final w = size.width;
-    final h = size.height;
-    final path = Path();
-
-    // Start at bottom left
-    path.moveTo(0, h);
-    // Vertical left wall
-    path.lineTo(0, h * 0.50);
-
-    // Left lower outward lobe
-    path.cubicTo(
-      0, h * 0.35,
-      w * 0.09, h * 0.27,
-      w * 0.17, h * 0.27,
-    );
-
-    // Left inward cusp
-    path.cubicTo(
-      w * 0.23, h * 0.27,
-      w * 0.23, h * 0.19,
-      w * 0.26, h * 0.15,
-    );
-
-    // Left soaring pointed arc to top center peak
-    path.cubicTo(
-      w * 0.31, h * 0.04,
-      w * 0.41, 0,
-      w * 0.50, 0,
-    );
-
-    // Right soaring pointed arc from top center peak
-    path.cubicTo(
-      w * 0.59, 0,
-      w * 0.69, h * 0.04,
-      w * 0.74, h * 0.15,
-    );
-
-    // Right inward cusp
-    path.cubicTo(
-      w * 0.77, h * 0.19,
-      w * 0.77, h * 0.27,
-      w * 0.83, h * 0.27,
-    );
-
-    // Right lower outward lobe
-    path.cubicTo(
-      w * 0.91, h * 0.27,
-      w, h * 0.35,
-      w, h * 0.50,
-    );
-
-    // Vertical right wall
-    path.lineTo(w, h);
-    path.close();
-
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
-
-/// Custom Painter to draw the fine golden ornamental trim along the Islamic Arch
-class IslamicArchBorderPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    final path = Path();
-    path.moveTo(0, h * 0.50);
-    path.cubicTo(0, h * 0.35, w * 0.09, h * 0.27, w * 0.17, h * 0.27);
-    path.cubicTo(w * 0.23, h * 0.27, w * 0.23, h * 0.19, w * 0.26, h * 0.15);
-    path.cubicTo(w * 0.31, h * 0.04, w * 0.41, 0, w * 0.50, 0);
-    path.cubicTo(w * 0.59, 0, w * 0.69, h * 0.04, w * 0.74, h * 0.15);
-    path.cubicTo(w * 0.77, h * 0.19, w * 0.77, h * 0.27, w * 0.83, h * 0.27);
-    path.cubicTo(w * 0.91, h * 0.27, w, h * 0.35, w, h * 0.50);
-
-    // 1. Soft gold outer glow
-    final glowPaint = Paint()
-      ..color = const Color(0xFFC89B3C).withValues(alpha: 0.30)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-    canvas.drawPath(path, glowPaint);
-
-    // 2. Primary golden stroke line
-    final strokePaint = Paint()
-      ..color = const Color(0xFFE5C066)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4;
-    canvas.drawPath(path, strokePaint);
-
-    // 3. Top peak finial / crest small ornament
-    final finialPaint = Paint()
-      ..color = const Color(0xFFF6E7C4)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(w * 0.5, 0), 2.5, finialPaint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
-}
-
-/// Custom Painter for acoustic soundwaves: ((  ))
-class _AcousticWavePainter extends CustomPainter {
-  final bool isLeft;
-  final bool isMuted;
-
-  _AcousticWavePainter({required this.isLeft, required this.isMuted});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = isMuted
-          ? Colors.white24
-          : const Color(0xFFE5C066).withValues(alpha: 0.75)
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 1.4;
-
-    final cx = isLeft ? size.width : 0.0;
-    final cy = size.height / 2;
-
-    // First wave arc
-    final rect1 = Rect.fromCircle(center: Offset(cx, cy), radius: 8);
-    final startAngle1 = isLeft ? math.pi * 0.65 : -math.pi * 0.35;
-    canvas.drawArc(rect1, startAngle1, math.pi * 0.7, false, paint);
-
-    // Second outer wave arc
-    final rect2 = Rect.fromCircle(center: Offset(cx, cy), radius: 14);
-    final startAngle2 = isLeft ? math.pi * 0.70 : -math.pi * 0.30;
-    canvas.drawArc(rect2, startAngle2, math.pi * 0.6, false, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _AcousticWavePainter oldDelegate) =>
-      oldDelegate.isMuted != isMuted;
 }

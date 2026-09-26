@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 enum NotificationContentType {
   ayah,
@@ -149,7 +149,7 @@ class NotificationPreferences {
     this.masterEnabled = true,
     this.quietHoursEnabled = true,
     this.quietHoursStart = const TimeOfDay(hour: 23, minute: 0),
-    this.quietHoursEnd = const TimeOfDay(hour: 7, minute: 0),
+    this.quietHoursEnd = const TimeOfDay(hour: 6, minute: 0),
     this.maxDailyNotifications = 8,
     this.minIntervalMinutes = 90,
     required this.schedules,
@@ -160,7 +160,7 @@ class NotificationPreferences {
       masterEnabled: true,
       quietHoursEnabled: true,
       quietHoursStart: const TimeOfDay(hour: 23, minute: 0),
-      quietHoursEnd: const TimeOfDay(hour: 7, minute: 0),
+      quietHoursEnd: const TimeOfDay(hour: 6, minute: 0),
       maxDailyNotifications: 8,
       minIntervalMinutes: 90,
       schedules: {

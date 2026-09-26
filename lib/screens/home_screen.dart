@@ -24,6 +24,7 @@ import 'prayer_times_screen.dart';
 import 'qibla_screen.dart';
 import 'radio_screen.dart';
 import 'surah_viewer_screen.dart';
+import '../widgets/developer_credits_badge.dart';
 
 enum SpiritualTimeContext {
   morning,
@@ -334,6 +335,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     vertical: DesignSystem.spacingXS,
                   ),
                   child: _buildContinueReadingCard(context),
+                ),
+              ),
+
+              // Developer Credits Badge
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: DesignSystem.spacingL,
+                    vertical: DesignSystem.spacingM,
+                  ),
+                  child: Center(
+                    child: DeveloperCreditsBadge(),
+                  ),
                 ),
               ),
 

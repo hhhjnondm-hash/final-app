@@ -11,9 +11,12 @@ import '../widgets/prayer_alert_sheet.dart';
 import '../widgets/prayer_hero_card.dart';
 import '../widgets/prayer_settings_sheet.dart';
 import '../widgets/prayer_timeline_card.dart';
-import '../widgets/qibla_compass_sheet.dart';
 import 'dhikr_reader_screen.dart';
 import 'qibla_screen.dart';
+import '../widgets/visual_effects/star_glint.dart';
+import '../widgets/visual_effects/shimmer_sweep.dart';
+import '../widgets/visual_effects/interactive_motion_card.dart';
+import '../widgets/developer_credits_badge.dart';
 
 class PrayerTimesScreen extends StatefulWidget {
   const PrayerTimesScreen({super.key});
@@ -265,6 +268,16 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(DesignSystem.spacingL),
                   child: _buildQuickToolsSection(context),
+                ),
+              ),
+
+              // Developer Credits Badge
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: DesignSystem.spacingL, vertical: 8),
+                  child: Center(
+                    child: DeveloperCreditsBadge(),
+                  ),
                 ),
               ),
 

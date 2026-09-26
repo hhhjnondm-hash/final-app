@@ -1,10 +1,21 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import '../models/prayer_models.dart';
 import '../services/quran_storage_service.dart';
 import '../utils/design_system.dart';
-import 'ai_assistant_screen.dart';
+import '../widgets/interactive_tasbih_card.dart';
+import '../widgets/visual_effects/star_glint.dart';
+import '../widgets/visual_effects/shimmer_sweep.dart';
+import '../widgets/visual_effects/pulsing_halo.dart';
+import '../widgets/visual_effects/islamic_decorations.dart';
 import 'azkar_screen.dart';
 import 'iqra_screen.dart';
+import 'notification_settings_screen.dart';
+import 'prayer_times_screen.dart';
+import 'qibla_screen.dart';
+import 'surah_viewer_screen.dart';
 import 'tasbih_screen.dart';
+import '../widgets/developer_credits_badge.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -15,118 +26,251 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final QuranStorageService _storage = QuranStorageService();
-  int _selectedTab = 0; // 0: العلامات المرجعية, 1: المفضلة
+
+  PrayerTiming? _nextPrayer;
+  String _hoursStr = '01';
+  String _minutesStr = '46';
+  String _secondsStr = '27';
+  List<PrayerTiming> _allPrayers = [];
+  Timer? _liveTimer;
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _initDefaultPrayerTimes();
+    _startLiveTimer();
+    _storage.addListener(_onStorageUpdate);
+  }
+
+  @override
+  void dispose() {
+    _liveTimer?.cancel();
+    _storage.removeListener(_onStorageUpdate);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onStorageUpdate() {
+    if (mounted) setState(() {});
+  }
+
+  void _initDefaultPrayerTimes() {
+    _allPrayers = [
+      PrayerTiming(
+        type: PrayerType.fajr,
+        nameArabic: 'الفجر',
+        nameEnglish: 'Fajr',
+        time: const TimeOfDay(hour: 5, minute: 19),
+        icon: Icons.nightlight_round,
+      ),
+      PrayerTiming(
+        type: PrayerType.sunrise,
+        nameArabic: 'الشروق',
+        nameEnglish: 'Sunrise',
+        time: const TimeOfDay(hour: 6, minute: 45),
+        icon: Icons.wb_twilight_rounded,
+      ),
+      PrayerTiming(
+        type: PrayerType.dhuhr,
+        nameArabic: 'الظهر',
+        nameEnglish: 'Dhuhr',
+        time: const TimeOfDay(hour: 12, minute: 46),
+        icon: Icons.wb_sunny_rounded,
+      ),
+      PrayerTiming(
+        type: PrayerType.asr,
+        nameArabic: 'العصر',
+        nameEnglish: 'Asr',
+        time: const TimeOfDay(hour: 16, minute: 13),
+        icon: Icons.cloud_queue_rounded,
+      ),
+      PrayerTiming(
+        type: PrayerType.maghrib,
+        nameArabic: 'المغرب',
+        nameEnglish: 'Maghrib',
+        time: const TimeOfDay(hour: 18, minute: 47),
+        icon: Icons.wb_sunny_outlined,
+      ),
+      PrayerTiming(
+        type: PrayerType.isha,
+        nameArabic: 'العشاء',
+        nameEnglish: 'Isha',
+        time: const TimeOfDay(hour: 20, minute: 4),
+        icon: Icons.nightlight_round,
+      ),
+    ];
+    _updateRealtimePrayerState();
+  }
+
+  void _startLiveTimer() {
+    _liveTimer?.cancel();
+    _liveTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        _updateRealtimePrayerState();
+      }
+    });
+  }
+
+  void _updateRealtimePrayerState() {
+    if (_allPrayers.isEmpty) return;
+
+    final now = DateTime.now();
+    PrayerTiming? next;
+    DateTime? nextDateTime;
+
+    for (final prayer in _allPrayers) {
+      final prayerDateTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        prayer.time.hour,
+        prayer.time.minute,
+      );
+
+      if (prayerDateTime.isAfter(now)) {
+        if (nextDateTime == null || prayerDateTime.isBefore(nextDateTime)) {
+          nextDateTime = prayerDateTime;
+          next = prayer;
+        }
+      }
+    }
+
+    if (next == null || nextDateTime == null) {
+      final fajrPrayer = _allPrayers.firstWhere(
+        (p) => p.type == PrayerType.fajr,
+        orElse: () => _allPrayers.first,
+      );
+      next = fajrPrayer;
+      nextDateTime = DateTime(
+        now.year,
+        now.month,
+        now.day + 1,
+        fajrPrayer.time.hour,
+        fajrPrayer.time.minute,
+      );
+    }
+
+    final diff = nextDateTime.difference(now);
+    final hours = diff.inHours;
+    final minutes = diff.inMinutes.remainder(60);
+    final seconds = diff.inSeconds.remainder(60);
+
+    setState(() {
+      _nextPrayer = next;
+      _hoursStr = hours.toString().padLeft(2, '0');
+      _minutesStr = minutes.toString().padLeft(2, '0');
+      _secondsStr = seconds.toString().padLeft(2, '0');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final progress = _storage.readingProgress;
-    final bookmarks = _storage.bookmarks;
+    final isLight = DesignSystem.isLightMode;
 
     return Scaffold(
-      backgroundColor: DesignSystem.bgDarkest,
+      backgroundColor: isLight ? const Color(0xFFF8F6F0) : const Color(0xFF07090E),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 850),
-            child: CustomScrollView(
+            constraints: const BoxConstraints(maxWidth: 1300),
+            child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              slivers: [
-                // 1. Header
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      DesignSystem.spacingL,
-                      DesignSystem.spacingM,
-                      DesignSystem.spacingL,
-                      DesignSystem.spacingS,
-                    ),
-                    child: _buildHeader(context),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 1. TOP BAR (Brand, Search Bar, Mode Switch, Notifications, User Capsule)
+                  _buildTopBar(context),
+
+                  const SizedBox(height: 16),
+
+                  // 2. TOP SECTION: Hero Greeting (Left) + Ayah Card (Right)
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.maxWidth > 850) {
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Left Hero Card (60%)
+                            Expanded(
+                              flex: 6,
+                              child: _buildHeroGreetingCard(context),
+                            ),
+                            const SizedBox(width: 14),
+                            // Right Ayah of the Day (40%)
+                            Expanded(
+                              flex: 4,
+                              child: _buildAyahCard(context),
+                            ),
+                          ],
+                        );
+                      }
+                      // Mobile Stacked View
+                      return Column(
+                        children: [
+                          _buildHeroGreetingCard(context),
+                          const SizedBox(height: 12),
+                          _buildAyahCard(context),
+                        ],
+                      );
+                    },
                   ),
-                ),
 
-                // 2. Profile Hero Card
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: DesignSystem.spacingL,
-                      vertical: DesignSystem.spacingS,
-                    ),
-                    child: _buildProfileHeroCard(),
+                  const SizedBox(height: 16),
+
+                  // 3. MIDDLE SECTION: Prayer Times (Left) + Electronic Tasbih (Right)
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.maxWidth > 850) {
+                        return IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Left Prayer Times Card (62%)
+                              Expanded(
+                                flex: 62,
+                                child: _buildPrayerTimesSpotlightCard(context),
+                              ),
+                              const SizedBox(width: 14),
+                              // Right Electronic Tasbih (38%)
+                              const Expanded(
+                                flex: 38,
+                                child: InteractiveTasbihCard(),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      // Mobile Stacked View
+                      return Column(
+                        children: [
+                          _buildPrayerTimesSpotlightCard(context),
+                          const SizedBox(height: 14),
+                          const SizedBox(
+                            height: 360,
+                            child: InteractiveTasbihCard(),
+                          ),
+                        ],
+                      );
+                    },
                   ),
-                ),
 
-                // 3. Quick Actions (Including Tasbih)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(DesignSystem.spacingL),
-                    child: _buildQuickActions(context),
+                  const SizedBox(height: 18),
+
+                  // 4. BOTTOM TOOLS SECTION ("أدوات سريعة")
+                  _buildQuickToolsSection(context),
+
+                  const SizedBox(height: 22),
+
+                  // 5. DEVELOPER CREDITS & RIGHTS ("Eng Ahmed Zaki")
+                  const Center(
+                    child: DeveloperCreditsBadge(),
                   ),
-                ),
 
-                // 4. Today Progress (رحلتي اليوم)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
-                    child: _buildTodayProgressSection(),
-                  ),
-                ),
-
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
-
-                // 5. Quran Journey (متابعة القراءة)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
-                    child: _buildQuranJourneyCard(context, progress),
-                  ),
-                ),
-
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
-
-                // 6. Khatmah + Streak Section
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
-                    child: _buildKhatmahAndStreakSection(),
-                  ),
-                ),
-
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
-
-                // 7. Statistics (إحصائياتي)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
-                    child: _buildStatisticsSection(),
-                  ),
-                ),
-
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
-
-                // 8. Bookmarks & Favorites (المحفوظات)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
-                    child: _buildBookmarksSection(bookmarks),
-                  ),
-                ),
-
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
-
-                // 9. Islamic Assistant Advice
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
-                    child: _buildIslamicAssistantCard(),
-                  ),
-                ),
-
-
-
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 100),
-                ),
-              ],
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
           ),
         ),
@@ -134,46 +278,292 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  // ==================== 1. TOP BAR ====================
+  Widget _buildTopBar(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        // Left: Rafeeq Brand & Mosque Logo
+        Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'الملف الشخصي',
-              style: TextStyle(
-                color: DesignSystem.textWhite,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFFFFD56B).withValues(alpha: 0.6),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFD56B).withValues(alpha: 0.2),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  isLight ? 'assets/out logo app/lightapp.png' : 'assets/out logo app/darkapp.png',
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.mosque,
+                    color: Color(0xFFFFD56B),
+                    size: 20,
+                  ),
+                ),
               ),
             ),
-            SizedBox(height: 2),
-            Text(
-              'رفيقك في رحلتك الإيمانية',
-              style: TextStyle(
-                color: DesignSystem.goldLight,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Rafeeq',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    color: isLight ? const Color(0xFF102A43) : Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const Text(
+                  'رفيقك في رحلتك الإيمانية',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    color: Color(0xFFC89B3C),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
+
+        const SizedBox(width: 16),
+
+        // Center: Search Bar ("ابحث في القرآن، الأذكار، المحتوى...")
+        Expanded(
+          child: Container(
+            height: 42,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C131D),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFF1E293B),
+                width: 1.1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isLight
+                      ? const Color(0xFF102A43).withValues(alpha: 0.04)
+                      : Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.search_rounded,
+                  size: 19,
+                  color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 12.5,
+                      color: isLight ? const Color(0xFF102A43) : Colors.white,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'ابحث في القرآن، الأذكار، المحتوى...',
+                      hintStyle: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 12,
+                        color: isLight ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 16),
+
+        // Right Group: Mode Toggle, Notification Bell, User Profile Capsule
         Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            _buildCircleIconButton(
-              icon: Icons.notifications_none_rounded,
+            // Theme Mode Toggle Pill
+            InkWell(
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('لا توجد إشعارات جديدة')),
+                setState(() {
+                  DesignSystem.isLightMode = !DesignSystem.isLightMode;
+                });
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C131D),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFF1E293B),
+                  ),
+                ),
+                child: Icon(
+                  isLight ? Icons.wb_sunny_rounded : Icons.nightlight_round,
+                  color: const Color(0xFFFFD56B),
+                  size: 18,
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 8),
+
+            // Notification Bell with Yellow (1) Badge
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NotificationSettingsScreen()),
                 );
               },
+              borderRadius: BorderRadius.circular(20),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C131D),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFF1E293B),
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.notifications_none_rounded,
+                      color: isLight ? const Color(0xFF102A43) : Colors.white,
+                      size: 19,
+                    ),
+                  ),
+                  Positioned(
+                    top: -2,
+                    right: -2,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFFD56B),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: Text(
+                          '1',
+                          style: TextStyle(
+                            color: Color(0xFF07090E),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(width: 8),
-            _buildCircleIconButton(
-              icon: Icons.tune_rounded,
-              onTap: () => _showGeneralSettings(context),
+
+            const SizedBox(width: 10),
+
+            // User Profile Capsule ("مرحباً بك • فارس القرآن")
+            InkWell(
+              onTap: () => _showEditProfileDialog(context),
+              borderRadius: BorderRadius.circular(24),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C131D),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: const Color(0xFFFFD56B).withValues(alpha: 0.45),
+                    width: 1.1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFD56B).withValues(alpha: 0.12),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'مرحباً بك في',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                            fontSize: 9.5,
+                          ),
+                        ),
+                        Text(
+                          'رفيق',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            color: isLight ? const Color(0xFF102A43) : Colors.white,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFFFFD56B),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/profile_hero.png',
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(
+                            Icons.person,
+                            color: Color(0xFFFFD56B),
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -181,146 +571,523 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildCircleIconButton({required IconData icon, required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
+  // ==================== 2. TOP HERO GREETING CARD ====================
+  Widget _buildHeroGreetingCard(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+
+    return ShimmerSweep(
+      duration: const Duration(milliseconds: 3200),
+      pauseDuration: const Duration(milliseconds: 3000),
+      shimmerColor: const Color(0xFFFFD56B),
       child: Container(
-        padding: const EdgeInsets.all(10),
+        height: 205,
         decoration: BoxDecoration(
-          color: DesignSystem.bgCard.withValues(alpha: 0.8),
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.35 : 0.45),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isLight
+                  ? const Color(0xFF102A43).withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.6),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
-        child: Icon(icon, color: DesignSystem.goldLight, size: 20),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Stack(
+            children: [
+              // Sunset Mosque Panorama Artwork
+              Positioned.fill(
+                child: Image.asset(
+                  'assets/home_hero_mosque.jpg',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                  errorBuilder: (_, __, ___) => Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF1B2E4B), Color(0xFF0A121D)],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Deep Dark Vignette Overlay for Crisp Text Contrast
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerRight,
+                      end: Alignment.centerLeft,
+                      colors: [
+                        const Color(0xFF07090E).withValues(alpha: 0.94),
+                        const Color(0xFF07090E).withValues(alpha: 0.70),
+                        const Color(0xFF07090E).withValues(alpha: 0.25),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Pointed Islamic Arch Border Trim
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: IslamicArchBorderPainter(
+                    primaryColor: const Color(0xFFFFD56B),
+                    secondaryColor: const Color(0xFFC89B3C),
+                  ),
+                ),
+              ),
+
+              // Sparkle Glint at corner
+              const Positioned(
+                top: 8,
+                left: 14,
+                child: StarGlint(size: 18),
+              ),
+
+              // Text Content
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'أهلاً ومرحباً بك',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            color: Color(0xFFFFD56B),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        const Text(
+                          'مرحباً بك في رفيق',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            color: Colors.white,
+                            fontSize: 26,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.4,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black,
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'بارك الله في يومك، واجعل لك فيه نصيباً من الخير والطاعة',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            color: Colors.white.withValues(alpha: 0.88),
+                            fontSize: 12,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Date & Hijri Pill
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0C131D).withValues(alpha: 0.85),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFFFFD56B).withValues(alpha: 0.35),
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.calendar_month_rounded,
+                            size: 14,
+                            color: Color(0xFFFFD56B),
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'الاثنين 27 سبتمبر 2026 • 4 ربيع الآخر 1448 هـ',
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              color: Color(0xFFFFD56B),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildProfileHeroCard() {
+  // ==================== 2.5 AYAH OF THE DAY CARD ====================
+  Widget _buildAyahCard(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+
     return Container(
-      width: double.infinity,
+      height: 205,
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF0D1D3A),
-            const Color(0xFF071324),
-            DesignSystem.bgDarkest,
-          ],
-        ),
+        color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C131D),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: DesignSystem.gold.withValues(alpha: 0.35),
-          width: 1.5,
+          color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.35 : 0.4),
+          width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: DesignSystem.gold.withValues(alpha: 0.12),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
+            color: isLight
+                ? const Color(0xFF102A43).withValues(alpha: 0.06)
+                : Colors.black.withValues(alpha: 0.6),
             blurRadius: 20,
             offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Background Islamic Mosque Artwork
-          ClipRRect(
-            borderRadius: BorderRadius.circular(28),
-            child: Image.asset(
-              'assets/profile_hero.png',
-              height: 220,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
-              errorBuilder: (_, __, ___) => const SizedBox(height: 220),
-            ),
-          ),
-
-          // Deep Dark Gradient Overlay
-          Container(
-            height: 220,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(28),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  DesignSystem.bgDarkest.withValues(alpha: 0.75),
-                  DesignSystem.bgDarkest.withValues(alpha: 0.98),
-                ],
-                stops: const [0.0, 0.5, 1.0],
-              ),
-            ),
-          ),
-
-          // Content Layer
-          Padding(
-            padding: const EdgeInsets.all(DesignSystem.spacingL),
-            child: Column(
-              children: [
-                const SizedBox(height: 10),
-                // Avatar with gold ring
-                Container(
-                  padding: const EdgeInsets.all(3.5),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: DesignSystem.goldGradient,
-                    boxShadow: DesignSystem.goldGlow,
-                  ),
-                  child: const CircleAvatar(
-                    radius: 36,
-                    backgroundColor: Color(0xFF0F2644),
-                    child: Icon(Icons.person, color: DesignSystem.goldLight, size: 40),
+          // Header: "★ آية اليوم"
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const StarGlint(size: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD56B).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFFFFD56B).withValues(alpha: 0.4),
                   ),
                 ),
-
-                const SizedBox(height: 12),
-
-                const Text(
-                  'مرحباً بك، قارئ القرآن',
-                  style: TextStyle(
-                    color: DesignSystem.textWhite,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: DesignSystem.gold.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                        border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.4)),
+                    Text(
+                      'آية اليوم',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        color: Color(0xFFFFD56B),
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
                       ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
+                    ),
+                    SizedBox(width: 4),
+                    Icon(
+                      Icons.menu_book_rounded,
+                      size: 13,
+                      color: Color(0xFFFFD56B),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          // Quran Calligraphy Verse
+          Text(
+            '﴿ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ ﴾',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Amiri',
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              height: 1.5,
+              color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
+              shadows: [
+                if (!isLight)
+                  Shadow(
+                    color: const Color(0xFFFFD56B).withValues(alpha: 0.5),
+                    blurRadius: 10,
+                  ),
+              ],
+            ),
+          ),
+
+          // Surah Reference & Tafsir Button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Tafsir Button
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const SurahViewerScreen(
+                        surahNumber: 13,
+                        surahName: 'الرعد',
+                        initialAyah: 28,
+                      ),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF151D2A),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFFFFD56B).withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.chevron_left_rounded, size: 14, color: Color(0xFFFFD56B)),
+                      SizedBox(width: 2),
+                      Text(
+                        'تفسير الآية',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          color: Color(0xFFFFD56B),
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              Text(
+                'سورة الرعد • الآية 28',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==================== 3. PRAYER TIMES SPOTLIGHT & COUNTDOWN ====================
+  Widget _buildPrayerTimesSpotlightCard(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C131D),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.35 : 0.4),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isLight
+                ? const Color(0xFF102A43).withValues(alpha: 0.06)
+                : Colors.black.withValues(alpha: 0.6),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Header: "مواقيت الصلاة - مكة المكرمة" + "عرض اليوم كامل >"
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PrayerTimesScreen()),
+                  );
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF151D2A),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.chevron_left_rounded, size: 14, color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8)),
+                      const SizedBox(width: 2),
+                      Text(
+                        'عرض اليوم كامل',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'مواقيت الصلاة',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          color: isLight ? const Color(0xFF102A43) : Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Row(
                         children: [
-                          Icon(Icons.verified_rounded, color: DesignSystem.goldLight, size: 12),
-                          SizedBox(width: 4),
                           Text(
-                            'رفيق القرآن',
-                            style: TextStyle(color: DesignSystem.goldLight, fontSize: 11, fontWeight: FontWeight.bold),
+                            'مكة المكرمة',
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              color: Color(0xFFFFD56B),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(width: 4),
+                          Icon(
+                            Icons.location_on_rounded,
+                            size: 13,
+                            color: Color(0xFFFFD56B),
                           ),
                         ],
                       ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          // 6 Prayer Cards Row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: _allPrayers.map((prayer) {
+              final isActive = _nextPrayer != null
+                  ? prayer.type == _nextPrayer!.type
+                  : prayer.type == PrayerType.asr;
+              return _buildPrayerPill(
+                prayer: prayer,
+                isActive: isActive,
+                isLight: isLight,
+              );
+            }).toList(),
+          ),
+
+          const SizedBox(height: 14),
+
+          // Golden Connecting Timeline with Node Points
+          Container(
+            height: 3,
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              color: isLight ? const Color(0xFFCBD5E1) : const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(3),
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    width: 240,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD56B),
+                      borderRadius: BorderRadius.circular(3),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0xFFFFD56B),
+                          blurRadius: 6,
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      '• عضو منذ 2026',
-                      style: TextStyle(color: DesignSystem.textMuted, fontSize: 11),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // Real-time Countdown Panel over Mosque Silhouette
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: isLight
+                    ? [const Color(0xFFF1F5F9), const Color(0xFFE2E8F0)]
+                    : [const Color(0xFF131C28), const Color(0xFF090E16)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isLight ? const Color(0xFFDCE3EC) : Colors.white10,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Digital Countdown: (ساعة : دقيقة : ثانية)
+                Row(
+                  children: [
+                    _buildTimeBox(_secondsStr, 'ثانية', isLight),
+                    _buildTimeColon(),
+                    _buildTimeBox(_minutesStr, 'دقيقة', isLight),
+                    _buildTimeColon(),
+                    _buildTimeBox(_hoursStr, 'ساعة', isLight),
+                  ],
+                ),
+
+                // Label: "الوقت المتبقي على ..."
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'الوقت المتبقي على ${_nextPrayer?.nameArabic ?? "العصر"}',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
@@ -332,463 +1099,386 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildQuickActions(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 600;
-
-        final items = [
-          _QuickActionItem(
-            icon: Icons.menu_book_rounded,
-            title: 'متابعة القرآن',
-            subtitle: 'استكمل قراءتك',
-            isSpecial: false,
-            onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const IqraScreen()));
-            },
-          ),
-          _QuickActionItem(
-            icon: Icons.all_inclusive_rounded,
-            title: 'السبحة',
-            subtitle: 'ابدأ ذكرك الآن',
-            isSpecial: true, // Special emerald + gold accent
-            onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const TasbihScreen()));
-            },
-          ),
-          _QuickActionItem(
-            icon: Icons.auto_awesome_rounded,
-            title: 'الأذكار',
-            subtitle: 'وردك اليومي',
-            isSpecial: false,
-            onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const AzkarScreen()));
-            },
-          ),
-          _QuickActionItem(
-            icon: Icons.favorite_rounded,
-            title: 'المفضلة',
-            subtitle: 'آياتك المحفوظة',
-            isSpecial: false,
-            onTap: () {
-              setState(() => _selectedTab = 1);
-            },
-          ),
-        ];
-
-        if (isMobile) {
-          return GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 10,
-              crossAxisSpacing: 10,
-              childAspectRatio: 1.5,
+  Widget _buildPrayerPill({
+    required PrayerTiming prayer,
+    required bool isActive,
+    required bool isLight,
+  }) {
+    if (isActive) {
+      return PulsingHalo(
+        isActive: true,
+        haloColor: const Color(0xFFFFD56B),
+        borderRadius: 16,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF263852),
+                Color(0xFF132032),
+                Color(0xFF0B1420),
+              ],
             ),
-            itemCount: items.length,
-            itemBuilder: (context, index) => _buildQuickActionCard(items[index]),
-          );
-        }
-
-        return Row(
-          children: items.map((item) => Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 5), child: _buildQuickActionCard(item)))).toList(),
-        );
-      },
-    );
-  }
-
-  Widget _buildQuickActionCard(_QuickActionItem item) {
-    return InkWell(
-      onTap: item.onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: item.isSpecial ? const Color(0xFF07241A) : DesignSystem.bgCard.withValues(alpha: 0.8),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: item.isSpecial ? const Color(0xFF38B982) : Colors.white.withValues(alpha: 0.08),
-            width: item.isSpecial ? 1.5 : 1.0,
-          ),
-          boxShadow: [
-            if (item.isSpecial)
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFFFFD56B),
+              width: 1.5,
+            ),
+            boxShadow: const [
               BoxShadow(
-                color: const Color(0xFF38B982).withValues(alpha: 0.18),
-                blurRadius: 16,
+                color: Color(0xFFFFD56B),
+                blurRadius: 12,
+                spreadRadius: 1,
               ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              item.icon,
-              color: item.isSpecial ? const Color(0xFF38B982) : DesignSystem.goldLight,
-              size: 24,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              item.title,
-              style: const TextStyle(
-                color: DesignSystem.textWhite,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              item.subtitle,
-              style: const TextStyle(color: DesignSystem.textMuted, fontSize: 10),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTodayProgressSection() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: DesignSystem.bgCard.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
+              const Icon(
+                Icons.mosque_rounded,
+                color: Color(0xFFFFD56B),
+                size: 20,
+              ),
+              const SizedBox(height: 4),
               Text(
-                'رحلتي اليوم',
-                style: TextStyle(color: DesignSystem.textWhite, fontSize: 16, fontWeight: FontWeight.bold),
+                prayer.nameArabic,
+                style: const TextStyle(
+                  fontFamily: 'Cairo',
+                  color: Color(0xFFFFD56B),
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+              const SizedBox(height: 2),
               Text(
-                '78% إنجاز اليوم',
-                style: TextStyle(color: DesignSystem.goldLight, fontSize: 12, fontWeight: FontWeight.bold),
+                '4:13 م',
+                style: const TextStyle(
+                  fontFamily: 'Cairo',
+                  color: Colors.white,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(child: _buildMetricItem('القرآن', '12 صفحة', Icons.menu_book_rounded)),
-              const SizedBox(width: 8),
-              Expanded(child: _buildMetricItem('الأذكار', '18 ذكر', Icons.auto_awesome_rounded)),
-              const SizedBox(width: 8),
-              Expanded(child: _buildMetricItem('الصلوات', '5 / 5', Icons.access_time_filled_rounded)),
-              const SizedBox(width: 8),
-              Expanded(child: _buildMetricItem('الأحاديث', '3 أحاديث', Icons.library_books_rounded)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMetricItem(String label, String value, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: DesignSystem.goldLight, size: 16),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(color: DesignSystem.textWhite, fontSize: 12, fontWeight: FontWeight.bold),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(label, style: const TextStyle(color: DesignSystem.textMuted, fontSize: 10)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuranJourneyCard(BuildContext context, dynamic progress) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: DesignSystem.bgCard.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: DesignSystem.gold.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.4)),
-            ),
-            child: const Icon(Icons.book_online_rounded, color: DesignSystem.goldLight, size: 28),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'سورة ${progress.lastSurahName}',
-                  style: const TextStyle(color: DesignSystem.textWhite, fontSize: 15, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'الآية ${progress.lastAyahNumber} • الجزء ${progress.lastJuz}',
-                  style: const TextStyle(color: DesignSystem.goldLight, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: DesignSystem.gold,
-              foregroundColor: DesignSystem.bgDarkest,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusPill)),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            ),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const IqraScreen()));
-            },
-            child: const Text('متابعة القراءة ←', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildKhatmahAndStreakSection() {
-    return Row(
-      children: [
-        // Khatmah Card
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: DesignSystem.bgCard.withValues(alpha: 0.8),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-            ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('ختمتي الحالية', style: TextStyle(color: DesignSystem.textMuted, fontSize: 11)),
-                SizedBox(height: 4),
-                Text('37% منجز', style: TextStyle(color: DesignSystem.goldLight, fontSize: 16, fontWeight: FontWeight.bold)),
-                SizedBox(height: 2),
-                Text('المتبقي: 18 يوماً', style: TextStyle(color: DesignSystem.textWhite, fontSize: 10)),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        // Streak Card
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: DesignSystem.bgCard.withValues(alpha: 0.8),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.3)),
-            ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('سلسلة الأيام 🔥', style: TextStyle(color: DesignSystem.textMuted, fontSize: 11)),
-                SizedBox(height: 4),
-                Text('12 يوماً متتالياً', style: TextStyle(color: DesignSystem.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
-                SizedBox(height: 2),
-                Text('واصل الحفظ والتدبر', style: TextStyle(color: DesignSystem.goldLight, fontSize: 10)),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatisticsSection() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: DesignSystem.bgCard.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('إحصائياتي', style: TextStyle(color: DesignSystem.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildStatCol('126', 'يوم قراءة'),
-              _buildStatCol('1,240', 'صفحة'),
-              _buildStatCol('37', 'سورة'),
-              _buildStatCol('24', 'ساعة استماع'),
-              _buildStatCol('84', 'آية محفوظة'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCol(String val, String label) {
-    return Column(
-      children: [
-        Text(val, style: const TextStyle(color: DesignSystem.goldLight, fontSize: 16, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 2),
-        Text(label, style: const TextStyle(color: DesignSystem.textMuted, fontSize: 10)),
-      ],
-    );
-  }
-
-  Widget _buildBookmarksSection(List<dynamic> bookmarks) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: DesignSystem.bgCard.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('المحفوظات', style: TextStyle(color: DesignSystem.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
-              Row(
+              const SizedBox(height: 3),
+              const Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildTabBtn('العلامات', 0),
-                  const SizedBox(width: 8),
-                  _buildTabBtn('المفضلة', 1),
+                  Text(
+                    'الآن',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      color: Color(0xFFFFD56B),
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(width: 3),
+                  Icon(Icons.circle, color: Color(0xFFFFD56B), size: 5),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          if (_selectedTab == 0) ...[
-            if (bookmarks.isEmpty)
-              const Center(child: Text('لا توجد علامات مرجعية', style: TextStyle(color: DesignSystem.textMuted, fontSize: 12)))
-            else
-              ...bookmarks.take(3).map((b) {
-                return ListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.bookmark_rounded, color: DesignSystem.goldLight, size: 18),
-                  title: Text('سورة ${b.surahName} — آية ${b.ayahNumber}',
-                      style: const TextStyle(color: DesignSystem.textWhite, fontSize: 12, fontWeight: FontWeight.bold)),
-                  subtitle: Text(b.ayahSnippet, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: DesignSystem.textMuted, fontSize: 10)),
-                );
-              }),
-          ] else ...[
-            const ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(Icons.favorite_rounded, color: Color(0xFFE11D48), size: 18),
-              title: Text('سورة الكهف • آية 1-10', style: TextStyle(color: DesignSystem.textWhite, fontSize: 12, fontWeight: FontWeight.bold)),
-              subtitle: Text('قراءة يوم الجمعة نور ما بين الجمعتين', style: TextStyle(color: DesignSystem.textMuted, fontSize: 10)),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF121B27),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isLight ? const Color(0xFFE2E8F0) : Colors.white.withValues(alpha: 0.06),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            prayer.icon,
+            color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+            size: 18,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            prayer.nameArabic,
+            style: TextStyle(
+              fontFamily: 'Cairo',
+              color: isLight ? const Color(0xFF102A43) : Colors.white70,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            prayer.formattedTimeArabic,
+            style: TextStyle(
+              fontFamily: 'Cairo',
+              color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+              fontSize: 10,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeBox(String value, String unit, bool isLight) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontFamily: 'Cairo',
+            color: isLight ? const Color(0xFF102A43) : Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        Text(
+          unit,
+          style: TextStyle(
+            fontFamily: 'Cairo',
+            color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+            fontSize: 9.5,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimeColon() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 6),
+      child: Text(
+        ':',
+        style: TextStyle(
+          color: Color(0xFFFFD56B),
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  // ==================== 4. QUICK TOOLS SECTION ("أدوات سريعة") ====================
+  Widget _buildQuickToolsSection(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'أدوات سريعة',
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                color: isLight ? const Color(0xFF102A43) : Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 6),
+            const Icon(Icons.flash_on_rounded, size: 16, color: Color(0xFFFFD56B)),
+          ],
+        ),
+
+        const SizedBox(height: 10),
+
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth > 700;
+
+            final tools = [
+              _QuickToolData(
+                title: 'القرآن الكريم',
+                subtitle: 'تلاوة واستماع',
+                icon: Icons.menu_book_rounded,
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const IqraScreen())),
+              ),
+              _QuickToolData(
+                title: 'الأذكار',
+                subtitle: 'أذكار الصباح والمساء',
+                icon: Icons.auto_awesome_rounded,
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AzkarScreen())),
+              ),
+              _QuickToolData(
+                title: 'السبحة',
+                subtitle: 'سبح الآن',
+                icon: Icons.all_inclusive_rounded,
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TasbihScreen())),
+              ),
+              _QuickToolData(
+                title: 'المساجد',
+                subtitle: 'ابحث عن مسجد قريب',
+                icon: Icons.mosque_rounded,
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QiblaScreen())),
+              ),
+              _QuickToolData(
+                title: 'مواقيت الصلاة',
+                subtitle: 'عرض جميع المواقيت',
+                icon: Icons.calendar_month_rounded,
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrayerTimesScreen())),
+              ),
+            ];
+
+            if (isWide) {
+              return Row(
+                children: tools.map((tool) => Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: _buildToolPillCard(tool, isLight)))).toList(),
+              );
+            }
+
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: tools.map((tool) => Container(width: 170, margin: const EdgeInsets.only(left: 8), child: _buildToolPillCard(tool, isLight))).toList(),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToolPillCard(_QuickToolData tool, bool isLight) {
+    return InkWell(
+      onTap: tool.onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C131D),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isLight ? const Color(0xFFDCE3EC) : Colors.white.withValues(alpha: 0.08),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isLight
+                  ? const Color(0xFF102A43).withValues(alpha: 0.04)
+                  : Colors.black.withValues(alpha: 0.4),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
           ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTabBtn(String label, int index) {
-    final isSelected = _selectedTab == index;
-    return InkWell(
-      onTap: () => setState(() => _selectedTab = index),
-      borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        decoration: BoxDecoration(
-          color: isSelected ? DesignSystem.gold : Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? DesignSystem.bgDarkest : DesignSystem.textMuted,
-            fontSize: 11,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD56B).withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                tool.icon,
+                color: const Color(0xFFFFD56B),
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    tool.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      color: isLight ? const Color(0xFF102A43) : Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    tool.subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                      fontSize: 9.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_left_rounded,
+              size: 16,
+              color: isLight ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildIslamicAssistantCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F1B30),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF315BEA).withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.auto_awesome_rounded, color: Color(0xFF536DFF), size: 24),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('المساعد القرآني ✨', style: TextStyle(color: DesignSystem.textWhite, fontSize: 13, fontWeight: FontWeight.bold)),
-                SizedBox(height: 2),
-                Text('ننصحك اليوم بتدبر سورة يس وورد الاستغفار', style: TextStyle(color: DesignSystem.textMuted, fontSize: 11)),
-              ],
+  void _showEditProfileDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF0C131D),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFFFD56B), width: 1.2),
+        ),
+        title: const Text(
+          'الملف الشخصي',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontFamily: 'Cairo', color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircleAvatar(
+              radius: 36,
+              backgroundColor: Color(0xFF151D2A),
+              child: Icon(Icons.person, size: 40, color: Color(0xFFFFD56B)),
             ),
-          ),
-          OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Color(0xFF536DFF)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusPill)),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            SizedBox(height: 12),
+            Text(
+              'فارس القرآن',
+              style: TextStyle(fontFamily: 'Cairo', color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const AiAssistantScreen()));
-            },
-            child: const Text('تحدث مع المساعد', style: TextStyle(color: Color(0xFF536DFF), fontSize: 11)),
+            SizedBox(height: 4),
+            Text(
+              'رفيقك الإيماني للقرآن والأذكار ومواقيت الصلاة',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontFamily: 'Cairo', color: Color(0xFF94A3B8), fontSize: 12),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('إغلاق', style: TextStyle(color: Color(0xFFFFD56B))),
           ),
         ],
-      ),
-    );
-  }
-
-
-  void _showGeneralSettings(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('تم حفظ الإعدادات والتفضيلات بنجاح'),
-        backgroundColor: Color(0xFF064E3B),
       ),
     );
   }
 }
 
-class _QuickActionItem {
-  final IconData icon;
+class _QuickToolData {
   final String title;
   final String subtitle;
-  final bool isSpecial;
+  final IconData icon;
   final VoidCallback onTap;
 
-  _QuickActionItem({
-    required this.icon,
+  _QuickToolData({
     required this.title,
     required this.subtitle,
-    required this.isSpecial,
+    required this.icon,
     required this.onTap,
   });
 }

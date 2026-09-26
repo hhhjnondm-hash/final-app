@@ -4,6 +4,12 @@ import '../data/reciters_data.dart';
 import '../models/quran_models.dart';
 import '../services/quran_storage_service.dart';
 import '../services/audio_quran_service.dart';
+import '../widgets/visual_effects/floating_particles.dart';
+import '../widgets/visual_effects/shimmer_sweep.dart';
+import '../widgets/visual_effects/star_glint.dart';
+import '../widgets/visual_effects/pulsing_halo.dart';
+import '../widgets/visual_effects/interactive_motion_card.dart';
+import '../widgets/developer_credits_badge.dart';
 import 'surah_viewer_screen.dart';
 
 class QuranScreen extends StatefulWidget {
@@ -555,8 +561,14 @@ class _QuranScreenState extends State<QuranScreen> {
                             : ListView.builder(
                                 physics: const BouncingScrollPhysics(),
                                 padding: const EdgeInsets.only(bottom: 120),
-                                itemCount: filteredSurahs.length,
+                                itemCount: filteredSurahs.length + 1,
                                 itemBuilder: (context, index) {
+                                  if (index == filteredSurahs.length) {
+                                    return const Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 16),
+                                      child: DeveloperCreditsBadge(compact: true),
+                                    );
+                                  }
                                   final surah = filteredSurahs[index];
                                   final isFav = _storage.isFavorite(surah.number);
                                   final isPlaying = _playingSurahNumber == surah.number;
@@ -663,51 +675,63 @@ class _QuranScreenState extends State<QuranScreen> {
 
   /// Top Mosque Arch Hero Banner matching the screenshot
   Widget _buildTopHeroMosqueBanner(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 175,
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.35), width: 1.2),
-        gradient: const RadialGradient(
-          center: Alignment(0, -0.4),
-          radius: 1.2,
-          colors: [
-            Color(0xFF261D0F),
-            Color(0xFF131A26),
-            Color(0xFF070B11),
+    return ShimmerSweep(
+      duration: const Duration(milliseconds: 3600),
+      pauseDuration: const Duration(milliseconds: 3000),
+      shimmerColor: const Color(0xFFFFD56B),
+      child: Container(
+        width: double.infinity,
+        height: 175,
+        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.35), width: 1.2),
+          gradient: const RadialGradient(
+            center: Alignment(0, -0.4),
+            radius: 1.2,
+            colors: [
+              Color(0xFF261D0F),
+              Color(0xFF131A26),
+              Color(0xFF070B11),
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFC89B3C).withValues(alpha: 0.15),
+              blurRadius: 28,
+              spreadRadius: 2,
+            ),
           ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFC89B3C).withValues(alpha: 0.15),
-            blurRadius: 28,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // Background subtle lantern and crescent effects
-          Positioned(
-            left: 12,
-            top: 40,
-            child: Icon(Icons.light_mode_rounded, color: const Color(0xFFE8D29A).withValues(alpha: 0.6), size: 28),
-          ),
-          Positioned(
-            right: 12,
-            top: 40,
-            child: Icon(Icons.light_mode_rounded, color: const Color(0xFFE8D29A).withValues(alpha: 0.6), size: 28),
-          ),
-          const Positioned(
-            top: 24,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Icon(Icons.nightlight_round, color: Color(0xFFFFD56B), size: 28),
-            ),
-          ),
+        child: FloatingParticles(
+          numberOfParticles: 14,
+          particleColor: const Color(0xFFFFD56B),
+          child: Stack(
+            children: [
+              // Background subtle lantern and crescent effects
+              Positioned(
+                left: 12,
+                top: 40,
+                child: Icon(Icons.light_mode_rounded, color: const Color(0xFFE8D29A).withValues(alpha: 0.6), size: 28),
+              ),
+              Positioned(
+                right: 12,
+                top: 40,
+                child: Icon(Icons.light_mode_rounded, color: const Color(0xFFE8D29A).withValues(alpha: 0.6), size: 28),
+              ),
+              const Positioned(
+                top: 24,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Icon(Icons.nightlight_round, color: Color(0xFFFFD56B), size: 28),
+                ),
+              ),
+              const Positioned(
+                top: 20,
+                right: 32,
+                child: StarGlint(size: 14),
+              ),
 
           // Top Header Icons Bar (Back, Search, Settings, Mosque Emblem)
           Positioned(
@@ -821,7 +845,9 @@ class _QuranScreenState extends State<QuranScreen> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 
   /// Search Bar with Magnifier Icon & "ابحث عن سورة ..."
@@ -1060,53 +1086,49 @@ class _QuranScreenState extends State<QuranScreen> {
 
   /// Individual Surah Card Row matching the screenshot layout
   Widget _buildSurahRowCard(SurahMeta surah, bool isFav, bool isPlaying) {
-    return Container(
+    return InteractiveMotionCard(
       margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F1621),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isPlaying
-              ? const Color(0xFFFFD56B)
-              : const Color(0xFFC89B3C).withValues(alpha: 0.25),
-          width: 1.1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+      borderRadius: 16,
+      backgroundColor: const Color(0xFF0F1621),
+      borderColor: isPlaying
+          ? const Color(0xFFFFD56B)
+          : const Color(0xFFC89B3C).withValues(alpha: 0.25),
+      glowColor: const Color(0xFFFFD56B),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SurahViewerScreen(
+              surahNumber: surah.number,
+              surahName: surah.nameArabic,
+            ),
           ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => SurahViewerScreen(
-                  surahNumber: surah.number,
-                  surahName: surah.nameArabic,
-                ),
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            child: Row(
-              children: [
-                // Star/Octagram Number Badge: 1, 2, 3...
-                _buildOctagramNumberBadge(surah.number),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        child: Row(
+          children: [
+            // Star/Octagram Number Badge: 1, 2, 3...
+            if (isPlaying)
+              const PulsingHalo(
+                isActive: true,
+                haloColor: Color(0xFFFFD56B),
+                borderRadius: 20,
+                child: StarGlint(size: 14),
+              )
+            else
+              _buildOctagramNumberBadge(surah.number),
 
-                const SizedBox(width: 10),
+            const SizedBox(width: 10),
 
-                // Surah Name Arabic & English
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            // Surah Name Arabic & English
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
@@ -1118,6 +1140,12 @@ class _QuranScreenState extends State<QuranScreen> {
                           color: Color(0xFFF6F8FA),
                         ),
                       ),
+                      if (isPlaying) ...[
+                        const SizedBox(width: 6),
+                        const StarGlint(size: 11),
+                      ],
+                    ],
+                  ),
                       Text(
                         surah.nameEnglish,
                         style: const TextStyle(
@@ -1197,8 +1225,6 @@ class _QuranScreenState extends State<QuranScreen> {
               ],
             ),
           ),
-        ),
-      ),
     );
   }
 

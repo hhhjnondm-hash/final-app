@@ -6,6 +6,12 @@ import '../utils/design_system.dart';
 import '../widgets/prayer_settings_sheet.dart';
 import 'dhikr_reader_screen.dart';
 import 'notification_settings_screen.dart';
+import '../widgets/visual_effects/floating_particles.dart';
+import '../widgets/visual_effects/shimmer_sweep.dart';
+import '../widgets/visual_effects/star_glint.dart';
+import '../widgets/visual_effects/pulsing_halo.dart';
+import '../widgets/visual_effects/interactive_motion_card.dart';
+import '../widgets/developer_credits_badge.dart';
 
 class AzkarScreen extends StatefulWidget {
   const AzkarScreen({super.key});
@@ -118,8 +124,18 @@ class _AzkarScreenState extends State<AzkarScreen> {
                 // 6. Bottom Dual Cards: [المفضلة] and [آخر ما قرأت]
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 100),
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
                     child: _buildBottomDualCards(context, categories, isLight),
+                  ),
+                ),
+
+                // 7. Developer Credits Badge
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(24, 0, 24, 100),
+                    child: Center(
+                      child: DeveloperCreditsBadge(),
+                    ),
                   ),
                 ),
               ],
@@ -412,122 +428,138 @@ class _AzkarScreenState extends State<AzkarScreen> {
 
   /// 2. Panoramic Mosque Hero Banner matching the uploaded image
   Widget _buildPanoramicHeroBanner(bool isLight) {
-    return Container(
-      height: 180,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFC89B3C).withValues(alpha: 0.4),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isLight ? Colors.black.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.7),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
+    return ShimmerSweep(
+      duration: const Duration(milliseconds: 3600),
+      pauseDuration: const Duration(milliseconds: 3000),
+      shimmerColor: const Color(0xFFFFD56B),
+      child: Container(
+        height: 180,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFC89B3C).withValues(alpha: 0.4),
+            width: 1.2,
           ),
-          if (!isLight)
+          boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFFD56B).withValues(alpha: 0.12),
-              blurRadius: 16,
+              color: isLight ? Colors.black.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.7),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
             ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // High-res Mosque Sunset Panoramic Artwork
-            Image.asset(
-              'assets/azkar_panoramic_hero.png',
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Image.asset(
-                'assets/home_hero_mosque.jpg',
-                fit: BoxFit.cover,
+            if (!isLight)
+              BoxShadow(
+                color: const Color(0xFFFFD56B).withValues(alpha: 0.12),
+                blurRadius: 16,
               ),
-            ),
-
-            // Deep Dark Gradient Overlay for the right typography
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.centerRight,
-                  end: Alignment.centerLeft,
-                  colors: isLight
-                      ? [
-                          const Color(0xFFFFFFFF).withValues(alpha: 0.96),
-                          const Color(0xFFFFFFFF).withValues(alpha: 0.85),
-                          const Color(0xFFFFFFFF).withValues(alpha: 0.15),
-                        ]
-                      : [
-                          const Color(0xFF07090E).withValues(alpha: 0.96),
-                          const Color(0xFF07090E).withValues(alpha: 0.85),
-                          const Color(0xFF07090E).withValues(alpha: 0.15),
-                        ],
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: FloatingParticles(
+            numberOfParticles: 14,
+            particleColor: const Color(0xFFFFD56B),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // High-res Mosque Sunset Panoramic Artwork
+                Image.asset(
+                  'assets/azkar_panoramic_hero.png',
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Image.asset(
+                    'assets/home_hero_mosque.jpg',
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
-            ),
 
-            // Calligraphy and text on Right
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'الأذكــــار',
-                    style: TextStyle(
-                      fontFamily: 'Amiri',
-                      fontSize: 34,
-                      fontWeight: FontWeight.bold,
-                      color: isLight ? const Color(0xFF0F172A) : const Color(0xFFFFD56B),
-                      letterSpacing: 1.0,
+                // Deep Dark Gradient Overlay for the right typography
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerRight,
+                      end: Alignment.centerLeft,
+                      colors: isLight
+                          ? [
+                              const Color(0xFFFFFFFF).withValues(alpha: 0.96),
+                              const Color(0xFFFFFFFF).withValues(alpha: 0.85),
+                              const Color(0xFFFFFFFF).withValues(alpha: 0.15),
+                            ]
+                          : [
+                              const Color(0xFF07090E).withValues(alpha: 0.96),
+                              const Color(0xFF07090E).withValues(alpha: 0.85),
+                              const Color(0xFF07090E).withValues(alpha: 0.15),
+                            ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
+                ),
+
+                // Calligraphy and text on Right
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.auto_awesome,
-                        size: 14,
-                        color: const Color(0xFFFFD56B),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const StarGlint(size: 16),
+                          const SizedBox(width: 8),
+                          Text(
+                            'الأذكــــار',
+                            style: TextStyle(
+                              fontFamily: 'Amiri',
+                              fontSize: 34,
+                              fontWeight: FontWeight.bold,
+                              color: isLight ? const Color(0xFF0F172A) : const Color(0xFFFFD56B),
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.auto_awesome,
+                            size: 14,
+                            color: const Color(0xFFFFD56B),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'طريقك إلى القرب من الله في كل وقت',
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: isLight ? const Color(0xFF334155) : Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
                       Text(
-                        'طريقك إلى القرب من الله في كل وقت',
+                        '«ألا بذكر الله تطمئن القلوب»',
                         style: TextStyle(
                           fontFamily: 'Cairo',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: isLight ? const Color(0xFF334155) : Colors.white,
+                          fontSize: 12,
+                          color: isLight ? const Color(0xFF64748B) : const Color(0xFFFFD56B).withValues(alpha: 0.85),
+                        ),
+                      ),
+                      Text(
+                        '(الرعد: 28)',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 10.5,
+                          color: isLight ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '«ألا بذكر الله تطمئن القلوب»',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 12,
-                      color: isLight ? const Color(0xFF64748B) : const Color(0xFFFFD56B).withValues(alpha: 0.85),
-                    ),
-                  ),
-                  Text(
-                    '(الرعد: 28)',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 10.5,
-                      color: isLight ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -564,19 +596,24 @@ class _AzkarScreenState extends State<AzkarScreen> {
                 children: [
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF1E1708),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: const Color(0xFFFFD56B).withValues(alpha: 0.4),
+                      PulsingHalo(
+                        isActive: true,
+                        haloColor: const Color(0xFFFFD56B),
+                        borderRadius: 12,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF1E1708),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFFFFD56B).withValues(alpha: 0.4),
+                            ),
                           ),
-                        ),
-                        child: const Icon(
-                          Icons.calendar_month_outlined,
-                          color: Color(0xFFFFD56B),
-                          size: 20,
+                          child: const Icon(
+                            Icons.calendar_month_outlined,
+                            color: Color(0xFFFFD56B),
+                            size: 20,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -940,113 +977,99 @@ class _AzkarScreenState extends State<AzkarScreen> {
               final bg = isLight ? (item['bg'] as Color).withValues(alpha: 0.08) : item['bg'] as Color;
               final accent = item['accent'] as Color;
 
-              return InkWell(
+              return InteractiveMotionCard(
+                borderRadius: 20,
+                backgroundColor: bg,
+                borderColor: accent.withValues(alpha: isLight ? 0.3 : 0.25),
+                glowColor: accent,
                 onTap: () => _openCategory(context, category),
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: bg,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: accent.withValues(alpha: isLight ? 0.3 : 0.25),
-                      width: 1.1,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isLight ? Colors.black.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.4),
-                        blurRadius: 14,
-                        offset: const Offset(0, 4),
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Icon Circle
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: accent.withValues(alpha: 0.18),
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Icon Circle
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: accent.withValues(alpha: 0.18),
+                      child: Center(
+                        child: Icon(
+                          item['icon'] as IconData,
+                          color: accent,
+                          size: 22,
                         ),
-                        child: Center(
-                          child: Icon(
-                            item['icon'] as IconData,
-                            color: accent,
-                            size: 22,
+                      ),
+                    ),
+
+                    // Titles
+                    Column(
+                      children: [
+                        Text(
+                          item['title'] as String,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: isLight ? const Color(0xFF0F172A) : Colors.white,
                           ),
                         ),
-                      ),
-
-                      // Titles
-                      Column(
-                        children: [
-                          Text(
-                            item['title'] as String,
-                            textAlign: TextAlign.center,
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFF151C28),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            item['count'] as String,
                             style: TextStyle(
                               fontFamily: 'Cairo',
-                              fontSize: 13,
+                              fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                              color: isLight ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFF151C28),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              item['count'] as String,
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: isLight ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
+                    ),
 
-                      // Desc & Arrow
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              item['desc'] as String,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 9.5,
-                                color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
-                              ),
+                    // Desc & Arrow
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item['desc'] as String,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 9.5,
+                              color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
                             ),
                           ),
-                          Container(
-                            width: 24,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFF1B2332),
-                            ),
-                            child: const Icon(
-                              Icons.chevron_left_rounded,
-                              size: 16,
-                              color: Color(0xFFFFD56B),
-                            ),
+                        ),
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFF1B2332),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
+                          child: const Icon(
+                            Icons.chevron_left_rounded,
+                            size: 16,
+                            color: Color(0xFFFFD56B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               );
             },

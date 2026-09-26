@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../core/constants/colors.dart';
+import '../utils/design_system.dart';
 import 'developer_credits_badge.dart';
 import 'visual_effects/floating_particles.dart';
 import 'visual_effects/interactive_motion_card.dart';
@@ -74,12 +74,12 @@ class CelebrationAchievementDialog extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(28),
               border: Border.all(
-                color: AppColors.gold.withValues(alpha: 0.4),
+                color: DesignSystem.gold.withValues(alpha: 0.4),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.gold.withValues(alpha: 0.25),
+                  color: DesignSystem.gold.withValues(alpha: 0.25),
                   blurRadius: 36,
                   spreadRadius: 4,
                   offset: const Offset(0, 8),
@@ -95,7 +95,7 @@ class CelebrationAchievementDialog extends StatelessWidget {
                     child: IgnorePointer(
                       child: FloatingParticles(
                         particleCount: 16,
-                        particleColor: AppColors.gold,
+                        particleColor: DesignSystem.gold,
                         maxSize: 4.5,
                         minSpeed: 0.15,
                         maxSpeed: 0.45,
@@ -107,12 +107,12 @@ class CelebrationAchievementDialog extends StatelessWidget {
                   const Positioned(
                     top: 16,
                     left: 20,
-                    child: StarGlint(size: 20, glintColor: AppColors.gold),
+                    child: StarGlint(size: 20, glintColor: DesignSystem.gold),
                   ),
                   const Positioned(
                     top: 24,
                     right: 24,
-                    child: StarGlint(size: 16, glintColor: AppColors.goldLight),
+                    child: StarGlint(size: 16, glintColor: DesignSystem.goldLight),
                   ),
 
                   Padding(
@@ -122,7 +122,7 @@ class CelebrationAchievementDialog extends StatelessWidget {
                       children: [
                         // Animated Hero Emblem
                         PulsingHalo(
-                          haloColor: AppColors.gold,
+                          haloColor: DesignSystem.gold,
                           borderRadius: 38,
                           child: Container(
                             width: 76,
@@ -130,13 +130,13 @@ class CelebrationAchievementDialog extends StatelessWidget {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: const LinearGradient(
-                                colors: [AppColors.gold, AppColors.goldDark],
+                                colors: [DesignSystem.gold, DesignSystem.goldDark],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.gold.withValues(alpha: 0.4),
+                                  color: DesignSystem.gold.withValues(alpha: 0.4),
                                   blurRadius: 18,
                                   offset: const Offset(0, 6),
                                 ),
@@ -159,7 +159,7 @@ class CelebrationAchievementDialog extends StatelessWidget {
                             fontFamily: 'Amiri',
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: isDark ? AppColors.goldLight : AppColors.goldDark,
+                            color: isDark ? DesignSystem.goldLight : DesignSystem.goldDark,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -172,7 +172,7 @@ class CelebrationAchievementDialog extends StatelessWidget {
                             fontFamily: 'Amiri',
                             fontSize: 14,
                             height: 1.6,
-                            color: isDark ? Colors.white70 : AppColors.primaryTextLight,
+                            color: isDark ? Colors.white70 : DesignSystem.lightPrimaryText,
                           ),
                         ),
                         const SizedBox(height: 18),
@@ -181,17 +181,17 @@ class CelebrationAchievementDialog extends StatelessWidget {
                         InteractiveMotionCard(
                           borderRadius: BorderRadius.circular(18),
                           child: ShimmerSweep(
-                            shimmerColor: AppColors.gold.withValues(alpha: 0.12),
+                            shimmerColor: DesignSystem.gold.withValues(alpha: 0.12),
                             child: Container(
                               width: double.infinity,
                               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? Colors.white.withValues(alpha: 0.05)
-                                    : AppColors.gold.withValues(alpha: 0.08),
+                                    : DesignSystem.gold.withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(18),
                                 border: Border.all(
-                                  color: AppColors.gold.withValues(alpha: 0.25),
+                                  color: DesignSystem.gold.withValues(alpha: 0.25),
                                   width: 1,
                                 ),
                               ),
@@ -200,12 +200,12 @@ class CelebrationAchievementDialog extends StatelessWidget {
                                   Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: AppColors.gold.withValues(alpha: 0.15),
+                                      color: DesignSystem.gold.withValues(alpha: 0.15),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
                                       Icons.check_circle_rounded,
-                                      color: AppColors.gold,
+                                      color: DesignSystem.gold,
                                       size: 24,
                                     ),
                                   ),
@@ -217,7 +217,7 @@ class CelebrationAchievementDialog extends StatelessWidget {
                                         fontSize: 13,
                                         height: 1.5,
                                         fontWeight: FontWeight.w500,
-                                        color: isDark ? Colors.white90 : AppColors.primaryTextLight,
+                                        color: isDark ? Colors.white90 : DesignSystem.lightPrimaryText,
                                       ),
                                     ),
                                   ),
@@ -238,10 +238,10 @@ class CelebrationAchievementDialog extends StatelessWidget {
                                   onContinue?.call();
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.gold,
+                                  backgroundColor: DesignSystem.gold,
                                   foregroundColor: Colors.white,
                                   elevation: 4,
-                                  shadowColor: AppColors.gold.withValues(alpha: 0.4),
+                                  shadowColor: DesignSystem.gold.withValues(alpha: 0.4),
                                   padding: const EdgeInsets.symmetric(vertical: 13),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(14),

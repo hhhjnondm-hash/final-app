@@ -94,11 +94,8 @@ class CelebrationAchievementDialog extends StatelessWidget {
                   const Positioned.fill(
                     child: IgnorePointer(
                       child: FloatingParticles(
-                        particleCount: 16,
+                        numberOfParticles: 16,
                         particleColor: DesignSystem.gold,
-                        maxSize: 4.5,
-                        minSpeed: 0.15,
-                        maxSpeed: 0.45,
                       ),
                     ),
                   ),

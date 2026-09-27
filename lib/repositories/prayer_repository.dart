@@ -290,7 +290,7 @@ class PrayerRepository {
   Future<bool> _hasConnection() async {
     try {
       final result = await _connectivity.checkConnectivity();
-      return result != ConnectivityResult.none;
+      return result.any((r) => r != ConnectivityResult.none);
     } catch (e) {
       return false;
     }

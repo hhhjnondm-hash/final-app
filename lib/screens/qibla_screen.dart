@@ -405,7 +405,11 @@ class _QiblaScreenState extends State<QiblaScreen> with SingleTickerProviderStat
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       child: Center(
-                        child: _buildCompassDial(qiblaBearing, isAligned, size: 310),
+                        child: _buildCompassDial(
+                          qiblaBearing,
+                          isAligned,
+                          size: math.min(310.0, MediaQuery.of(context).size.width - 40),
+                        ),
                       ),
                     ),
                   ),
@@ -953,14 +957,26 @@ class _QiblaScreenState extends State<QiblaScreen> with SingleTickerProviderStat
             child: const Icon(Icons.mosque_outlined, color: DesignSystem.goldLight, size: 20),
           ),
           const SizedBox(height: 12),
-          const Text('المسافة للكعبة', style: TextStyle(color: DesignSystem.textMuted, fontSize: 12)),
+          const FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text('المسافة للكعبة', style: TextStyle(color: DesignSystem.textMuted, fontSize: 12)),
+          ),
           const SizedBox(height: 4),
-          Text(
-            '${distanceKm.toInt()} كم',
-            style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(
+              '${distanceKm.toInt()} كم',
+              style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+            ),
           ),
           const SizedBox(height: 2),
-          const Text('تقريباً من موقعك الحالي', style: TextStyle(color: Colors.white38, fontSize: 10)),
+          const FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text('تقريباً من موقعك الحالي', style: TextStyle(color: Colors.white38, fontSize: 10)),
+          ),
         ],
       ),
     );
@@ -1009,14 +1025,26 @@ class _QiblaScreenState extends State<QiblaScreen> with SingleTickerProviderStat
             ],
           ),
           const SizedBox(height: 12),
-          const Text('إحداثيات الكعبة', style: TextStyle(color: DesignSystem.textMuted, fontSize: 12)),
+          const FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text('إحداثيات الكعبة', style: TextStyle(color: DesignSystem.textMuted, fontSize: 12)),
+          ),
           const SizedBox(height: 4),
-          const Text(
-            '21.42° N, 39.83° E',
-            style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+          const FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(
+              '21.42° N, 39.83° E',
+              style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+            ),
           ),
           const SizedBox(height: 2),
-          const Text('مكة المكرمة، السعودية', style: TextStyle(color: Colors.white38, fontSize: 10)),
+          const FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text('مكة المكرمة، السعودية', style: TextStyle(color: Colors.white38, fontSize: 10)),
+          ),
         ],
       ),
     );

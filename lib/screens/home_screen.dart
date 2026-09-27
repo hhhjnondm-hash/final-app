@@ -1919,7 +1919,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               // Main Card Content
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                 child: Column(
                   children: [
                     // Top Next Prayer Presentation
@@ -1933,14 +1933,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             // 3D Monospace Live Countdown Dial
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: isLight
                                       ? [const Color(0xFF102A43), const Color(0xFF0D1B2A)]
                                       : [const Color(0xFF1C2C45), const Color(0xFF0F1A2A)],
                                 ),
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
                                   color: const Color(0xFFFFD56B).withValues(alpha: 0.6),
                                   width: 1.2,
@@ -1971,27 +1971,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 6),
                                   Text(
                                     _countdown,
                                     style: const TextStyle(
                                       fontFamily: 'Courier',
                                       color: Color(0xFFFFD56B),
-                                      fontSize: 16,
+                                      fontSize: 15,
                                       fontWeight: FontWeight.w900,
-                                      letterSpacing: 1.2,
+                                      letterSpacing: 1.0,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 5),
                             Row(
                               children: [
                                 const Icon(
                                   Icons.hourglass_top_rounded,
                                   color: Color(0xFFC89B3C),
-                                  size: 13,
+                                  size: 12,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -2054,7 +2054,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     nextPrayerTitle,
                                     style: TextStyle(
                                       fontFamily: 'Amiri',
-                                      fontSize: 28,
+                                      fontSize: 26,
                                       fontWeight: FontWeight.w900,
                                       color: Colors.white,
                                       shadows: [
@@ -2071,21 +2071,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                   'عند $nextPrayerTime',
                                   style: TextStyle(
                                     color: isLight ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                                    fontSize: 12,
+                                    fontSize: 11.5,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(width: 14),
+                            const SizedBox(width: 12),
 
                             // 3D Glowing Mosque Medallion with PulsingHalo
                             PulsingHalo(
                               haloColor: const Color(0xFFFFD56B),
-                              borderRadius: 28,
+                              borderRadius: 26,
                               child: Container(
-                                width: 56,
-                                height: 56,
+                                width: 52,
+                                height: 52,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   gradient: const LinearGradient(
@@ -2100,9 +2100,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   boxShadow: [
                                     BoxShadow(
                                       color: const Color(0xFFFFD56B).withValues(alpha: 0.45),
-                                      blurRadius: 18,
+                                      blurRadius: 16,
                                       spreadRadius: 2,
-                                      offset: const Offset(0, 4),
+                                      offset: const Offset(0, 3),
                                     ),
                                   ],
                                   border: Border.all(
@@ -2113,7 +2113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: const Icon(
                                   Icons.mosque_rounded,
                                   color: Color(0xFF0F172A),
-                                  size: 28,
+                                  size: 26,
                                 ),
                               ),
                             ),
@@ -2122,7 +2122,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 18),
 
                     // 6 Prayer Cards 3D Row (الفجر، الشروق، الظهر، العصر، المغرب، العشاء)
                     if (_allPrayers.isNotEmpty)
@@ -2132,7 +2132,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           final isActive = _nextPrayer != null && _nextPrayer!.type == prayer.type;
                           return Expanded(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                              padding: const EdgeInsets.symmetric(horizontal: 1.5),
                               child: _buildPrayerCard(
                                 prayer.nameArabic,
                                 prayer.formattedTimeArabic,
@@ -2160,7 +2160,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     // Bottom Spiritual Quote & Navigation Hint
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                       decoration: BoxDecoration(
                         color: isLight
                             ? const Color(0xFFC89B3C).withValues(alpha: 0.08)
@@ -2175,16 +2175,21 @@ class _HomeScreenState extends State<HomeScreen> {
                           const Icon(Icons.menu_book_rounded, color: Color(0xFFFFD56B), size: 14),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: Text(
-                              '﴿إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَوْقُوتًا﴾',
-                              style: TextStyle(
-                                fontFamily: 'Amiri',
-                                color: isLight ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.bold,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                '﴿إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَوْقُوتًا﴾',
+                                style: TextStyle(
+                                  fontFamily: 'Amiri',
+                                  color: isLight ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
+                          const SizedBox(width: 6),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -2221,13 +2226,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final isLight = DesignSystem.isLightMode;
 
     if (isActive) {
-      // 3D Elevated Active Prayer Tile with Pulsing Golden Aura Halo
+      // 3D Elevated Active Prayer Tile with Pulsing Golden Aura Halo & Zero Truncation
       return PulsingHalo(
         isActive: true,
         haloColor: const Color(0xFFFFD56B),
-        borderRadius: 16,
+        borderRadius: 14,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
@@ -2238,21 +2243,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 Color(0xFF0D1726),
               ],
             ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: const Color(0xFFFFD56B),
-              width: 1.8,
+              width: 1.6,
             ),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFFFFD56B).withValues(alpha: 0.45),
-                blurRadius: 16,
+                blurRadius: 14,
                 spreadRadius: 1,
-                offset: const Offset(0, 4),
+                offset: const Offset(0, 3),
               ),
               const BoxShadow(
                 color: Colors.black45,
-                blurRadius: 6,
+                blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -2261,57 +2266,39 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFD56B).withValues(alpha: 0.2),
+                  color: const Color(0xFFFFD56B).withValues(alpha: 0.22),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: const Color(0xFFFFD56B), size: 16),
+                child: Icon(icon, color: const Color(0xFFFFD56B), size: 15),
               ),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 5,
-                    height: 5,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFFFD56B),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Color(0xFFFFD56B),
-                          blurRadius: 4,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
+              const SizedBox(height: 4),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.center,
+                child: Text(
+                  name,
+                  softWrap: false,
+                  style: const TextStyle(
+                    color: Color(0xFFFFD56B),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w900,
                   ),
-                  const SizedBox(width: 3),
-                  Flexible(
-                    child: Text(
-                      name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFFFFD56B),
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-              const SizedBox(height: 3),
-              Text(
-                time,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.w800,
+              const SizedBox(height: 2),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.center,
+                child: Text(
+                  time,
+                  softWrap: false,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
             ],
@@ -2320,14 +2307,14 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    // 3D Inactive Prayer Card: Elevated Glass Tile with Top Highlight & Soft Shadow
+    // 3D Inactive Prayer Card: Elevated Glass Tile with FittedBox Scaling
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 9),
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
       decoration: BoxDecoration(
         color: isLight
             ? const Color(0xFFFFFFFF)
             : Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isLight
               ? const Color(0xFFDCE3EC)
@@ -2338,8 +2325,8 @@ class _HomeScreenState extends State<HomeScreen> {
           BoxShadow(
             color: isLight
                 ? const Color(0xFF102A43).withValues(alpha: 0.04)
-                : Colors.black.withValues(alpha: 0.25),
-            blurRadius: 6,
+                : Colors.black.withValues(alpha: 0.2),
+            blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
@@ -2350,28 +2337,34 @@ class _HomeScreenState extends State<HomeScreen> {
           Icon(
             icon,
             color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-            size: 15,
+            size: 14,
           ),
           const SizedBox(height: 4),
-          Text(
-            name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: isLight ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.center,
+            child: Text(
+              name,
+              softWrap: false,
+              style: TextStyle(
+                color: isLight ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const SizedBox(height: 2),
-          Text(
-            time,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-              fontSize: 9.5,
-              fontWeight: FontWeight.w500,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.center,
+            child: Text(
+              time,
+              softWrap: false,
+              style: TextStyle(
+                color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                fontSize: 9.5,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
@@ -2394,7 +2387,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const IqraScreen())),
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 8),
 
         // Card 2: حصن المسلم (Teal)
         Expanded(
@@ -2407,7 +2400,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AzkarScreen())),
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 8),
 
         // Card 3: اتجاه القبلة (Navy / Sky Blue)
         Expanded(
@@ -2420,7 +2413,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QiblaScreen())),
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 8),
 
         // Card 4: إذاعة القرآن (Purple)
         Expanded(
@@ -2448,16 +2441,17 @@ class _HomeScreenState extends State<HomeScreen> {
     final isLight = DesignSystem.isLightMode;
 
     return GlassCard(
-      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
-      borderRadius: 22,
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
+      borderRadius: 18,
       onTap: onTap,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Circular Icon Container with glowing ring
           Container(
-            width: 50,
-            height: 50,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: isLight ? iconBg : iconBg.withValues(alpha: 0.16),
               shape: BoxShape.circle,
@@ -2476,26 +2470,36 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Icon(
               icon,
               color: isLight ? accentColor : const Color(0xFFFFD56B),
-              size: 24,
+              size: 22,
             ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isLight ? const Color(0xFF172033) : Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.center,
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              softWrap: false,
+              style: TextStyle(
+                color: isLight ? const Color(0xFF172033) : Colors.white,
+                fontSize: 12.5,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           const SizedBox(height: 2),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isLight ? const Color(0xFF667085) : const Color(0xFF94A3B8),
-              fontSize: 11,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.center,
+            child: Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              softWrap: false,
+              style: TextStyle(
+                color: isLight ? const Color(0xFF667085) : const Color(0xFF94A3B8),
+                fontSize: 10.5,
+              ),
             ),
           ),
         ],

@@ -85,7 +85,7 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
     );
 
     return Container(
-      height: 310,
+      constraints: const BoxConstraints(minHeight: 270),
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
@@ -246,59 +246,73 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
                       ],
                     ),
 
-                    const SizedBox(width: 24),
+                    const SizedBox(width: 16),
 
                     // Next Prayer Titles & Timing
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: DesignSystem.gold,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: DesignSystem.gold,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 6),
-                            const Text(
-                              'الصلاة القادمة',
-                              style: TextStyle(
-                                color: DesignSystem.goldLight,
-                                fontSize: 12,
+                              const SizedBox(width: 6),
+                              const Text(
+                                'الصلاة القادمة',
+                                style: TextStyle(
+                                  color: DesignSystem.goldLight,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              'صلاة ${nextPrayer.nameArabic}',
+                              softWrap: false,
+                              style: const TextStyle(
+                                color: DesignSystem.textWhite,
+                                fontSize: 24,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'صلاة ${nextPrayer.nameArabic}',
-                          style: const TextStyle(
-                            color: DesignSystem.textWhite,
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          nextPrayer.formattedTimeArabic,
-                          style: const TextStyle(
-                            color: DesignSystem.cyanAccent,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                          const SizedBox(height: 2),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              nextPrayer.formattedTimeArabic,
+                              softWrap: false,
+                              style: const TextStyle(
+                                color: DesignSystem.cyanAccent,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
 
+                const SizedBox(height: 14),
+
                 // Bottom Status Pill: Current Prayer
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
@@ -307,19 +321,29 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Icon(currentPrayer.icon, color: DesignSystem.goldLight, size: 16),
-                          const SizedBox(width: 8),
-                          Text(
-                            'الصلاة الحالية: صلاة ${currentPrayer.nameArabic}',
-                            style: const TextStyle(
-                              color: DesignSystem.textSecondary,
-                              fontSize: 12,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Icon(currentPrayer.icon, color: DesignSystem.goldLight, size: 16),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  'الصلاة الحالية: صلاة ${currentPrayer.nameArabic}',
+                                  softWrap: false,
+                                  style: const TextStyle(
+                                    color: DesignSystem.textSecondary,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Text(
                         currentPrayer.formattedTimeArabic,
                         style: const TextStyle(

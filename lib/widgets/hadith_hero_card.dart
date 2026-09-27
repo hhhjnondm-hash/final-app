@@ -62,36 +62,37 @@ class HadithHeroCard extends StatelessWidget {
           particleColor: const Color(0xFFFFD56B),
           child: Stack(
             children: [
-          // Islamic Lantern & Mosque Night Artwork
-          ClipRRect(
-            borderRadius: BorderRadius.circular(28),
-            child: Image.asset(
-              'assets/hadith_hero.jpg',
-              height: 360,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
-              errorBuilder: (_, __, ___) => const SizedBox(height: 360),
-            ),
-          ),
-
-          // Deep Dark Gradient Overlay
-          Container(
-            height: 360,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(28),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  DesignSystem.bgDarkest.withValues(alpha: 0.7),
-                  DesignSystem.bgDarkest.withValues(alpha: 0.98),
-                ],
-                stops: const [0.0, 0.45, 1.0],
+              // Islamic Lantern & Mosque Night Artwork (Responsive Fill)
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: Image.asset(
+                    'assets/hadith_hero.jpg',
+                    fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
+                    errorBuilder: (_, __, ___) => const SizedBox(),
+                  ),
+                ),
               ),
-            ),
-          ),
+
+              // Deep Dark Gradient Overlay (Responsive Fill)
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(28),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        DesignSystem.bgDarkest.withValues(alpha: 0.7),
+                        DesignSystem.bgDarkest.withValues(alpha: 0.98),
+                      ],
+                      stops: const [0.0, 0.45, 1.0],
+                    ),
+                  ),
+                ),
+              ),
 
           // Content Layer
           Padding(

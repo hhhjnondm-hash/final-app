@@ -203,17 +203,28 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                     DesignSystem.spacingS,
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'مواقيت الصلاة اليوم',
-                        style: TextStyle(
-                          color: DesignSystem.textWhite,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                      const Expanded(
+                        child: FittedBox(
+                          alignment: Alignment.centerRight,
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'مواقيت الصلاة اليوم',
+                            style: TextStyle(
+                              color: DesignSystem.textWhite,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 4),
                       TextButton.icon(
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                         onPressed: () {
                           showModalBottomSheet(
                             context: context,
@@ -222,15 +233,21 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                             builder: (_) => const MonthlyPrayerSheet(),
                           );
                         },
-                        icon: const Icon(Icons.calendar_month_rounded, color: DesignSystem.goldLight, size: 16),
-                        label: const Text('جدول الشهر', style: TextStyle(color: DesignSystem.goldLight, fontSize: 12)),
+                        icon: const Icon(Icons.calendar_month_rounded, color: DesignSystem.goldLight, size: 15),
+                        label: const Text('جدول الشهر', style: TextStyle(color: DesignSystem.goldLight, fontSize: 11)),
                       ),
+                      const SizedBox(width: 4),
                       TextButton.icon(
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                         onPressed: () {
                           _showAthanSettings(context);
                         },
-                        icon: const Icon(Icons.notifications_active_rounded, color: DesignSystem.goldLight, size: 16),
-                        label: const Text('الأذان', style: TextStyle(color: DesignSystem.goldLight, fontSize: 12)),
+                        icon: const Icon(Icons.notifications_active_rounded, color: DesignSystem.goldLight, size: 15),
+                        label: const Text('الأذان', style: TextStyle(color: DesignSystem.goldLight, fontSize: 11)),
                       ),
                     ],
                   ),

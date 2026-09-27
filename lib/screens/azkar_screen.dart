@@ -102,12 +102,19 @@ class _AzkarScreenState extends State<AzkarScreen> {
                             color: isLight ? const Color(0xFF0F172A) : Colors.white,
                           ),
                         ),
-                        Text(
-                          'اختر ما يناسبك من الأذكار في كل الأوقات',
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 12,
-                            color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'اختر ما يناسبك من الأذكار في كل الأوقات',
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                fontSize: 12,
+                                color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -962,9 +969,9 @@ class _AzkarScreenState extends State<AzkarScreen> {
         return SliverGrid(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            childAspectRatio: 0.95,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
+            childAspectRatio: 0.90,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
           ),
           delegate: SliverChildBuilderDelegate(
             (context, index) {
@@ -983,15 +990,15 @@ class _AzkarScreenState extends State<AzkarScreen> {
                 borderColor: accent.withValues(alpha: isLight ? 0.3 : 0.25),
                 glowColor: accent,
                 onTap: () => _openCategory(context, category),
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Icon Circle
                     Container(
-                      width: 44,
-                      height: 44,
+                      width: 42,
+                      height: 42,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: accent.withValues(alpha: 0.18),
@@ -1000,7 +1007,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                         child: Icon(
                           item['icon'] as IconData,
                           color: accent,
-                          size: 22,
+                          size: 20,
                         ),
                       ),
                     ),
@@ -1008,14 +1015,18 @@ class _AzkarScreenState extends State<AzkarScreen> {
                     // Titles
                     Column(
                       children: [
-                        Text(
-                          item['title'] as String,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            item['title'] as String,
+                            textAlign: TextAlign.center,
+                            softWrap: false,
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 4),

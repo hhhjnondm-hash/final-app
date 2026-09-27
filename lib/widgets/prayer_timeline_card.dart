@@ -83,12 +83,19 @@ class PrayerTimelineCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        timing.nameArabic,
-                        style: const TextStyle(
-                          color: DesignSystem.textWhite,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            timing.nameArabic,
+                            softWrap: false,
+                            style: const TextStyle(
+                              color: DesignSystem.textWhite,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -139,23 +146,30 @@ class PrayerTimelineCard extends StatelessWidget {
               ),
             ),
 
+            const SizedBox(width: 8),
+
             // Prayer Time & Notification Icon
             Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  timing.formattedTimeArabic,
-                  style: TextStyle(
-                    color: isCurrent ? DesignSystem.goldLight : DesignSystem.textWhite,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    timing.formattedTimeArabic,
+                    softWrap: false,
+                    style: TextStyle(
+                      color: isCurrent ? DesignSystem.goldLight : DesignSystem.textWhite,
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 InkWell(
                   onTap: onNotificationToggle,
                   borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
                   child: Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(7),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white.withValues(alpha: 0.04),

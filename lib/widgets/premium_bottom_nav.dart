@@ -144,25 +144,33 @@ class PremiumBottomNav extends StatelessWidget {
                       : (isLight ? const Color(0xFF475569) : const Color(0xFFA0AEC0)),
                 ),
                 if (isSelected) ...[
-                  const SizedBox(width: 6),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: activeTextColor,
+                  const SizedBox(width: 5),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      label,
+                      softWrap: false,
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: activeTextColor,
+                      ),
                     ),
                   ),
                 ] else ...[
                   const SizedBox(width: 4),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: inactiveTextColor,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      label,
+                      softWrap: false,
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: inactiveTextColor,
+                      ),
                     ),
                   ),
                 ],

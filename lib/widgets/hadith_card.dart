@@ -36,39 +36,47 @@ class HadithCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: DesignSystem.gold),
-                            color: DesignSystem.gold.withValues(alpha: 0.1),
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${hadith.number}',
-                              style: const TextStyle(
-                                color: DesignSystem.goldLight,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: DesignSystem.gold),
+                              color: DesignSystem.gold.withValues(alpha: 0.1),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${hadith.number}',
+                                style: const TextStyle(
+                                  color: DesignSystem.goldLight,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          hadith.book,
-                          style: const TextStyle(
-                            color: DesignSystem.goldLight,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                hadith.book,
+                                style: const TextStyle(
+                                  color: DesignSystem.goldLight,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
@@ -76,9 +84,12 @@ class HadithCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
                         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                       ),
-                      child: Text(
-                        hadith.topic,
-                        style: const TextStyle(color: DesignSystem.textMuted, fontSize: 10),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          hadith.topic,
+                          style: const TextStyle(color: DesignSystem.textMuted, fontSize: 10),
+                        ),
                       ),
                     ),
                   ],

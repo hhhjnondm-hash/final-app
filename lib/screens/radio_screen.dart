@@ -615,11 +615,14 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                       ],
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      station.name,
-                      style: const TextStyle(color: DesignSystem.textWhite, fontSize: 16, fontWeight: FontWeight.bold),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        station.name,
+                        style: const TextStyle(color: DesignSystem.textWhite, fontSize: 16, fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(

@@ -1002,10 +1002,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               final isActive = _nextPrayer != null
                   ? prayer.type == _nextPrayer!.type
                   : prayer.type == PrayerType.asr;
-              return _buildPrayerPill(
-                prayer: prayer,
-                isActive: isActive,
-                isLight: isLight,
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 1.5),
+                  child: _buildPrayerPill(
+                    prayer: prayer,
+                    isActive: isActive,
+                    isLight: isLight,
+                  ),
+                ),
               );
             }).toList(),
           ),
@@ -1108,9 +1113,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return PulsingHalo(
         isActive: true,
         haloColor: const Color(0xFFFFD56B),
-        borderRadius: 16,
+        borderRadius: 14,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
@@ -1121,7 +1126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Color(0xFF0B1420),
               ],
             ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: const Color(0xFFFFD56B),
               width: 1.5,
@@ -1129,7 +1134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             boxShadow: const [
               BoxShadow(
                 color: Color(0xFFFFD56B),
-                blurRadius: 12,
+                blurRadius: 10,
                 spreadRadius: 1,
               ),
             ],
@@ -1140,44 +1145,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const Icon(
                 Icons.mosque_rounded,
                 color: Color(0xFFFFD56B),
-                size: 20,
+                size: 16,
               ),
               const SizedBox(height: 4),
-              Text(
-                prayer.nameArabic,
-                style: const TextStyle(
-                  fontFamily: 'Cairo',
-                  color: Color(0xFFFFD56B),
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.bold,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.center,
+                child: Text(
+                  prayer.nameArabic,
+                  softWrap: false,
+                  style: const TextStyle(
+                    fontFamily: 'Cairo',
+                    color: Color(0xFFFFD56B),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 2),
-              Text(
-                '4:13 م',
-                style: const TextStyle(
-                  fontFamily: 'Cairo',
-                  color: Colors.white,
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.bold,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.center,
+                child: Text(
+                  prayer.formattedTimeArabic,
+                  softWrap: false,
+                  style: const TextStyle(
+                    fontFamily: 'Cairo',
+                    color: Colors.white,
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 3),
-              const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'الآن',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      color: Color(0xFFFFD56B),
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.bold,
-                    ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD56B).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text(
+                  'الآن',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    color: Color(0xFFFFD56B),
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.bold,
                   ),
-                  SizedBox(width: 3),
-                  Icon(Icons.circle, color: Color(0xFFFFD56B), size: 5),
-                ],
+                ),
               ),
             ],
           ),
@@ -1186,10 +1201,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
       decoration: BoxDecoration(
         color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF121B27),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isLight ? const Color(0xFFE2E8F0) : Colors.white.withValues(alpha: 0.06),
         ),
@@ -1200,25 +1215,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Icon(
             prayer.icon,
             color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
-            size: 18,
+            size: 16,
           ),
           const SizedBox(height: 4),
-          Text(
-            prayer.nameArabic,
-            style: TextStyle(
-              fontFamily: 'Cairo',
-              color: isLight ? const Color(0xFF102A43) : Colors.white70,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w600,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.center,
+            child: Text(
+              prayer.nameArabic,
+              softWrap: false,
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                color: isLight ? const Color(0xFF102A43) : Colors.white70,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const SizedBox(height: 2),
-          Text(
-            prayer.formattedTimeArabic,
-            style: TextStyle(
-              fontFamily: 'Cairo',
-              color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
-              fontSize: 10,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.center,
+            child: Text(
+              prayer.formattedTimeArabic,
+              softWrap: false,
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                fontSize: 9.5,
+              ),
             ),
           ),
         ],

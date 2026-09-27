@@ -155,26 +155,36 @@ class _SurahCardState extends State<SurahCard> {
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        'سورة ${widget.surah.nameArabic}',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Amiri',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: titleColor,
-                          height: 1.2,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.center,
+                        child: Text(
+                          'سورة ${widget.surah.nameArabic}',
+                          textAlign: TextAlign.center,
+                          softWrap: false,
+                          style: TextStyle(
+                            fontFamily: 'Amiri',
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: titleColor,
+                            height: 1.2,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        widget.surah.nameEnglish,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 12,
-                          color: subtitleColor,
-                          fontWeight: FontWeight.w500,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.center,
+                        child: Text(
+                          widget.surah.nameEnglish,
+                          textAlign: TextAlign.center,
+                          softWrap: false,
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 12,
+                            color: subtitleColor,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 10),

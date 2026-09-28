@@ -3,6 +3,7 @@ import '../models/audio_models.dart';
 import '../services/audio_quran_service.dart';
 import '../utils/design_system.dart';
 import 'visual_effects/interactive_motion_card.dart';
+import 'quran_download_sheet.dart';
 
 class ReciterCard extends StatelessWidget {
   final ReciterProfile reciter;
@@ -147,9 +148,53 @@ class ReciterCard extends StatelessWidget {
                   ),
                 ),
 
-                // Actions: Favorite & Play/Pause Button
+                // Actions: Download Button & Favorite & Play/Pause Button
                 Row(
                   children: [
+                    // Download Button (Icon + "تنزيل")
+                    InkWell(
+                      onTap: () {
+                        QuranDownloadSheet.show(
+                          context,
+                          reciter: reciter,
+                          currentSurah: service.currentSurah,
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
+                          border: Border.all(
+                            color: DesignSystem.gold.withValues(alpha: 0.3),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: const Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.download_rounded,
+                              color: DesignSystem.goldLight,
+                              size: 18,
+                            ),
+                            SizedBox(height: 1),
+                            Text(
+                              'تنزيل',
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                color: DesignSystem.goldLight,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+
                     IconButton(
                       icon: Icon(
                         isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,

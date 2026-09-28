@@ -495,48 +495,70 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'مراعاة الوضع الصامت للموبايل',
+                      'أذان مختصر في الوضع الصامت',
                       style: TextStyle(color: DesignSystem.textWhite, fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 2),
                     Text(
-                      'كتم صوت الأذان تلقائياً إذا كان الهاتف صامتاً أو اهتزاز',
+                      'ينطق بالتكبير والشهادتين فقط ثم ينتهي بلطف عند كتم الصوت',
                       style: TextStyle(color: DesignSystem.textMuted, fontSize: 11),
                     ),
                   ],
                 ),
               ),
               Switch(
-                value: athanSettings.respectSilentMode,
-                activeColor: DesignSystem.gold,
+                value: athanSettings.shortAthanOnSilent,
+                activeThumbColor: DesignSystem.gold,
                 onChanged: (val) {
                   setState(() {
-                    _athanService.updateSettings(athanSettings.copyWith(respectSilentMode: val));
+                    _athanService.updateSettings(athanSettings.copyWith(shortAthanOnSilent: val));
                   });
                 },
               ),
             ],
           ),
           const Divider(color: Colors.white12, height: 20),
-          // Test button
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: DesignSystem.goldLight,
-                side: const BorderSide(color: DesignSystem.goldLight),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          // Test buttons
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: DesignSystem.goldLight,
+                    side: const BorderSide(color: DesignSystem.goldLight),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () {
+                    if (_athanService.isPlayingAthan) {
+                      _athanService.stopAthan();
+                    } else {
+                      _athanService.testAthan(context: context);
+                    }
+                  },
+                  icon: Icon(_athanService.isPlayingAthan ? Icons.stop_rounded : Icons.play_arrow_rounded, size: 18),
+                  label: Text(_athanService.isPlayingAthan ? 'إيقاف' : 'تجربة الأذان كاملًا', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                ),
               ),
-              onPressed: () {
-                if (_athanService.isPlayingAthan) {
-                  _athanService.stopAthan();
-                } else {
-                  _athanService.testAthan(context: context);
-                }
-              },
-              icon: Icon(_athanService.isPlayingAthan ? Icons.stop_rounded : Icons.play_arrow_rounded),
-              label: Text(_athanService.isPlayingAthan ? 'إيقاف التجربة' : 'تجربة الأذان ونافذة التنبيه الآن'),
-            ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF38B982),
+                    side: const BorderSide(color: Color(0xFF38B982)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () {
+                    if (_athanService.isPlayingAthan) {
+                      _athanService.stopAthan();
+                    } else {
+                      _athanService.testShortAthan(context: context);
+                    }
+                  },
+                  icon: const Icon(Icons.flash_on_rounded, color: Color(0xFF38B982), size: 18),
+                  label: const Text('تجربة الأذان المختصر', style: TextStyle(color: Color(0xFF38B982), fontSize: 12, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
           ),
         ],
       ),

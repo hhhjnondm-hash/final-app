@@ -24,6 +24,7 @@ class _IqraScreenState extends State<IqraScreen> {
 
   late SurahMeta _currentSurah;
   List<Map<String, dynamic>> _ayahs = [];
+  final List<int> _cumulativeAyahWeights = [];
   bool _isLoading = true;
   int _activeAyahNumber = 1;
   double _fontSize = 24.0;
@@ -48,15 +49,29 @@ class _IqraScreenState extends State<IqraScreen> {
     if (mounted) {
       if (_currentSurah.number != _audio.currentSurah.number) {
         _loadSurah(_audio.currentSurah);
+        return;
       }
-      
-      // Calculate active Ayah based on position & total duration
-      if (_audio.isPlaying && _ayahs.isNotEmpty) {
+
+      // Calculate active Ayah proportionally based on Ayah text lengths
+      if (_audio.isPlaying && _ayahs.isNotEmpty && _cumulativeAyahWeights.isNotEmpty) {
         final posMs = _audio.currentPosition.inMilliseconds;
         final totalMs = _audio.totalDuration.inMilliseconds;
         if (totalMs > 0 && posMs > 0) {
           final fraction = (posMs / totalMs).clamp(0.0, 0.999);
-          final calculatedAyah = (fraction * _ayahs.length).floor() + 1;
+          final targetWeight = fraction * _cumulativeAyahWeights.last;
+
+          int foundIndex = 0;
+          for (int i = 0; i < _cumulativeAyahWeights.length; i++) {
+            if (_cumulativeAyahWeights[i] >= targetWeight) {
+              foundIndex = i;
+              break;
+            }
+          }
+
+          final calculatedAyah = (foundIndex < _ayahs.length)
+              ? (_ayahs[foundIndex]['ayahNumber'] ?? _ayahs[foundIndex]['number'] ?? (foundIndex + 1)) as int
+              : 1;
+
           if (calculatedAyah != _activeAyahNumber && calculatedAyah <= _ayahs.length) {
             _activeAyahNumber = calculatedAyah;
           }
@@ -71,6 +86,17 @@ class _IqraScreenState extends State<IqraScreen> {
     setState(() => _isLoading = true);
     await QuranService.loadQuranData();
     final list = QuranService.getSurahAyahs(surah.number) ?? [];
+    
+    // Calculate cumulative weights for accurate proportional timeline synchronization
+    _cumulativeAyahWeights.clear();
+    int runningSum = 0;
+    for (final a in list) {
+      final text = ((a['text'] ?? '') as String).trim();
+      final weight = text.length > 5 ? text.length : 15;
+      runningSum += weight;
+      _cumulativeAyahWeights.add(runningSum);
+    }
+
     if (mounted) {
       setState(() {
         _currentSurah = surah;
@@ -101,8 +127,11 @@ class _IqraScreenState extends State<IqraScreen> {
     if (_ayahs.isEmpty) return;
     setState(() => _activeAyahNumber = ayahNumber);
     final totalMs = _audio.totalDuration.inMilliseconds;
-    if (totalMs > 0) {
-      final targetMs = (((ayahNumber - 1) / _ayahs.length) * totalMs).toInt();
+    if (totalMs > 0 && _cumulativeAyahWeights.isNotEmpty) {
+      final prevWeight = ayahNumber > 1 && (ayahNumber - 2) < _cumulativeAyahWeights.length
+          ? _cumulativeAyahWeights[ayahNumber - 2]
+          : 0;
+      final targetMs = ((prevWeight / _cumulativeAyahWeights.last) * totalMs).toInt();
       _audio.seekTo(Duration(milliseconds: targetMs));
     }
     if (!_audio.isPlaying) {

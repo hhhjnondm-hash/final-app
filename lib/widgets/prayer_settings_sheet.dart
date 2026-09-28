@@ -150,37 +150,59 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
 
                   const SizedBox(height: 12),
 
-                  // Respect Silent Mode Switch
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.volume_off_rounded, color: DesignSystem.goldLight, size: 20),
-                          SizedBox(width: 8),
-                          Text(
-                            'مراعاة الوضع الصامت للموبايل',
-                            style: TextStyle(
-                              color: DesignSystem.textWhite,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                  // Smart Short Athan on Silent Mode Switch
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: DesignSystem.bgDarkest.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
+                      border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.2)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Expanded(
+                              child: Row(
+                                children: [
+                                  Icon(Icons.volume_down_rounded, color: DesignSystem.goldLight, size: 20),
+                                  SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'أذان مختصر في الوضع الصامت (التكبير والشهادتان)',
+                                      style: TextStyle(
+                                        color: DesignSystem.textWhite,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      Switch(
-                        value: athanSettings.respectSilentMode,
-                        activeThumbColor: DesignSystem.gold,
-                        onChanged: (val) {
-                          _athanService.updateSettings(athanSettings.copyWith(respectSilentMode: val));
-                        },
-                      ),
-                    ],
+                            Switch(
+                              value: athanSettings.shortAthanOnSilent,
+                              activeThumbColor: DesignSystem.gold,
+                              onChanged: (val) {
+                                _athanService.updateSettings(athanSettings.copyWith(shortAthanOnSilent: val));
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'عندما يكون الهاتف على الوضع الصامت، ينطق الأذان بالتكبيرتين والشهادتين فقط ثم ينتهي بلطف دون رفع الأذان كاملًا.',
+                          style: TextStyle(color: DesignSystem.textMuted, fontSize: 11, height: 1.4),
+                        ),
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 12),
 
-                  // Test Athan Button (with dialog popup)
+                  // Test Buttons Row: Full Athan & Short Athan
                   Row(
                     children: [
                       Expanded(
@@ -197,8 +219,33 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                               _athanService.testAthan(context: context);
                             }
                           },
-                          icon: Icon(_athanService.isPlayingAthan ? Icons.stop_rounded : Icons.play_arrow_rounded),
-                          label: Text(_athanService.isPlayingAthan ? 'إيقاف التجربة' : 'تجربة صوت الأذان ونافذة التنبيه'),
+                          icon: Icon(_athanService.isPlayingAthan ? Icons.stop_rounded : Icons.play_arrow_rounded, size: 18),
+                          label: Text(
+                            _athanService.isPlayingAthan ? 'إيقاف' : 'تجربة الأذان كاملًا',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF38B982),
+                            side: const BorderSide(color: Color(0xFF38B982)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () {
+                            if (_athanService.isPlayingAthan) {
+                              _athanService.stopAthan();
+                            } else {
+                              _athanService.testShortAthan(context: context);
+                            }
+                          },
+                          icon: const Icon(Icons.flash_on_rounded, color: Color(0xFF38B982), size: 18),
+                          label: const Text(
+                            'تجربة الأذان المختصر',
+                            style: TextStyle(color: Color(0xFF38B982), fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ),
                     ],

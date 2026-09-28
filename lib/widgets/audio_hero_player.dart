@@ -3,13 +3,16 @@ import '../services/audio_quran_service.dart';
 import '../utils/design_system.dart';
 import 'visual_effects/floating_particles.dart';
 import 'visual_effects/shimmer_sweep.dart';
+import 'quran_download_sheet.dart';
 
 class AudioHeroPlayer extends StatefulWidget {
   final VoidCallback? onReciterChangeTap;
+  final VoidCallback? onSurahChangeTap;
 
   const AudioHeroPlayer({
     super.key,
     this.onReciterChangeTap,
+    this.onSurahChangeTap,
   });
 
   @override
@@ -153,60 +156,104 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                       ),
                     ),
 
-                    if (widget.onReciterChangeTap != null)
-                      InkWell(
-                        onTap: widget.onReciterChangeTap,
-                        borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.08),
+                    Row(
+                      children: [
+                        if (widget.onSurahChangeTap != null) ...[
+                          InkWell(
+                            onTap: widget.onSurahChangeTap,
                             borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-                          ),
-                          child: const Row(
-                            children: [
-                              Text(
-                                'تغيير القارئ',
-                                style: TextStyle(color: DesignSystem.textWhite, fontSize: 11),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: DesignSystem.gold.withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
+                                border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.5)),
                               ),
-                              SizedBox(width: 4),
-                              Icon(Icons.keyboard_arrow_down_rounded, color: DesignSystem.goldLight, size: 14),
-                            ],
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.menu_book_rounded, color: DesignSystem.goldLight, size: 14),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'السور (114)',
+                                    style: TextStyle(color: DesignSystem.goldLight, fontSize: 11, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
+                          const SizedBox(width: 6),
+                        ],
+                        if (widget.onReciterChangeTap != null)
+                          InkWell(
+                            onTap: widget.onReciterChangeTap,
+                            borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
+                                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+                              ),
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    'القراء',
+                                    style: TextStyle(color: DesignSystem.textWhite, fontSize: 11),
+                                  ),
+                                  SizedBox(width: 4),
+                                  Icon(Icons.keyboard_arrow_down_rounded, color: DesignSystem.goldLight, size: 14),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
 
-                const SizedBox(height: 80),
+                const SizedBox(height: 70),
 
                 // Surah & Reciter Info
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'سورة ${surah.nameArabic}',
-                            style: const TextStyle(
-                              color: DesignSystem.textWhite,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
+                      child: InkWell(
+                        onTap: widget.onSurahChangeTap,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      'سورة ${surah.nameArabic}',
+                                      style: const TextStyle(
+                                        color: DesignSystem.textWhite,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Icon(Icons.touch_app_rounded, color: DesignSystem.goldLight, size: 18),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'القارئ: ${reciter.nameArabic}',
+                                style: const TextStyle(
+                                  color: DesignSystem.goldLight,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'القارئ: ${reciter.nameArabic}',
-                            style: const TextStyle(
-                              color: DesignSystem.goldLight,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
 
@@ -317,49 +364,49 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                     ),
                     const SizedBox(width: 12),
 
-                    // Offline Download Surah Button
-                    IconButton(
-                      icon: Icon(
-                        _service.isDownloaded(reciter.id, surah.number)
-                            ? Icons.download_done_rounded
-                            : Icons.download_for_offline_rounded,
-                        color: _service.isDownloaded(reciter.id, surah.number)
-                            ? const Color(0xFF4ADE80)
-                            : DesignSystem.goldLight,
-                        size: 24,
-                      ),
-                      tooltip: _service.isDownloaded(reciter.id, surah.number) ? 'تم التحميل أوفلاين' : 'تحميل للاستماع بدون نت',
-                      onPressed: () async {
-                        if (!_service.isDownloaded(reciter.id, surah.number)) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('بدأ تحميل سورة ${surah.nameArabic} للقارئ ${reciter.nameArabic} للاستماع بدون إنترنت...'),
-                              duration: const Duration(seconds: 2),
-                              backgroundColor: const Color(0xFF102A43),
-                            ),
-                          );
-                          await _service.downloadCurrentSurah();
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('تم اكتمال تحميل سورة ${surah.nameArabic} بنجاح! متاحة الآن أوفلاين.'),
-                                duration: const Duration(seconds: 2),
-                                backgroundColor: const Color(0xFF10B981),
-                              ),
-                            );
-                          }
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('سورة ${surah.nameArabic} محملة بالفعل ومتاحة بدون إنترنت.'),
-                              duration: const Duration(seconds: 2),
-                              backgroundColor: const Color(0xFF102A43),
-                            ),
-                          );
-                        }
+                    // Dedicated Royal Download Button (Icon + "تنزيل" text beneath)
+                    InkWell(
+                      onTap: () {
+                        QuranDownloadSheet.show(
+                          context,
+                          reciter: reciter,
+                          currentSurah: surah,
+                        );
                       },
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
+                          border: Border.all(
+                            color: DesignSystem.gold.withValues(alpha: 0.4),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.download_rounded,
+                              color: DesignSystem.goldLight,
+                              size: 20,
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              'تنزيل',
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                color: DesignSystem.goldLight,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
 
                     // Speed Toggle
                     InkWell(
@@ -368,7 +415,7 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                         _service.setPlaybackSpeed(nextSpeed);
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),

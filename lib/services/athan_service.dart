@@ -48,6 +48,7 @@ class AthanSettings {
   final bool playFullAthan;
   final bool playFajrSpecial;
   final bool respectSilentMode;
+  final bool shortAthanOnSilent;
   final Map<String, bool> enabledPrayers; // Fajr, Dhuhr, Asr, Maghrib, Isha
 
   const AthanSettings({
@@ -59,6 +60,7 @@ class AthanSettings {
     this.playFullAthan = true,
     this.playFajrSpecial = true,
     this.respectSilentMode = true,
+    this.shortAthanOnSilent = true,
     this.enabledPrayers = const {
       'Fajr': true,
       'Dhuhr': true,
@@ -77,6 +79,7 @@ class AthanSettings {
     bool? playFullAthan,
     bool? playFajrSpecial,
     bool? respectSilentMode,
+    bool? shortAthanOnSilent,
     Map<String, bool>? enabledPrayers,
   }) {
     return AthanSettings(
@@ -88,6 +91,7 @@ class AthanSettings {
       playFullAthan: playFullAthan ?? this.playFullAthan,
       playFajrSpecial: playFajrSpecial ?? this.playFajrSpecial,
       respectSilentMode: respectSilentMode ?? this.respectSilentMode,
+      shortAthanOnSilent: shortAthanOnSilent ?? this.shortAthanOnSilent,
       enabledPrayers: enabledPrayers ?? this.enabledPrayers,
     );
   }
@@ -102,6 +106,7 @@ class AthanSettings {
       'playFullAthan': playFullAthan,
       'playFajrSpecial': playFajrSpecial,
       'respectSilentMode': respectSilentMode,
+      'shortAthanOnSilent': shortAthanOnSilent,
       'enabledPrayers': enabledPrayers,
     };
   }
@@ -116,6 +121,7 @@ class AthanSettings {
       playFullAthan: json['playFullAthan'] ?? true,
       playFajrSpecial: json['playFajrSpecial'] ?? true,
       respectSilentMode: json['respectSilentMode'] ?? true,
+      shortAthanOnSilent: json['shortAthanOnSilent'] ?? true,
       enabledPrayers: json['enabledPrayers'] != null
           ? Map<String, bool>.from(json['enabledPrayers'])
           : const {
@@ -693,6 +699,7 @@ class AthanService extends ChangeNotifier {
     required String prayer,
     DateTime? prayerTime,
     bool showDialog = true,
+    bool forceShortAthan = false,
   }) async {
     if (!_settings.enabled) {
       debugPrint('🔇 Athan service is disabled');
@@ -710,7 +717,7 @@ class AthanService extends ChangeNotifier {
 
       // Check if device is in Silent or Vibrate mode
       bool isSilent = false;
-      if (_settings.respectSilentMode) {
+      if (_settings.respectSilentMode && !forceShortAthan) {
         isSilent = await isDeviceInSilentMode();
       }
 
@@ -743,18 +750,11 @@ class AthanService extends ChangeNotifier {
         }
       }
 
-      // 4. Play in-app audio if device is not silent and sound is not set to none
-      if (isSilent) {
-        debugPrint('🔕 Phone is in silent/vibrate mode: In-app athan sound suppressed per user settings');
-        // Still trigger missed prayer follow-up reminder after athan normal duration
-        Future.delayed(const Duration(minutes: 3), () {
-          _notificationService.showMissedPrayerNotification(
-            id: prayerIndex + 500,
-            prayerName: prayer,
-            arabicName: arabicName,
-          );
-        });
-      } else if (_settings.sound != AthanSound.none) {
+      // 4. Play audio (Full Athan or Smart Short Athan on Silent Mode)
+      final isShortAthan = forceShortAthan || (isSilent && _settings.shortAthanOnSilent);
+      final shouldPlayAudio = _settings.sound != AthanSound.none && (!isSilent || isShortAthan || forceShortAthan);
+
+      if (shouldPlayAudio) {
         String audioPath;
         bool isRemote = false;
 
@@ -792,19 +792,44 @@ class AthanService extends ChangeNotifier {
         final descriptor = AudioSourceDescriptor(
           id: 'athan_$prayer',
           type: AudioSourceType.adhan,
-          title: 'أذان صلاة $arabicName',
-          subtitle: getSoundDisplayName(_settings.sound),
+          title: isShortAthan
+              ? 'أذان مختصر (الوضع الصامت) - صلاة $arabicName'
+              : 'أذان صلاة $arabicName',
+          subtitle: isShortAthan
+              ? 'الله أكبر، أشهد أن لا إله إلا الله، أشهد أن محمدًا رسول الله'
+              : getSoundDisplayName(_settings.sound),
           provider: 'تطبيق رفيق',
           localPath: isRemote ? null : audioPath,
           remoteUrl: isRemote ? audioPath : null,
           metadata: {
             'prayer': prayer,
             'sound': _settings.sound.name,
+            'isShortAthan': isShortAthan,
           },
         );
 
-        debugPrint('🎵 Triggering unified Athan for $prayer with sound $audioPath');
+        debugPrint('🎵 Triggering Athan for $prayer (isSilent=$isSilent, isShortAthan=$isShortAthan)');
         await _audioManager.play(descriptor);
+
+        // If in Silent Mode or short Athan, automatically stop playback after the Shahadatayn (28 seconds)
+        if (isShortAthan) {
+          debugPrint('🔕 Short Athan mode: Scheduled auto-stop after 28 seconds (Takbeerat & Shahadatayn only)');
+          Timer(const Duration(seconds: 28), () {
+            if (_currentlyPlayingPrayer == prayer && isPlayingAthan) {
+              debugPrint('🔕 Short Athan completed: Stopping sound gracefully after Shahadatayn');
+              stopAthan();
+            }
+          });
+        }
+      } else {
+        debugPrint('🔕 In-app athan sound suppressed per user settings');
+        Future.delayed(const Duration(minutes: 3), () {
+          _notificationService.showMissedPrayerNotification(
+            id: prayerIndex + 500,
+            prayerName: prayer,
+            arabicName: arabicName,
+          );
+        });
       }
     } catch (e) {
       debugPrint('❌ Error playing athan: $e');
@@ -856,6 +881,22 @@ class AthanService extends ChangeNotifier {
     }
     await playAthan(prayer: 'Dhuhr', showDialog: context == null);
     _settings = _settings.copyWith(sound: previousSound);
+  }
+
+  Future<void> testShortAthan({BuildContext? context}) async {
+    if (context != null && context.mounted) {
+      PrayerAthanDialog.show(
+        context,
+        prayerName: 'Dhuhr',
+        arabicName: 'الظهر',
+      );
+    }
+    await playAthan(
+      prayer: 'Dhuhr',
+      prayerTime: DateTime.now(),
+      showDialog: context == null,
+      forceShortAthan: true,
+    );
   }
 
   @override

@@ -116,32 +116,35 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
         ],
       ),
       child: Stack(
-        fit: StackFit.expand,
         children: [
           // Islamic Mosque Artwork Image
-          ClipRRect(
-            borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
-            child: Image.asset(
-              'assets/prayer_hero.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
+              child: Image.asset(
+                'assets/prayer_hero.png',
+                fit: BoxFit.cover,
+                alignment: Alignment.topCenter,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ),
             ),
           ),
 
           // Deep Dark Smooth Gradient Overlays
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  DesignSystem.bgDarkest.withValues(alpha: 0.75),
-                  DesignSystem.bgDarkest.withValues(alpha: 0.98),
-                ],
-                stops: const [0.0, 0.5, 1.0],
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    DesignSystem.bgDarkest.withValues(alpha: 0.75),
+                    DesignSystem.bgDarkest.withValues(alpha: 0.98),
+                  ],
+                  stops: const [0.0, 0.5, 1.0],
+                ),
               ),
             ),
           ),

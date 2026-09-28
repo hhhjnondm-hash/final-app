@@ -4,6 +4,7 @@ import '../data/reciters_data.dart';
 import '../models/audio_models.dart';
 import '../models/quran_models.dart';
 import '../services/audio_quran_service.dart';
+import '../services/quran_audio_downloader.dart';
 import '../services/robust_quran_audio_service.dart';
 import '../adapters/reciter_adapter.dart';
 import '../utils/design_system.dart';
@@ -12,6 +13,8 @@ import '../widgets/audio_mini_player.dart';
 import '../widgets/reciter_card.dart';
 import '../widgets/audio_diagnostic_dialog.dart';
 import '../widgets/developer_credits_badge.dart';
+import '../widgets/floating_download_tracker.dart';
+import '../widgets/quran_download_progress_sheet.dart';
 import '../widgets/visual_effects/floating_particles.dart';
 import '../widgets/visual_effects/interactive_motion_card.dart';
 import '../widgets/visual_effects/star_glint.dart';
@@ -128,6 +131,7 @@ class _AudioScreenState extends State<AudioScreen> {
                           vertical: DesignSystem.spacingS,
                         ),
                         child: AudioHeroPlayer(
+                          onSurahChangeTap: () => _showSurahSelectorModal(context),
                           onReciterChangeTap: () => _showSurahSelectorModal(context),
                         ),
                       ),
@@ -252,6 +256,14 @@ class _AudioScreenState extends State<AudioScreen> {
               ),
             ),
 
+            // Floating Download Tracker (Appears while downloading with live logs & progress)
+            const Positioned(
+              bottom: 96,
+              left: 8,
+              right: 8,
+              child: FloatingDownloadTracker(),
+            ),
+
             // Floating Mini Player
             Positioned(
               bottom: 16,
@@ -300,16 +312,7 @@ class _AudioScreenState extends State<AudioScreen> {
             _buildHeaderCircleButton(
               icon: Icons.cloud_download_outlined,
               onTap: () {
-                setState(() {
-                  _useRealApi = !_useRealApi;
-                });
-                _initializeReciters();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(_useRealApi ? 'استخدام API الحقيقي' : 'استخدام البيانات المحلية'),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
+                QuranDownloadProgressSheet.show(context);
               },
             ),
             const SizedBox(width: 8),
@@ -604,11 +607,27 @@ class _AudioScreenState extends State<AudioScreen> {
                                     if (!_audioService.isDownloaded(_audioService.currentReciter.id, surah.number)) {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
-                                          content: Text('بدأ تحميل سورة ${surah.nameArabic}...'),
-                                          duration: const Duration(seconds: 1),
+                                          content: Text('جاري تنزيل سورة ${surah.nameArabic}...'),
+                                          duration: const Duration(seconds: 2),
                                         ),
                                       );
-                                      await _audioService.downloadSpecificSurah(_audioService.currentReciter, surah);
+                                      final success = await QuranAudioDownloader().downloadSingleSurah(
+                                        reciter: _audioService.currentReciter,
+                                        surah: surah,
+                                      );
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              success
+                                                  ? 'تم تنزيل وحفظ سورة ${surah.nameArabic} بنجاح ✅'
+                                                  : 'تعذر تنزيل سورة ${surah.nameArabic}',
+                                            ),
+                                            backgroundColor: success ? const Color(0xFF0F5132) : const Color(0xFF842029),
+                                            duration: const Duration(seconds: 2),
+                                          ),
+                                        );
+                                      }
                                     }
                                   },
                                 ),

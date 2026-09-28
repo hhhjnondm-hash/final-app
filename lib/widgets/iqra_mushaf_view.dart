@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class IqraMushafView extends StatelessWidget {
@@ -95,22 +96,25 @@ class IqraMushafView extends StatelessWidget {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 24),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: cardBorderColor, width: 1.4),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: theme == 'cream' || theme == 'ivory' || theme == 'green' ? 0.08 : 0.4),
+            color: Colors.black.withValues(
+              alpha: theme == 'cream' || theme == 'ivory' || theme == 'green' ? 0.08 : 0.4,
+            ),
             blurRadius: 20,
             offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Elegant Islamic Ornate Surah Header Banner (Matching screenshot)
+          // Elegant Islamic Ornate Surah Header Banner
           if (surahName.isNotEmpty) ...[
             Container(
               width: double.infinity,
@@ -123,7 +127,6 @@ class IqraMushafView extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Left & Right subtle arabesque diamonds
                   Positioned(
                     right: 8,
                     child: Icon(Icons.star_rounded, color: goldColor.withValues(alpha: 0.6), size: 14),
@@ -132,7 +135,6 @@ class IqraMushafView extends StatelessWidget {
                     left: 8,
                     child: Icon(Icons.star_rounded, color: goldColor.withValues(alpha: 0.6), size: 14),
                   ),
-
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -193,26 +195,28 @@ class IqraMushafView extends StatelessWidget {
             ),
           ],
 
-          // Continuous Flow Text with highlighted active Ayah
+          // Continuous Flow Text with fully wrapping spans & highlighted active Ayah
           Directionality(
             textDirection: TextDirection.rtl,
-            child: Text.rich(
-              TextSpan(
-                style: TextStyle(
-                  fontFamily: 'Amiri',
-                  fontSize: fontSize,
-                  height: 2.25,
-                  color: textColor,
-                  letterSpacing: 0.2,
+            child: SelectionArea(
+              child: Text.rich(
+                TextSpan(
+                  style: TextStyle(
+                    fontFamily: 'Amiri',
+                    fontSize: fontSize,
+                    height: 2.3,
+                    color: textColor,
+                    letterSpacing: 0.2,
+                  ),
+                  children: _buildContinuousAyahSpans(
+                    textColor: textColor,
+                    activeTextColor: activeTextColor,
+                    activeBgColor: activeBgColor,
+                    goldColor: goldColor,
+                  ),
                 ),
-                children: _buildContinuousAyahSpans(
-                  textColor: textColor,
-                  activeTextColor: activeTextColor,
-                  activeBgColor: activeBgColor,
-                  goldColor: goldColor,
-                ),
+                textAlign: TextAlign.justify,
               ),
-              textAlign: TextAlign.center,
             ),
           ),
         ],
@@ -238,71 +242,64 @@ class IqraMushafView extends StatelessWidget {
         text = text.replaceFirst('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', '').trim();
       }
 
-      // Ayah Text Span
+      // 1. Ayah Text Span (Standard TextSpan allowing native word-wrapping across multiple lines)
+      spans.add(
+        TextSpan(
+          text: '$text ',
+          style: TextStyle(
+            fontFamily: 'Amiri',
+            fontSize: fontSize,
+            color: isCurrent ? activeTextColor : textColor,
+            backgroundColor: isCurrent ? activeBgColor : Colors.transparent,
+            fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+            height: 2.3,
+          ),
+          recognizer: TapGestureRecognizer()..onTap = () => onAyahTap(number, text),
+        ),
+      );
+
+      // 2. Ornate Ayah Number End Mark (Wrapped in a compact WidgetSpan or TextSpan)
       spans.add(
         WidgetSpan(
           alignment: PlaceholderAlignment.middle,
           child: InkWell(
             onTap: () => onAyahTap(number, text),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(fontSize * 0.5),
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
-              padding: isCurrent
-                  ? const EdgeInsets.symmetric(horizontal: 6, vertical: 2)
-                  : EdgeInsets.zero,
-              decoration: isCurrent
-                  ? BoxDecoration(
-                      color: activeBgColor,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: goldColor.withValues(alpha: 0.6), width: 1.1),
-                    )
-                  : null,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    text,
-                    style: TextStyle(
-                      fontFamily: 'Amiri',
-                      fontSize: fontSize,
-                      color: isCurrent ? activeTextColor : textColor,
-                      fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-                    ),
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              padding: const EdgeInsets.all(2),
+              constraints: BoxConstraints(
+                minWidth: fontSize * 0.95,
+                minHeight: fontSize * 0.95,
+              ),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isCurrent ? activeTextColor : goldColor,
+                  width: isCurrent ? 1.5 : 1.1,
+                ),
+                color: isCurrent ? activeBgColor : Colors.transparent,
+              ),
+              child: Center(
+                child: Text(
+                  _toArabicDigits(number),
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: fontSize * 0.44,
+                    fontWeight: FontWeight.bold,
+                    color: isCurrent ? activeTextColor : goldColor,
                   ),
-                  const SizedBox(width: 4),
-
-                  // Octagram / Circle Ayah Badge
-                  Container(
-                    width: fontSize * 0.95,
-                    height: fontSize * 0.95,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: goldColor, width: 1.2),
-                      color: isCurrent ? goldColor.withValues(alpha: 0.2) : Colors.transparent,
-                    ),
-                    child: Center(
-                      child: Text(
-                        _toArabicDigits(number),
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: fontSize * 0.46,
-                          fontWeight: FontWeight.bold,
-                          color: isCurrent ? activeTextColor : goldColor,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                ],
+                ),
               ),
             ),
           ),
         ),
       );
+
+      // Trailing space between verses
+      spans.add(const TextSpan(text: ' '));
     }
 
     return spans;
   }
 }
-
-

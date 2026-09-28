@@ -117,16 +117,8 @@ class AthanPlaybackService : Service() {
             it.ringerMode == AudioManager.RINGER_MODE_VIBRATE
         } ?: false
 
-        if (isSilent && respectSilentMode) {
-            Log.d(TAG, "Device is in Silent/Vibrate mode: Suppressing audio playback per user settings")
-            // Keep notification up for 3 minutes, then shut down and trigger reminder
-            dismissHandler = Handler(Looper.getMainLooper())
-            dismissRunnable = Runnable {
-                stopAthanPlayback(userInitiated = false)
-            }
-            dismissHandler?.postDelayed(dismissRunnable!!, 3 * 60 * 1000L)
-            return START_NOT_STICKY
-        }
+        val shortAthanOnSilent = intent?.getBooleanExtra("short_athan_on_silent", true) ?: true
+        val isShortAthan = isSilent && respectSilentMode && shortAthanOnSilent
 
         // 3. Play Athan Audio using MediaPlayer on USAGE_ALARM stream
         try {
@@ -154,7 +146,17 @@ class AthanPlaybackService : Service() {
                 }
                 start()
             }
-            Log.d(TAG, "MediaPlayer started successfully for $arabicName")
+            Log.d(TAG, "MediaPlayer started successfully for $arabicName (isShortAthan=$isShortAthan)")
+
+            if (isShortAthan) {
+                Log.d(TAG, "Short Athan mode: Scheduled auto-stop after 28 seconds (Takbeerat & Shahada)")
+                dismissHandler = Handler(Looper.getMainLooper())
+                dismissRunnable = Runnable {
+                    Log.d(TAG, "Short Athan duration elapsed: Stopping audio playback gracefully")
+                    stopAthanPlayback(userInitiated = false)
+                }
+                dismissHandler?.postDelayed(dismissRunnable!!, 28 * 1000L)
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize/play MediaPlayer: ${e.message}", e)
             stopAthanPlayback(userInitiated = false)

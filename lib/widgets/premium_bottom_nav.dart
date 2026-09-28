@@ -17,11 +17,11 @@ class PremiumBottomNav extends StatelessWidget {
     // 9 Sections in Exact Order
     final navItems = [
       _NavItem(Icons.home_outlined, Icons.home_rounded, 'الرئيسية'),
-      _NavItem(Icons.auto_stories_outlined, Icons.auto_stories_rounded, 'اقرأ'),
+      _NavItem(Icons.menu_book_outlined, Icons.menu_book_rounded, 'القرآن'),
       _NavItem(Icons.record_voice_over_outlined, Icons.record_voice_over_rounded, 'المصاحف'),
       _NavItem(Icons.radio_outlined, Icons.radio_rounded, 'الراديو'),
       _NavItem(Icons.access_time_outlined, Icons.access_time_filled, 'المواقيت'),
-      _NavItem(Icons.menu_book_outlined, Icons.menu_book_rounded, 'القرآن'),
+      _NavItem(Icons.auto_stories_outlined, Icons.auto_stories_rounded, 'اقرأ'),
       _NavItem(Icons.auto_awesome_outlined, Icons.auto_awesome_rounded, 'الأذكار'),
       _NavItem(Icons.library_books_outlined, Icons.library_books_rounded, 'الأحاديث'),
       _NavItem(Icons.person_outline_rounded, Icons.person_rounded, 'حسابي'),

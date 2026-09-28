@@ -95,11 +95,11 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),          // 0. الرئيسية
-    const IqraScreen(),          // 1. اقرأ
+    const QuranScreen(),         // 1. القرآن الكريم (الـ 114 سورة)
     const AudioScreen(),         // 2. المصاحف الصوتية
     const RadioScreen(),         // 3. الراديو
     const PrayerTimesScreen(),   // 4. مواقيت الصلاة
-    const QuranScreen(),         // 5. القرآن الكريم
+    const IqraScreen(),          // 5. اقرأ
     const AzkarScreen(),         // 6. الأذكار
     const HadithScreen(),        // 7. الأحاديث النبوية
     const ProfileScreen(),       // 8. حسابي

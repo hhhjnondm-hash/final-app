@@ -1,69 +1,80 @@
 import 'package:flutter/material.dart';
+import '../services/theme_service.dart';
 
 /// Design System for Islamyat (Rafeeq) App
-/// Luxury Islamic Digital Product Design System - Dark & Light Mode
+/// Luxury Islamic Digital Product Design System - Dynamic Time-Based & Presets
 class DesignSystem {
-  // Theme Mode State - true: Light Mode (نهاري), false: Dark Mode (ليلي ملكي أسود وذهبي)
-  static bool isLightMode = false; // Default to Luxury Dark Mode (أسود وذهبي) or togglable
+  // Theme Mode State - bound to ThemeService
+  static bool get isLightMode => ThemeService.instance.isLightMode;
+  static set isLightMode(bool value) {
+    ThemeService.instance.setLightMode(value);
+  }
 
-  // ==================== 1. LUXURY DARK MODE PALETTE (DEEP BLACK & ROYAL GOLD) ====================
-  static const Color darkBgMain = Color(0xFF07090E);       // Pure Deep Void Black
-  static const Color darkBgSecondary = Color(0xFF0C1017);  // Deep Charcoal Slate
-  static const Color darkCardBg = Color(0xFF111722);       // Obsidian Card Background
-  static const Color darkCardElevated = Color(0xFF161F2E); // Elevated Card
-  static const Color darkBorder = Color(0xFF2A364F);       // Subtle Midnight Blue Border
-  static const Color darkGoldBorder = Color(0xFFC89B3C);   // Royal Gold Border
+  // ==================== DYNAMIC ADAPTIVE THEME ACCESSORS ====================
+  static AppThemePalette get currentPalette => ThemeService.instance.effectivePalette;
+
+  static Color get currentBgMain => currentPalette.bgMain;
+  static Color get currentBgSecondary => currentPalette.bgSecondary;
+  static Color get currentCardBg => currentPalette.cardBg;
+  static Color get currentCardElevated => currentPalette.cardElevated;
+  static Color get currentTextPrimary => currentPalette.textPrimary;
+  static Color get currentTextSecondary => currentPalette.textSecondary;
+  static Color get currentBorder => currentPalette.border;
+  static Color get currentGold => currentPalette.goldAccent;
+  static Color get currentAccentGlow => currentPalette.accentGlow;
+  static LinearGradient get currentHeroGradient => currentPalette.heroGradient;
+  static LinearGradient get currentCardGradient => currentPalette.cardGradient;
+
+  // ==================== 1. LUXURY DARK MODE PALETTE CONSTANTS ====================
+  static const Color darkBgMain = Color(0xFF08090B);       // Pure Deep Void Black
+  static const Color darkBgSecondary = Color(0xFF0E1117);  // Deep Charcoal Slate
+  static const Color darkCardBg = Color(0xFF131722);       // Obsidian Card Background
+  static const Color darkCardElevated = Color(0xFF1A2130); // Elevated Card
+  static const Color darkBorder = Color(0xFF263248);       // Subtle Midnight Blue Border
+  static const Color darkGoldBorder = Color(0xFFD4AF57);   // Royal Gold Border
   static const Color darkTextPrimary = Color(0xFFF6F8FA);  // Pure Crisp White
   static const Color darkTextSecondary = Color(0xFF94A3B8);// Silver Slate Subtitles
   static const Color darkTextGold = Color(0xFFE8D29A);     // Luminous Radiant Gold
 
-  // ==================== 2. LIGHT MODE COLOR PALETTE (DAYTIME IVORY & NAVY) ====================
-  static const Color lightBgMain = Color(0xFFF8F6F0);      // Soft Warm Ivory
-  static const Color lightBgSecondary = Color(0xFFF2F5F7); // Very Pale Blue-Gray
+  // ==================== 2. LIGHT MODE COLOR PALETTE CONSTANTS ====================
+  static const Color lightBgMain = Color(0xFFDCEAF4);      // Soft Sky Blue (Day default)
+  static const Color lightBgSecondary = Color(0xFFEEF6FA); // Pale Sky Blue
   static const Color lightCardBg = Color(0xFFFFFFFF);      // Pure White Card
   static const Color lightPrimaryNavy = Color(0xFF102A43);  // Deep Navy for branding & active pills
   static const Color lightSecondaryNavy = Color(0xFF183B5B);// Secondary Navy
   static const Color lightTeal = Color(0xFF0F6B78);         // Teal Accent (Hisn Al-Muslim)
   static const Color lightTealBg = Color(0xFFE8F3F3);       // Light Teal BG
   static const Color lightSoftSkyBlue = Color(0xFFDCEAF4);  // Soft Sky Blue (Qibla / Hero)
-  static const Color lightPrimaryGold = Color(0xFFC89B3C);  // Primary Metallic Gold (Quran / Accents)
+  static const Color lightPrimaryGold = Color(0xFFC9A24D);  // Primary Metallic Gold (Quran / Accents)
   static const Color lightSoftGold = Color(0xFFE8D29A);     // Soft Gold Glow & Borders
-  static const Color lightPrimaryText = Color(0xFF172033);  // Primary Dark Text (Titles)
-  static const Color lightSecondaryText = Color(0xFF667085);// Secondary Muted Gray-Navy Text
-  static const Color lightBorder = Color(0xFFDCE3EC);       // Card & Container Subtle Border
+  static const Color lightPrimaryText = Color(0xFF102A43);  // Primary Dark Text (Titles)
+  static const Color lightSecondaryText = Color(0xFF2B6F9B);// Secondary Muted Blue Text
+  static const Color lightBorder = Color(0xFFBDD8EA);       // Card & Container Subtle Border
   static const Color lightPurple = Color(0xFF6956B8);       // Purple Accent (Quran Radio)
   static const Color lightSoftPurple = Color(0xFFF0ECFA);   // Soft Purple BG
-  static const Color lightWarmBeige = Color(0xFFF3EDE1);    // Very Light Warm Beige
-
-  // ==================== DYNAMIC ADAPTIVE ACCESSORS ====================
-  static Color get currentBgMain => isLightMode ? lightBgMain : darkBgMain;
-  static Color get currentBgSecondary => isLightMode ? lightBgSecondary : darkBgSecondary;
-  static Color get currentCardBg => isLightMode ? lightCardBg : darkCardBg;
-  static Color get currentTextPrimary => isLightMode ? lightPrimaryText : darkTextPrimary;
-  static Color get currentTextSecondary => isLightMode ? lightSecondaryText : darkTextSecondary;
-  static Color get currentBorder => isLightMode ? lightBorder : darkBorder;
+  static const Color lightWarmBeige = Color(0xFFF3E8D0);    // Light Warm Sand
 
   // ==================== BACKGROUND CONSTANTS (FOR BACKWARD COMPATIBILITY) ====================
-  static const Color bgDarkest = Color(0xFF07090E);
-  static const Color bgDark = Color(0xFF0C1017);
-  static const Color bgElevated = Color(0xFF161F2E);
-  static const Color bgSurface = Color(0xFF111722);
-  static const Color bgCard = Color(0xFF111722);
-  static const Color bgCardHover = Color(0xFF1A2436);
+  static const Color bgDarkest = Color(0xFF08090B);
+  static const Color bgDark = Color(0xFF0E1117);
+  static const Color bgElevated = Color(0xFF1A2130);
+  static const Color bgSurface = Color(0xFF131722);
+  static const Color bgCard = Color(0xFF131722);
+  static const Color bgCardHover = Color(0xFF1C2433);
 
-  static const Color darkBgDarkest = Color(0xFF07090E);
-  static const Color darkBgDark = Color(0xFF0C1017);
-  static const Color darkBgElevated = Color(0xFF161F2E);
-  static const Color darkBgSurface = Color(0xFF111722);
-  static const Color darkBgCard = Color(0xFF111722);
-  static const Color darkBgCardHover = Color(0xFF1A2436);
+  static const Color darkBgDarkest = Color(0xFF08090B);
+  static const Color darkBgDark = Color(0xFF0E1117);
+  static const Color darkBgElevated = Color(0xFF1A2130);
+  static const Color darkBgSurface = Color(0xFF131722);
+  static const Color darkBgCard = Color(0xFF131722);
+  static const Color darkBgCardHover = Color(0xFF1C2433);
 
   // ==================== SACRED ROYAL GOLD PALETTE ====================
-  static const Color gold = Color(0xFFC89B3C);
+  static const Color gold = Color(0xFFD4AF57);
   static const Color goldLight = Color(0xFFE8D29A);
   static const Color goldDark = Color(0xFF996515);
   static const Color goldAmber = Color(0xFFE6B84A);
-  static const Color goldMuted = Color(0x33C89B3C);
+  static const Color goldMuted = Color(0x33D4AF57);
   static const Color goldRadiant = Color(0xFFFFD56B);
 
   // ==================== CELESTIAL BLUE & CYAN ====================
@@ -98,9 +109,9 @@ class DesignSystem {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0xFF141E30), // Obsidian Navy
-      Color(0xFF0A0F18), // Deep Night Black
-      Color(0xFF05070B),
+      Color(0xFF141A26),
+      Color(0xFF0C1018),
+      Color(0xFF08090B),
     ],
   );
 
@@ -108,8 +119,8 @@ class DesignSystem {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0xFF131B2A),
-      Color(0xFF0D1420),
+      Color(0xFF151C2B),
+      Color(0xFF0E131E),
     ],
   );
 
@@ -129,32 +140,13 @@ class DesignSystem {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0xFFDCEAF4), // Soft sky blue
-      Color(0xFFF3F8FB), // Very pale ice
+      Color(0xFFDCEAF4),
+      Color(0xFFEEF6FA),
     ],
   );
 
   // ==================== SHADOW SYSTEM ====================
-  static List<BoxShadow> get softCardShadow => isLightMode
-      ? [
-          BoxShadow(
-            color: const Color(0xFF102A43).withValues(alpha: 0.06),
-            blurRadius: 20,
-            offset: const Offset(0, 5),
-          ),
-        ]
-      : [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.6),
-            blurRadius: 24,
-            offset: const Offset(0, 6),
-          ),
-          BoxShadow(
-            color: gold.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 2),
-          ),
-        ];
+  static List<BoxShadow> get softCardShadow => currentPalette.cardShadow;
 
   static List<BoxShadow> get goldGlow => [
         BoxShadow(
@@ -183,69 +175,78 @@ class DesignSystem {
   static const double radiusPill = 999;
 
   // ==================== THEME DATA ====================
-  static ThemeData get darkTheme => ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: darkBgMain,
-        primaryColor: gold,
-        fontFamily: 'Cairo',
-        colorScheme: const ColorScheme.dark(
-          primary: gold,
-          secondary: goldLight,
-          surface: darkCardBg,
-          error: error,
-        ),
-      );
+  static ThemeData get darkTheme {
+    final palette = currentPalette.isDark ? currentPalette : AppThemePalette.darkNight;
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: palette.bgMain,
+      primaryColor: palette.goldAccent,
+      fontFamily: 'Cairo',
+      colorScheme: ColorScheme.dark(
+        primary: palette.goldAccent,
+        secondary: goldLight,
+        surface: palette.cardBg,
+        error: error,
+      ),
+    );
+  }
 
-  static ThemeData get lightTheme => ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: lightBgMain,
-        primaryColor: lightPrimaryNavy,
-        fontFamily: 'Cairo',
-        colorScheme: const ColorScheme.light(
-          primary: lightPrimaryNavy,
-          secondary: gold,
-          surface: lightCardBg,
-          error: error,
-        ),
-      );
+  static ThemeData get lightTheme {
+    final palette = !currentPalette.isDark ? currentPalette : AppThemePalette.lightSkyBlue;
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: palette.bgMain,
+      primaryColor: palette.primaryNavy,
+      fontFamily: 'Cairo',
+      colorScheme: ColorScheme.light(
+        primary: palette.primaryNavy,
+        secondary: palette.goldAccent,
+        surface: palette.cardBg,
+        error: error,
+      ),
+    );
+  }
 
   // ==================== DECORATIONS ====================
   static BoxDecoration radialGlowBackground([BuildContext? context]) {
-    final isLight = isLightMode;
-    return BoxDecoration(
-      color: isLight ? lightBgMain : darkBgMain,
-      gradient: isLight
-          ? const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFFF9F7F2), Color(0xFFF0EBE0)],
-            )
-          : const RadialGradient(
-              center: Alignment(0.0, -0.6),
-              radius: 1.2,
-              colors: [
-                Color(0xFF161E2E),
-                Color(0xFF0D121B),
-                Color(0xFF07090E),
-              ],
-            ),
-    );
+    final p = currentPalette;
+    if (p.isDark) {
+      return BoxDecoration(
+        color: p.bgMain,
+        gradient: RadialGradient(
+          center: const Alignment(0.0, -0.6),
+          radius: 1.2,
+          colors: [
+            p.cardElevated,
+            p.bgSecondary,
+            p.bgMain,
+          ],
+        ),
+      );
+    } else {
+      return BoxDecoration(
+        color: p.bgMain,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [p.bgMain, p.bgSecondary],
+        ),
+      );
+    }
   }
 
   static BoxDecoration glassCard([BuildContext? context]) {
-    final isLight = isLightMode;
+    final p = currentPalette;
     return BoxDecoration(
-      color: isLight ? lightCardBg : darkCardBg,
+      color: p.cardBg,
       borderRadius: BorderRadius.circular(radiusMedium),
       border: Border.all(
-        color: isLight ? lightBorder : darkBorder.withValues(alpha: 0.6),
+        color: p.border.withValues(alpha: p.isDark ? 0.6 : 0.8),
         width: 1,
       ),
-      boxShadow: softCardShadow,
+      boxShadow: p.cardShadow,
     );
   }
 }
-
-

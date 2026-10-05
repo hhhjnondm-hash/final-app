@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/storage_service.dart';
+import '../services/theme_service.dart';
 
 class UserPreferencesProvider extends ChangeNotifier {
   static final UserPreferencesProvider _instance = UserPreferencesProvider._internal();
@@ -15,8 +16,7 @@ class UserPreferencesProvider extends ChangeNotifier {
   String get language => _language;
 
   // Theme
-  String _themeMode = 'dark';
-  String get themeMode => _themeMode;
+  String get themeMode => ThemeService.instance.currentPreset;
 
   // First Launch
   bool _isFirstLaunch = true;
@@ -49,6 +49,7 @@ class UserPreferencesProvider extends ChangeNotifier {
 
   Future<void> initialize() async {
     await _init();
+    await ThemeService.instance.init();
   }
 
   Future<void> _loadPreferences() async {
@@ -56,12 +57,6 @@ class UserPreferencesProvider extends ChangeNotifier {
     final savedLanguage = _storage.getLanguage();
     if (savedLanguage != null) {
       _language = savedLanguage;
-    }
-
-    // Load theme
-    final savedTheme = _storage.getTheme();
-    if (savedTheme != null) {
-      _themeMode = savedTheme;
     }
 
     // Load first launch
@@ -88,8 +83,7 @@ class UserPreferencesProvider extends ChangeNotifier {
 
   // Theme
   Future<void> setTheme(String themeMode) async {
-    _themeMode = themeMode;
-    await _storage.setTheme(themeMode);
+    await ThemeService.instance.setThemePreset(themeMode);
     notifyListeners();
   }
 
@@ -144,7 +138,6 @@ class UserPreferencesProvider extends ChangeNotifier {
   // Reset to defaults
   Future<void> resetToDefaults() async {
     _language = 'ar';
-    _themeMode = 'dark';
     _fontSize = 1.0;
     _autoPlayAudio = true;
     _showTranslations = true;
@@ -152,7 +145,7 @@ class UserPreferencesProvider extends ChangeNotifier {
     _audioPlaybackRate = 1.0;
 
     await _storage.setLanguage('ar');
-    await _storage.setTheme('dark');
+    await ThemeService.instance.setThemePreset(ThemePresetIds.autoDark);
     await _saveAudioSettings();
     
     notifyListeners();

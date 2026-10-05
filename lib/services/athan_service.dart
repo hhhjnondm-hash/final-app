@@ -427,68 +427,68 @@ class AthanService extends ChangeNotifier {
         final arabicName = _getArabicPrayerName(prayer);
         final prayerIndex = _getPrayerIndex(prayer);
 
-        // 1. ⏰ Pre-prayer Reminder: 60 minutes before
-        final timeMinus60 = prayerTime.subtract(const Duration(minutes: 60));
-        if (timeMinus60.isAfter(now)) {
-          await _notificationService.schedulePrePrayerReminder(
-            id: prayerIndex * 100 + 60,
+        if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+          // On iOS/Web, schedule via Flutter Local Notifications
+          final timeMinus60 = prayerTime.subtract(const Duration(minutes: 60));
+          if (timeMinus60.isAfter(now)) {
+            await _notificationService.schedulePrePrayerReminder(
+              id: prayerIndex * 100 + 60,
+              prayerName: prayer,
+              arabicName: arabicName,
+              scheduledDate: timeMinus60,
+              minutesBefore: 60,
+            );
+          }
+
+          final timeMinus30 = prayerTime.subtract(const Duration(minutes: 30));
+          if (timeMinus30.isAfter(now)) {
+            await _notificationService.schedulePrePrayerReminder(
+              id: prayerIndex * 100 + 30,
+              prayerName: prayer,
+              arabicName: arabicName,
+              scheduledDate: timeMinus30,
+              minutesBefore: 30,
+            );
+          }
+
+          final timeMinus3 = prayerTime.subtract(const Duration(minutes: 3));
+          if (timeMinus3.isAfter(now)) {
+            await _notificationService.schedulePrePrayerReminder(
+              id: prayerIndex * 100 + 3,
+              prayerName: prayer,
+              arabicName: arabicName,
+              scheduledDate: timeMinus3,
+              minutesBefore: 3,
+            );
+          }
+
+          await _notificationService.schedulePrayerAthan(
+            id: prayerIndex + 100,
             prayerName: prayer,
             arabicName: arabicName,
-            scheduledDate: timeMinus60,
-            minutesBefore: 60,
+            scheduledDate: prayerTime,
+            isFajr: isFajr,
           );
-        }
 
-        // 2. ⏰ Pre-prayer Reminder: 30 minutes before
-        final timeMinus30 = prayerTime.subtract(const Duration(minutes: 30));
-        if (timeMinus30.isAfter(now)) {
-          await _notificationService.schedulePrePrayerReminder(
-            id: prayerIndex * 100 + 30,
+          await _notificationService.scheduleMissedPrayerReminder(
+            id: prayerIndex + 500,
             prayerName: prayer,
             arabicName: arabicName,
-            scheduledDate: timeMinus30,
-            minutesBefore: 30,
+            prayerTime: prayerTime,
+            delayMinutes: 15,
           );
         }
-
-        // 3. ⏰ Pre-prayer Reminder: 3 minutes before
-        final timeMinus3 = prayerTime.subtract(const Duration(minutes: 3));
-        if (timeMinus3.isAfter(now)) {
-          await _notificationService.schedulePrePrayerReminder(
-            id: prayerIndex * 100 + 3,
-            prayerName: prayer,
-            arabicName: arabicName,
-            scheduledDate: timeMinus3,
-            minutesBefore: 3,
-          );
-        }
-
-        // Schedule Athan exact alarm
-        await _notificationService.schedulePrayerAthan(
-          id: prayerIndex + 100,
-          prayerName: prayer,
-          arabicName: arabicName,
-          scheduledDate: prayerTime,
-          isFajr: isFajr,
-        );
-
-        // Schedule Missed Prayer Follow-up (15 min after athan)
-        await _notificationService.scheduleMissedPrayerReminder(
-          id: prayerIndex + 500,
-          prayerName: prayer,
-          arabicName: arabicName,
-          prayerTime: prayerTime,
-          delayMinutes: 15,
-        );
       }
     }
 
-    // Schedule native background Android AlarmClock alarms (fires even when app is killed or phone is locked)
-    await scheduleNativeAthanAlarms(prayerTimes);
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      // Schedule native background Android AlarmClock alarms (Single authoritative source for Android)
+      await scheduleNativeAthanAlarms(prayerTimes);
+    }
 
     _hasScheduledUpcomingToday = true;
     _lastScheduledDate = todayStr;
-    debugPrint('📅 Scheduled all remaining daily prayer notifications in OS');
+    debugPrint('📅 Scheduled all remaining daily prayer notifications cleanly in OS');
   }
 
   /// Schedule exact background Alarms in Android native AlarmManager

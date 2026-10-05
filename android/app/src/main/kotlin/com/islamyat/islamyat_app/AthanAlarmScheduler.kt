@@ -51,6 +51,7 @@ object AthanAlarmScheduler {
                         putExtra("is_fajr", isFajr)
                         putExtra("request_code", requestCode)
                         putExtra("respect_silent_mode", respectSilentMode)
+                        putExtra("short_athan_on_silent", true)
                     }
 
                     val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

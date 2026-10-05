@@ -135,6 +135,7 @@ flutter:
     - assets/data/notifications/
     - assets/data/
     - assets/images/
+    - assets/images/3d/
     - assets/images/athan/
     - assets/audio/athan/
     - assets/l10n/

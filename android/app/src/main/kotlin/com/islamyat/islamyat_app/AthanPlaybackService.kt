@@ -94,6 +94,11 @@ class AthanPlaybackService : Service() {
         val respectSilentMode = intent?.getBooleanExtra("respect_silent_mode", true) ?: true
         currentArabicName = arabicName
 
+        // Cancel previous Islamic reminders & old prayer notifications to keep notification drawer clean
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+        notificationManager?.cancel(IslamicReminderReceiver.UNIFIED_REMINDER_NOTIFICATION_ID)
+        notificationManager?.cancel(MISSED_NOTIFICATION_ID)
+
         // 1. Build and show Ongoing Foreground Notification
         val notification = buildAthanNotification(prayerName, arabicName)
         try {
@@ -133,6 +138,7 @@ class AthanPlaybackService : Service() {
                 val afd = resources.openRawResourceFd(audioResId)
                 setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
                 afd.close()
+                setVolume(1.0f, 1.0f)
                 setWakeMode(applicationContext, PowerManager.PARTIAL_WAKE_LOCK)
                 prepare()
                 setOnCompletionListener {
@@ -146,7 +152,7 @@ class AthanPlaybackService : Service() {
                 }
                 start()
             }
-            Log.d(TAG, "MediaPlayer started successfully for $arabicName (isShortAthan=$isShortAthan)")
+            Log.d(TAG, "MediaPlayer started successfully for $arabicName (isSilent=$isSilent, isShortAthan=$isShortAthan)")
 
             if (isShortAthan) {
                 Log.d(TAG, "Short Athan mode: Scheduled auto-stop after 28 seconds (Takbeerat & Shahada)")

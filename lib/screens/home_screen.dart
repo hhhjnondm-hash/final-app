@@ -28,6 +28,8 @@ import 'qibla_screen.dart';
 import 'radio_screen.dart';
 import 'surah_viewer_screen.dart';
 import '../widgets/developer_credits_badge.dart';
+import '../services/theme_service.dart';
+import '../widgets/theme_selection_modal.dart';
 
 enum SpiritualTimeContext {
   morning,
@@ -365,223 +367,291 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ==================== 1. TOP HEADER ====================
+  // ==================== 1. TOP HEADER & SEARCH ====================
   Widget _buildTopBar(BuildContext context) {
     final isLight = DesignSystem.isLightMode;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
       children: [
-        // Left Side: Notification, Theme Switcher & Location Selector (RTL friendly)
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Circular Notification Bell Button
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const NotificationSettingsScreen()),
-                );
-              },
-              borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFFFFF),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFDCE3EC)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF102A43).withValues(alpha: 0.04),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+            // Left Side (in RTL): Location Pill, Theme Toggle, Notification Bell
+            Row(
+              children: [
+                // Circular Notification Bell Button
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const NotificationSettingsScreen()),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF131D2A),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFFFD56B).withValues(alpha: 0.3),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.notifications_none_rounded,
-                  color: Color(0xFF102A43),
-                  size: 20,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-
-            // Prominent Theme Mode Toggle Pill (Light / Dark Switcher)
-            InkWell(
-              onTap: () {
-                setState(() {
-                  DesignSystem.isLightMode = !DesignSystem.isLightMode;
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    duration: const Duration(seconds: 2),
-                    backgroundColor: const Color(0xFF102A43),
-                    content: Row(
+                    child: Stack(
+                      alignment: Alignment.center,
                       children: [
                         Icon(
-                          DesignSystem.isLightMode ? Icons.wb_sunny_rounded : Icons.nightlight_round,
-                          color: const Color(0xFFC89B3C),
-                          size: 18,
+                          Icons.notifications_outlined,
+                          color: isLight ? const Color(0xFF102A43) : Colors.white,
+                          size: 19,
                         ),
-                        const SizedBox(width: 10),
-                        Text(
-                          DesignSystem.isLightMode
-                              ? 'تم تفعيل الوضع النهاري المشرق (Light Mode) ☀️'
-                              : 'تم تفعيل الوضع الليلي الفاخر (Dark Mode) 🌙',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        Positioned(
+                          top: 8,
+                          right: 9,
+                          child: Container(
+                            width: 6,
+                            height: 6,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFFFD56B),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                );
-              },
-              borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: DesignSystem.isLightMode
-                        ? [const Color(0xFFFFF7E6), const Color(0xFFFFFFFF)]
-                        : [const Color(0xFF102A43), const Color(0xFF0D1B2A)],
-                  ),
-                  borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                  border: Border.all(
-                    color: const Color(0xFFC89B3C).withValues(alpha: 0.5),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFC89B3C).withValues(alpha: 0.18),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      DesignSystem.isLightMode ? Icons.wb_sunny_rounded : Icons.nightlight_round,
-                      color: const Color(0xFFC89B3C),
-                      size: 16,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      DesignSystem.isLightMode ? 'نهاري' : 'ليلي',
-                      style: TextStyle(
-                        color: DesignSystem.isLightMode ? const Color(0xFF172033) : const Color(0xFFE8D29A),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+                const SizedBox(width: 6),
+
+                // Theme Mode Pill (ليلي / نهاري + ضغطة مطولة لتخصيص الثيم)
+                InkWell(
+                  onTap: () {
+                    ThemeService.instance.toggleDarkLight();
+                  },
+                  onLongPress: () {
+                    ThemeSelectionModal.show(context);
+                  },
+                  borderRadius: BorderRadius.circular(18),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF131D2A),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFFFD56B).withValues(alpha: 0.3),
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-
-            // Location Selector Pill ("مكة المكرمة")
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFFFFF),
-                borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                border: Border.all(color: const Color(0xFFDCE3EC)),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF102A43).withValues(alpha: 0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Row(
-                children: [
-                  Icon(
-                    Icons.location_on_rounded,
-                    color: Color(0xFF102A43),
-                    size: 15,
-                  ),
-                  SizedBox(width: 6),
-                  Text(
-                    'مكة المكرمة',
-                    style: TextStyle(
-                      color: Color(0xFF172033),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          DesignSystem.isLightMode ? Icons.wb_sunny_rounded : Icons.nightlight_round,
+                          color: const Color(0xFFFFD56B),
+                          size: 14,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          ThemeService.instance.isAutoMode
+                              ? (DesignSystem.isLightMode ? 'نهاري (تلقائي)' : 'ليلي (تلقائي)')
+                              : (DesignSystem.isLightMode ? 'نهاري' : 'ليلي'),
+                          style: TextStyle(
+                            color: isLight ? const Color(0xFF172033) : Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Cairo',
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  SizedBox(width: 4),
-                  Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color: Color(0xFF102A43),
-                    size: 16,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-
-        // Right Side: Brand Logo & Typography (Rafeeq / رفيقك في رحلتك الإيمانية)
-        Row(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  'Rafeeq',
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    color: isLight ? const Color(0xFF102A43) : Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.5,
-                  ),
                 ),
-                Text(
-                  'رفيقك في رحلتك الإيمانية',
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    color: const Color(0xFFC89B3C),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
+                const SizedBox(width: 6),
+
+                // Location Pill ("📍 مكة المكرمة ▾")
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF131D2A),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFFFD56B).withValues(alpha: 0.3),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.location_on_rounded,
+                        color: Color(0xFFFFD56B),
+                        size: 14,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'مكة المكرمة',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Cairo',
+                        ),
+                      ),
+                      SizedBox(width: 2),
+                      Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: Color(0xFFFFD56B),
+                        size: 14,
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(width: 12),
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFFFD56B).withValues(alpha: 0.6),
-                  width: 1.5,
+
+            // Right Side (in RTL): Brand Logo & Typography (Rafeeq / رفيق / وجهتك في رحلتك الإيمانية)
+            Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text(
+                      'Rafeeq',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        color: Color(0xFFCBD5E1),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const Text(
+                      'رفيق',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        color: Color(0xFFFFD56B),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        height: 1.1,
+                      ),
+                    ),
+                    Text(
+                      'وجهتك في رحلتك الإيمانية',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFC89B3C).withValues(alpha: 0.25),
-                    blurRadius: 10,
+                const SizedBox(width: 10),
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF2C2010), Color(0xFF130E07)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    border: Border.all(
+                      color: const Color(0xFFFFD56B).withValues(alpha: 0.6),
+                      width: 1.3,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFC89B3C).withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: ClipOval(
-                child: Image.asset(
-                  isLight ? 'assets/out logo app/lightapp.png' : 'assets/out logo app/darkapp.png',
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Icon(
-                    Icons.mosque,
-                    color: Color(0xFFC89B3C),
-                    size: 24,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(13),
+                    child: Image.asset(
+                      isLight ? 'assets/out logo app/lightapp.png' : 'assets/out logo app/darkapp.png',
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.mosque_rounded,
+                        color: Color(0xFFFFD56B),
+                        size: 26,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
+        ),
+
+        const SizedBox(height: 12),
+
+        // Glass Floating Search Bar
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const QuranScreen()),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF101924).withValues(alpha: 0.8),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFFFD56B).withValues(alpha: 0.25),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.search_rounded,
+                  color: Color(0xFFFFD56B),
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  'ابحث في القرآن الكريم ..',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                    fontSize: 12.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );
@@ -615,27 +685,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(26),
-        gradient: isLight
-            ? const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFFFFFFF),
-                  Color(0xFFF6F8FC),
-                  Color(0xFFE9F0F8),
-                ],
-              )
-            : const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF0F1E2E),
-                  Color(0xFF14273A),
-                  Color(0xFF0A131F),
-                ],
-              ),
         border: Border.all(
-          color: const Color(0xFFC89B3C).withValues(alpha: isLight ? 0.45 : 0.4),
+          color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.45 : 0.4),
           width: 1.5,
         ),
         boxShadow: [
@@ -643,16 +694,16 @@ class _HomeScreenState extends State<HomeScreen> {
           BoxShadow(
             color: isLight
                 ? const Color(0xFF102A43).withValues(alpha: 0.1)
-                : const Color(0xFF000000).withValues(alpha: 0.7),
-            blurRadius: 28,
+                : const Color(0xFF000000).withValues(alpha: 0.75),
+            blurRadius: 30,
             spreadRadius: 2,
             offset: const Offset(0, 10),
           ),
           // 3D Golden Specular Top Glow
           if (!isLight)
             BoxShadow(
-              color: const Color(0xFFFFD56B).withValues(alpha: 0.12),
-              blurRadius: 20,
+              color: const Color(0xFFFFD56B).withValues(alpha: 0.15),
+              blurRadius: 22,
               offset: const Offset(0, -2),
             ),
         ],
@@ -661,18 +712,66 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(25),
         child: Stack(
           children: [
-            // 3D Subtle Ambient Radial Glow
+            // Layer 1: Cinematic Mosque Courtyard Scenery Background
+            Positioned.fill(
+              child: Image.asset(
+                'assets/home_hero_mosque.jpg',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF0D1E2E), Color(0xFF14273A), Color(0xFF0A131F)],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Layer 2: Atmospheric Dark Gradient & Radial Lighting Scrim
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isLight
+                        ? [
+                            const Color(0xFFFFFFFF).withValues(alpha: 0.92),
+                            const Color(0xFFF6F8FC).withValues(alpha: 0.88),
+                            const Color(0xFFE9F0F8).withValues(alpha: 0.94),
+                          ]
+                        : [
+                            const Color(0xFF080F18).withValues(alpha: 0.88),
+                            const Color(0xFF0E1A29).withValues(alpha: 0.82),
+                            const Color(0xFF060B12).withValues(alpha: 0.92),
+                          ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
+            ),
+
+            // Layer 3: Ambient Golden Dust Particles
+            const Positioned.fill(
+              child: IgnorePointer(
+                child: FloatingParticles(
+                  numberOfParticles: 14,
+                  particleColor: Color(0xFFFFD56B),
+                ),
+              ),
+            ),
+
+            // Layer 4: 3D Golden Flare / Specular Light Top-Right
             Positioned(
               top: -30,
               right: -30,
               child: Container(
-                width: 120,
-                height: 120,
+                width: 140,
+                height: 140,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.12 : 0.18),
+                      const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.15 : 0.25),
                       Colors.transparent,
                     ],
                   ),
@@ -974,11 +1073,12 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'صباح مبارك بذكر الله 🌅',
+          'صباح مبارك ياصديقي 🌅',
           style: TextStyle(
             color: isLight ? const Color(0xFF102A43) : Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            fontFamily: 'Cairo',
           ),
         ),
         const SizedBox(height: 3),
@@ -987,6 +1087,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
             fontSize: 12,
+            fontFamily: 'Cairo',
           ),
         ),
         const SizedBox(height: 14),
@@ -996,11 +1097,12 @@ class _HomeScreenState extends State<HomeScreen> {
               child: _buildActionPillCard(
                 icon: Icons.wb_sunny_rounded,
                 iconColor: const Color(0xFFF59E0B),
-                bgColor: const Color(0xFFF59E0B).withValues(alpha: 0.14),
+                bgColor: const Color(0xFF1E2838),
                 borderColor: const Color(0xFFF59E0B).withValues(alpha: 0.45),
                 title: 'أذكار الصباح',
                 subtitle: '25 ذكراً للتحصين والبركة',
-                btnText: 'ابدأ الأذكار ←',
+                btnText: 'قراءة الأذكار ←',
+                imageAsset: 'assets/images/3d/hisn_muslim_3d.jpg',
                 onTap: () {
                   final cat = AllAzkarData.categories.firstWhere(
                     (c) => c.type == AzkarCategoryType.morning,
@@ -1014,12 +1116,13 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: _buildActionPillCard(
                 icon: Icons.menu_book_rounded,
-                iconColor: const Color(0xFF10B981),
-                bgColor: const Color(0xFF10B981).withValues(alpha: 0.14),
-                borderColor: const Color(0xFF10B981).withValues(alpha: 0.45),
-                title: stopMark != null ? 'ورد: سورة ${stopMark.surahName}' : 'ورد القرآن',
-                subtitle: stopMark != null ? 'موضع التوقف: الآية ${stopMark.ayahNumber}' : 'اقرأ القرآن فإنه شفيع لأهله',
+                iconColor: const Color(0xFF38BDF8),
+                bgColor: const Color(0xFF112538),
+                borderColor: const Color(0xFF38BDF8).withValues(alpha: 0.45),
+                title: stopMark != null ? 'ورد: سورة ${stopMark.surahName}' : 'وردك القرآني',
+                subtitle: stopMark != null ? 'موضع التوقف: الآية ${stopMark.ayahNumber}' : 'أتمم وردك اليوم',
                 btnText: 'متابعة الورد ←',
+                imageAsset: 'assets/images/3d/quran_sphere_3d.jpg',
                 onTap: () {
                   if (stopMark != null) {
                     Navigator.push(
@@ -1072,6 +1175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: isLight ? const Color(0xFF78350F) : const Color(0xFFFFE082),
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,
+                    fontFamily: 'Cairo',
                   ),
                 ),
               ),
@@ -1094,6 +1198,7 @@ class _HomeScreenState extends State<HomeScreen> {
             color: isLight ? const Color(0xFF102A43) : Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            fontFamily: 'Cairo',
           ),
         ),
         const SizedBox(height: 3),
@@ -1102,6 +1207,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
             fontSize: 12,
+            fontFamily: 'Cairo',
           ),
         ),
         const SizedBox(height: 14),
@@ -1167,6 +1273,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.white,
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
+                          fontFamily: 'Cairo',
                         ),
                       ),
                       const SizedBox(height: 3),
@@ -1174,7 +1281,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           const Text(
                             'متبقي ',
-                            style: TextStyle(color: Color(0xFFA7F3D0), fontSize: 12),
+                            style: TextStyle(color: Color(0xFFA7F3D0), fontSize: 12, fontFamily: 'Cairo'),
                           ),
                           Text(
                             _countdown,
@@ -1213,7 +1320,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: const Text(
                     'المواقيت ←',
-                    style: TextStyle(color: Color(0xFF022C22), fontSize: 11.5, fontWeight: FontWeight.w900),
+                    style: TextStyle(color: Color(0xFF022C22), fontSize: 11.5, fontWeight: FontWeight.w900, fontFamily: 'Cairo'),
                   ),
                 ),
               ],
@@ -1266,33 +1373,37 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'مساء مبارك بالسكينة 🌙',
+          'مساء مبارك ياصديقي 🌙',
           style: TextStyle(
             color: isLight ? const Color(0xFF102A43) : Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            fontFamily: 'Cairo',
           ),
         ),
         const SizedBox(height: 3),
         Text(
-          'حصنك المسائي وراحة لقلبك في ختام اليوم وتجديد العهد مع القرآن',
+          'حصّن نفسك بذكر الله وراحة قلبك في ختام اليوم',
           style: TextStyle(
             color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
             fontSize: 12,
+            fontFamily: 'Cairo',
           ),
         ),
         const SizedBox(height: 14),
         Row(
           children: [
+            // Right Card (in RTL): أذكار المساء with 3D Tasbih
             Expanded(
               child: _buildActionPillCard(
                 icon: Icons.nightlight_round,
                 iconColor: const Color(0xFF60A5FA),
-                bgColor: const Color(0xFF60A5FA).withValues(alpha: 0.14),
+                bgColor: const Color(0xFF121B2B),
                 borderColor: const Color(0xFF60A5FA).withValues(alpha: 0.45),
                 title: 'أذكار المساء',
                 subtitle: '24 ذكراً لطمأنينة النفس',
                 btnText: 'قراءة الأذكار ←',
+                imageAsset: 'assets/images/3d/tasbih_3d.jpg',
                 onTap: () {
                   final cat = AllAzkarData.categories.firstWhere(
                     (c) => c.type == AzkarCategoryType.evening,
@@ -1303,15 +1414,17 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(width: 10),
+            // Left Card (in RTL): وردك القرآني with 3D Quran & Sphere
             Expanded(
               child: _buildActionPillCard(
                 icon: Icons.menu_book_rounded,
                 iconColor: const Color(0xFF38BDF8),
-                bgColor: const Color(0xFF38BDF8).withValues(alpha: 0.14),
+                bgColor: const Color(0xFF0F2236),
                 borderColor: const Color(0xFF38BDF8).withValues(alpha: 0.45),
                 title: stopMark != null ? 'ورد: سورة ${stopMark.surahName}' : 'وردك القرآني',
-                subtitle: stopMark != null ? 'موضع التوقف: الآية ${stopMark.ayahNumber}' : 'أتمم ورد اليوم بطمأنينة',
+                subtitle: stopMark != null ? 'موضع التوقف: الآية ${stopMark.ayahNumber}' : 'أتمم وردك اليوم',
                 btnText: 'متابعة الورد ←',
+                imageAsset: 'assets/images/3d/quran_sphere_3d.jpg',
                 onTap: () {
                   if (stopMark != null) {
                     Navigator.push(
@@ -1333,40 +1446,57 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         const SizedBox(height: 12),
+        // Mosque panoramic banner at bottom
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: isLight
                   ? [const Color(0xFFEFF6FF), const Color(0xFFDBEAFE)]
-                  : [const Color(0xFF0D1B2A), const Color(0xFF09121D)],
+                  : [const Color(0xFF0E1A29), const Color(0xFF09121D)],
             ),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: const Color(0xFF60A5FA).withValues(alpha: 0.35),
+              color: const Color(0xFFFFD56B).withValues(alpha: 0.3),
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF60A5FA).withValues(alpha: 0.1),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
-          child: Row(
+          child: const Row(
             children: [
-              const Icon(Icons.star_rounded, color: Color(0xFFFFD56B), size: 18),
-              const SizedBox(width: 10),
+              Icon(Icons.arrow_back_ios_rounded, color: Color(0xFFFFD56B), size: 14),
+              SizedBox(width: 8),
               Expanded(
-                child: Text(
-                  '🌙 سنن المساء: صلاة المغرب والعشاء في جماعة وأداء سنة الوتر ونيل بركة الليل',
-                  style: TextStyle(
-                    color: isLight ? const Color(0xFF1E3A8A) : const Color(0xFFBFDBFE),
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'سنن المساء: صلاة المغرب والعشاء في جماعة وأداء سنة الوتر',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Cairo',
+                      ),
+                    ),
+                    Text(
+                      'الوتر ونيل بركة الليل',
+                      style: TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 10,
+                        fontFamily: 'Cairo',
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              SizedBox(width: 8),
+              Icon(Icons.star_rounded, color: Color(0xFFFFD56B), size: 18),
             ],
           ),
         ),
@@ -1386,6 +1516,7 @@ class _HomeScreenState extends State<HomeScreen> {
             color: isLight ? const Color(0xFF102A43) : Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            fontFamily: 'Cairo',
           ),
         ),
         const SizedBox(height: 3),
@@ -1394,6 +1525,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
             fontSize: 12,
+            fontFamily: 'Cairo',
           ),
         ),
         const SizedBox(height: 14),
@@ -1527,44 +1659,6 @@ class _HomeScreenState extends State<HomeScreen> {
             Navigator.push(context, MaterialPageRoute(builder: (_) => DhikrReaderScreen(category: cat)));
           },
         ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isLight
-                  ? [const Color(0xFFF5F3FF), const Color(0xFFEDE9FE)]
-                  : [const Color(0xFF1E1B4B).withValues(alpha: 0.3), const Color(0xFF0F0E2A)],
-            ),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: const Color(0xFFA78BFA).withValues(alpha: 0.35),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFA78BFA).withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.nightlight_outlined, color: Color(0xFFFFD56B), size: 18),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  '🌌 صلاة الوتر: اجعلوا آخر صلاتكم بالليل وتراً • ركعة واحدة تكفيك وتكتبك من القائمين',
-                  style: TextStyle(
-                    color: isLight ? const Color(0xFF5B21B6) : const Color(0xFFDDD6FE),
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }
@@ -1577,82 +1671,135 @@ class _HomeScreenState extends State<HomeScreen> {
     required String title,
     required String subtitle,
     required String btnText,
+    String? imageAsset,
     required VoidCallback onTap,
   }) {
     final isLight = DesignSystem.isLightMode;
 
     return InteractiveMotionCard(
-      borderRadius: 18,
+      borderRadius: 20,
       borderColor: borderColor,
       glowColor: iconColor.withValues(alpha: 0.3),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(14),
+        height: 160,
         decoration: BoxDecoration(
           color: isLight ? const Color(0xFFFFFFFF) : bgColor,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(color: borderColor, width: 1.2),
           boxShadow: [
             BoxShadow(
-              color: iconColor.withValues(alpha: isLight ? 0.08 : 0.15),
-              blurRadius: 10,
+              color: iconColor.withValues(alpha: isLight ? 0.08 : 0.2),
+              blurRadius: 14,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: 0.22),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: iconColor.withValues(alpha: 0.4)),
-                  ),
-                  child: Icon(icon, color: iconColor, size: 19),
-                ),
-                const SizedBox(width: 9),
-                Expanded(
-                  child: Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: isLight ? const Color(0xFF172033) : Colors.white,
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w800,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(19),
+          child: Stack(
+            children: [
+              // Background 3D Model Artwork if provided
+              if (imageAsset != null)
+                Positioned.fill(
+                  child: Opacity(
+                    opacity: 0.38,
+                    child: Image.asset(
+                      imageAsset,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                     ),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 7),
-            Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-                fontSize: 11,
-              ),
-            ),
-            const SizedBox(height: 9),
-            Row(
-              children: [
-                Text(
-                  btnText,
-                  style: TextStyle(
-                    color: iconColor,
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
+
+              // Gradient Overlay for Readability
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        bgColor.withValues(alpha: 0.95),
+                        bgColor.withValues(alpha: 0.65),
+                        bgColor.withValues(alpha: 0.95),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
                   ),
                 ),
-              ],
-            ),
-          ],
+              ),
+
+              // Card Content
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: isLight ? const Color(0xFF172033) : Colors.white,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w800,
+                              fontFamily: 'Cairo',
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: iconColor.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: iconColor.withValues(alpha: 0.4)),
+                          ),
+                          child: Icon(icon, color: iconColor, size: 16),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                        fontSize: 10.5,
+                        fontFamily: 'Cairo',
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: iconColor.withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            btnText,
+                            style: TextStyle(
+                              color: isLight ? iconColor : Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              fontFamily: 'Cairo',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -2601,56 +2748,56 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ==================== 4. QUICK ACCESS GRID ====================
+  // ==================== 4. QUICK ACCESS GRID (3D PHOTOREALISTIC MODELS) ====================
   Widget _buildQuickActionsGrid(BuildContext context) {
     return Row(
       children: [
-        // Card 1: القرآن الكريم (Gold) - 114 سورة
+        // Card 1: القرآن الكريم (114 سورة) -> 3D Quran Leather & Gold
         Expanded(
           child: _buildQuickActionCard(
             title: 'القرآن الكريم',
             subtitle: '114 سورة',
             icon: Icons.menu_book_rounded,
-            iconBg: const Color(0xFFFFF7E6),
+            imageAsset: 'assets/images/3d/quran_3d.jpg',
             accentColor: const Color(0xFFC89B3C),
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QuranScreen())),
           ),
         ),
         const SizedBox(width: 8),
 
-        // Card 2: حصن المسلم (Teal)
+        // Card 2: حصن المسلم (أذكار وأدعية) -> 3D Glowing Book
         Expanded(
           child: _buildQuickActionCard(
             title: 'حصن المسلم',
             subtitle: 'أذكار وأدعية',
             icon: Icons.auto_awesome_rounded,
-            iconBg: const Color(0xFFE8F3F3),
+            imageAsset: 'assets/images/3d/hisn_muslim_3d.jpg',
             accentColor: const Color(0xFF0F6B78),
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AzkarScreen())),
           ),
         ),
         const SizedBox(width: 8),
 
-        // Card 3: اتجاه القبلة (Navy / Sky Blue)
+        // Card 3: اتجاه القبلة (بوصلة دقيقة) -> 3D Antique Compass
         Expanded(
           child: _buildQuickActionCard(
             title: 'اتجاه القبلة',
             subtitle: 'بوصلة دقيقة',
             icon: Icons.explore_rounded,
-            iconBg: const Color(0xFFDCEAF4),
+            imageAsset: 'assets/images/3d/qibla_compass_3d.jpg',
             accentColor: const Color(0xFF102A43),
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QiblaScreen())),
           ),
         ),
         const SizedBox(width: 8),
 
-        // Card 4: إذاعة القرآن (Purple)
+        // Card 4: إذاعة القرآن (بث مباشر) -> 3D Classic Radio
         Expanded(
           child: _buildQuickActionCard(
             title: 'إذاعة القرآن',
             subtitle: 'بث مباشر',
             icon: Icons.radio_rounded,
-            iconBg: const Color(0xFFF0ECFA),
+            imageAsset: 'assets/images/3d/radio_3d.jpg',
             accentColor: const Color(0xFF6956B8),
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RadioScreen())),
           ),
@@ -2663,75 +2810,157 @@ class _HomeScreenState extends State<HomeScreen> {
     required String title,
     required String subtitle,
     required IconData icon,
-    required Color iconBg,
+    required String imageAsset,
     required Color accentColor,
     required VoidCallback onTap,
   }) {
     final isLight = DesignSystem.isLightMode;
 
-    return GlassCard(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
-      borderRadius: 18,
+    return InteractiveMotionCard(
+      borderRadius: 20,
+      borderColor: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.4 : 0.35),
+      glowColor: const Color(0xFFFFD56B).withValues(alpha: 0.25),
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Circular Icon Container with glowing ring
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: isLight ? iconBg : iconBg.withValues(alpha: 0.16),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: accentColor.withValues(alpha: 0.35),
-                width: 1.5,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        decoration: BoxDecoration(
+          gradient: isLight
+              ? const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFFFFFFFF),
+                    Color(0xFFF8FAFC),
+                  ],
+                )
+              : const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF162232),
+                    Color(0xFF0F1824),
+                  ],
+                ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isLight
+                ? const Color(0xFFDCE3EC)
+                : const Color(0xFFFFD56B).withValues(alpha: 0.28),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isLight ? 0.08 : 0.45),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+            if (!isLight)
+              BoxShadow(
+                color: const Color(0xFFFFD56B).withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, -1),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: accentColor.withValues(alpha: isLight ? 0.15 : 0.28),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 3D Object Volumetric Floating Pedestal
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                // Floor Shadow under 3D Object
+                Positioned(
+                  bottom: -2,
+                  child: Container(
+                    width: 44,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.5),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // 3D Model Artifact with Double Specular Ring
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFFFFD56B).withValues(alpha: 0.6),
+                      width: 1.3,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFD56B).withValues(alpha: 0.22),
+                        blurRadius: 12,
+                        spreadRadius: 1,
+                        offset: const Offset(0, 3),
+                      ),
+                      const BoxShadow(
+                        color: Color(0xFF000000),
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Image.asset(
+                      imageAsset,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Icon(
+                        icon,
+                        color: const Color(0xFFFFD56B),
+                        size: 26,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-            child: Icon(
-              icon,
-              color: isLight ? accentColor : const Color(0xFFFFD56B),
-              size: 22,
-            ),
-          ),
-          const SizedBox(height: 8),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.center,
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              softWrap: false,
-              style: TextStyle(
-                color: isLight ? const Color(0xFF172033) : Colors.white,
-                fontSize: 12.5,
-                fontWeight: FontWeight.bold,
+            const SizedBox(height: 9),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                softWrap: false,
+                style: TextStyle(
+                  color: isLight ? const Color(0xFF172033) : Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  fontFamily: 'Cairo',
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 2),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.center,
-            child: Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              softWrap: false,
-              style: TextStyle(
-                color: isLight ? const Color(0xFF667085) : const Color(0xFF94A3B8),
-                fontSize: 10.5,
+            const SizedBox(height: 2),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                softWrap: false,
+                style: TextStyle(
+                  color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Cairo',
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -2885,12 +3114,33 @@ class _HomeScreenState extends State<HomeScreen> {
   }) {
     final isLight = DesignSystem.isLightMode;
 
-    return GlassCard(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    return InteractiveMotionCard(
       borderRadius: 18,
+      borderColor: isCurrent
+          ? const Color(0xFFFFD56B)
+          : const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.35 : 0.2),
+      glowColor: const Color(0xFFFFD56B).withValues(alpha: 0.25),
       onTap: onTap,
-      child: SizedBox(
-        width: 105,
+      child: Container(
+        width: 110,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        decoration: BoxDecoration(
+          color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF111A26),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isCurrent
+                ? const Color(0xFFFFD56B)
+                : (isLight ? const Color(0xFFDCE3EC) : const Color(0xFFFFD56B).withValues(alpha: 0.2)),
+            width: isCurrent ? 1.5 : 1.1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isLight ? 0.05 : 0.4),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -2903,14 +3153,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isCurrent ? const Color(0xFFFFD56B) : const Color(0xFFDCE3EC),
+                      color: isCurrent ? const Color(0xFFFFD56B) : const Color(0xFFFFD56B).withValues(alpha: 0.6),
                       width: isCurrent ? 2.5 : 1.5,
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: isCurrent
-                            ? const Color(0xFFFFD56B).withValues(alpha: 0.35)
-                            : const Color(0xFF102A43).withValues(alpha: 0.06),
+                            ? const Color(0xFFFFD56B).withValues(alpha: 0.4)
+                            : const Color(0xFFC89B3C).withValues(alpha: 0.15),
                         blurRadius: isCurrent ? 12 : 8,
                         spreadRadius: isCurrent ? 1.0 : 0,
                         offset: const Offset(0, 2),
@@ -2924,7 +3174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => const Icon(
                               Icons.person,
-                              color: Color(0xFF102A43),
+                              color: Color(0xFFFFD56B),
                               size: 26,
                             ),
                           )
@@ -2933,7 +3183,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => const Icon(
                               Icons.person,
-                              color: Color(0xFF102A43),
+                              color: Color(0xFFFFD56B),
                               size: 26,
                             ),
                           ),
@@ -2945,9 +3195,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: isCurrent ? const Color(0xFFFFD56B) : const Color(0xFF102A43),
+                      color: isCurrent ? const Color(0xFFFFD56B) : const Color(0xFF101924),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 1.5),
+                      border: Border.all(color: const Color(0xFFFFD56B), width: 1.2),
                     ),
                     child: isCurrent
                         ? const SoundWaveVisualizer(
@@ -2961,8 +3211,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           )
                         : const Icon(
                             Icons.play_arrow_rounded,
-                            color: Colors.white,
-                            size: 11,
+                            color: Color(0xFFFFD56B),
+                            size: 12,
                           ),
                   ),
                 ),
@@ -2978,6 +3228,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: isLight ? const Color(0xFF172033) : Colors.white,
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
+                fontFamily: 'Cairo',
               ),
             ),
             const SizedBox(height: 2),
@@ -2988,7 +3239,8 @@ class _HomeScreenState extends State<HomeScreen> {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: isLight ? const Color(0xFF667085) : const Color(0xFF94A3B8),
-                fontSize: 9,
+                fontSize: 9.5,
+                fontFamily: 'Cairo',
               ),
             ),
           ],

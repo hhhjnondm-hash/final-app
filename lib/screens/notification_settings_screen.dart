@@ -57,24 +57,25 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final palette = DesignSystem.currentPalette;
     return Scaffold(
-      backgroundColor: DesignSystem.bgDarkest,
+      backgroundColor: palette.bgMain,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: DesignSystem.textWhite, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: palette.textPrimary, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Row(
+        title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            StarGlint(color: DesignSystem.goldLight, size: 16),
-            SizedBox(width: 6),
+            StarGlint(color: palette.goldAccent, size: 16),
+            const SizedBox(width: 6),
             Text(
               'إعدادات الإشعارات والأذان',
               style: TextStyle(
-                color: DesignSystem.textWhite,
+                color: palette.textPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),

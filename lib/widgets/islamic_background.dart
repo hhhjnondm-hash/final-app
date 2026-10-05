@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../utils/design_system.dart';
+import '../services/theme_service.dart';
 import 'visual_effects/glowing_lantern.dart';
 
 class IslamicBackground extends StatelessWidget {
@@ -17,44 +18,48 @@ class IslamicBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLight = DesignSystem.isLightMode;
+    final palette = DesignSystem.currentPalette;
+    final isLight = !palette.isDark;
 
     return Stack(
       children: [
-        // 1. Dynamic Background: Royal Obsidian Black & Gold (Dark) or Soft Warm Ivory (Light)
+        // 1. Dynamic Background: Bound to current active palette (Deep Sapphire, Emerald, Night, Sky Blue, Warm Sand, Soft Rose)
         Positioned.fill(
           child: Container(
             decoration: BoxDecoration(
-              color: isLight ? const Color(0xFFF8F6F0) : const Color(0xFF07090E),
+              color: palette.bgMain,
               gradient: isLight
-                  ? const RadialGradient(
-                      center: Alignment(0.0, -0.2),
-                      radius: 1.2,
+                  ? LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                       colors: [
-                        Color(0xFFFFFFFF), // Radiant daylight center
-                        Color(0xFFF8F6F0), // Warm ivory
-                        Color(0xFFF2EFE9), // Soft outer edge
+                        palette.bgMain,
+                        palette.bgSecondary,
+                        palette.bgMain.withValues(alpha: 0.95),
                       ],
                     )
-                  : const RadialGradient(
-                      center: Alignment(0.0, -0.3),
+                  : RadialGradient(
+                      center: const Alignment(0.0, -0.3),
                       radius: 1.3,
                       colors: [
-                        Color(0xFF141E30), // Luminous midnight navy-gold
-                        Color(0xFF0A0E17), // Deep obsidian
-                        Color(0xFF07090E), // Pure void black
+                        palette.cardElevated,
+                        palette.bgSecondary,
+                        palette.bgMain,
                       ],
                     ),
             ),
           ),
         ),
 
-        // 2. Subtle Botanical Leaves & Islamic Sacred Geometry in Canvas
-        Positioned.fill(
-          child: CustomPaint(
-            painter: isLight ? _DaytimeCourtyardPainter() : _NightCourtyardPainter(),
+        // 2. Subtle Botanical Leaves & Islamic Sacred Geometry in Canvas matching active theme
+        if (showSacredGeometry)
+          Positioned.fill(
+            child: CustomPaint(
+              painter: isLight
+                  ? _DaytimeCourtyardPainter(accentColor: palette.accentGlow)
+                  : _NightCourtyardPainter(goldColor: palette.goldAccent),
+            ),
           ),
-        ),
 
         // 3. Left Hanging Golden Lantern with Radiant Gold Glow & Pendulum Sway
         Positioned(
@@ -86,7 +91,7 @@ class IslamicBackground extends StatelessWidget {
           left: 18,
           child: _buildSideInspiration(
             text: 'كل\nخطوة\nتقربك\nمن الله',
-            isLight: isLight,
+            palette: palette,
           ),
         ),
 
@@ -96,7 +101,7 @@ class IslamicBackground extends StatelessWidget {
           right: 18,
           child: _buildSideInspiration(
             text: 'طريقك\nإلى\nالطمأنينة',
-            isLight: isLight,
+            palette: palette,
           ),
         ),
 
@@ -106,69 +111,7 @@ class IslamicBackground extends StatelessWidget {
     );
   }
 
-  Widget _buildLantern({required double height, required bool isLeft, bool isLight = true}) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Chain
-        Container(
-          width: 1.5,
-          height: 35,
-          color: const Color(0xFFC89B3C).withValues(alpha: isLight ? 0.45 : 0.75),
-        ),
-        // Lantern Body
-        Container(
-          width: 32,
-          height: 60,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: isLight
-                  ? const [
-                      Color(0xFFE8D29A),
-                      Color(0xFFC89B3C),
-                      Color(0xFF996515),
-                    ]
-                  : const [
-                      Color(0xFFFFE082),
-                      Color(0xFFC89B3C),
-                      Color(0xFF805300),
-                    ],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: isLight
-                    ? const Color(0xFFC89B3C).withValues(alpha: 0.22)
-                    : const Color(0xFFC89B3C).withValues(alpha: 0.45),
-                blurRadius: isLight ? 20 : 28,
-                spreadRadius: isLight ? 2 : 4,
-              ),
-            ],
-          ),
-          child: Center(
-            child: Container(
-              width: 14,
-              height: 28,
-              decoration: BoxDecoration(
-                color: isLight ? const Color(0xFFFFFBEA) : const Color(0xFFFFF4D0),
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: isLight ? const Color(0xFFFFE8A3) : const Color(0xFFFFD56B),
-                    blurRadius: isLight ? 10 : 16,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSideInspiration({required String text, bool isLight = true}) {
+  Widget _buildSideInspiration({required String text, required AppThemePalette palette}) {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Container(
@@ -181,7 +124,7 @@ class IslamicBackground extends StatelessWidget {
                 text,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: isLight ? const Color(0xFF667085) : const Color(0xFF8C9BAE),
+                  color: palette.textSecondary.withValues(alpha: 0.8),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   height: 1.6,
@@ -191,7 +134,7 @@ class IslamicBackground extends StatelessWidget {
               Container(
                 width: 24,
                 height: 1.5,
-                color: const Color(0xFFC89B3C).withValues(alpha: isLight ? 0.4 : 0.6),
+                color: palette.goldAccent.withValues(alpha: palette.isDark ? 0.6 : 0.4),
               ),
             ],
           ),
@@ -202,15 +145,18 @@ class IslamicBackground extends StatelessWidget {
 }
 
 class _NightCourtyardPainter extends CustomPainter {
+  final Color goldColor;
+  _NightCourtyardPainter({required this.goldColor});
+
   @override
   void paint(Canvas canvas, Size size) {
     final patternPaint = Paint()
-      ..color = const Color(0xFFC89B3C).withValues(alpha: 0.045)
+      ..color = goldColor.withValues(alpha: 0.045)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
     final glowPaint = Paint()
-      ..color = const Color(0xFFC89B3C).withValues(alpha: 0.02)
+      ..color = goldColor.withValues(alpha: 0.02)
       ..style = PaintingStyle.fill;
 
     // Islamic 8-point geometric star lattices
@@ -241,19 +187,23 @@ class _NightCourtyardPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _NightCourtyardPainter oldDelegate) =>
+      oldDelegate.goldColor != goldColor;
 }
 
 class _DaytimeCourtyardPainter extends CustomPainter {
+  final Color accentColor;
+  _DaytimeCourtyardPainter({required this.accentColor});
+
   @override
   void paint(Canvas canvas, Size size) {
     final patternPaint = Paint()
-      ..color = const Color(0xFF102A43).withValues(alpha: 0.025)
+      ..color = accentColor.withValues(alpha: 0.035)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
     final leafPaint = Paint()
-      ..color = const Color(0xFF0F6B78).withValues(alpha: 0.035)
+      ..color = accentColor.withValues(alpha: 0.045)
       ..style = PaintingStyle.fill;
 
     // Outer subtle Islamic geometry (8-point star lattices in corners)
@@ -293,5 +243,6 @@ class _DaytimeCourtyardPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _DaytimeCourtyardPainter oldDelegate) =>
+      oldDelegate.accentColor != accentColor;
 }

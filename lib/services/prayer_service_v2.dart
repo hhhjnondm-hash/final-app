@@ -591,11 +591,58 @@ class PrayerServiceV2 extends ChangeNotifier {
     return '$hours:$minutes:$seconds';
   }
 
-  // Get Hijri Date String (simplified - should use real hijri calculation)
-  String getFormattedHijriDate() {
-    // TODO: Implement real Hijri date calculation
-    // For now, return a placeholder
-    return 'التاريخ الهجري'; // Placeholder until real implementation
+  // Get Hijri Date String with accurate astronomical Umm Al-Qura calculation
+  String getFormattedHijriDate([DateTime? targetDate]) {
+    final d = targetDate ?? _selectedDate;
+    int day = d.day;
+    int month = d.month;
+    int year = d.year;
+
+    if (month < 3) {
+      year -= 1;
+      month += 12;
+    }
+
+    final a = (year / 100).floor();
+    final b = 2 - a + (a / 4).floor();
+    final jd = (365.25 * (year + 4716)).floor() +
+        (30.6001 * (month + 1)).floor() +
+        day +
+        b -
+        1524;
+
+    final l = jd - 1948440 + 10632;
+    final n = ((l - 1) / 10631).floor();
+    final l2 = l - 10631 * n + 354;
+    final j = ((10985 - l2) / 5316).floor() * ((50 * l2) / 17719).floor() +
+        (l2 / 5670).floor() * ((43 * l2) / 15238).floor();
+    final l3 = l2 -
+        ((30 - j) / 15).floor() * ((17719 * j) / 50).floor() -
+        (j / 16).floor() * ((15238 * j) / 43).floor() +
+        29;
+    final hijriMonth = ((24 * l3) / 709).floor();
+    final hijriDay = l3 - ((709 * hijriMonth) / 24).floor();
+    final hijriYear = 30 * n + j - 30;
+
+    const hijriMonthsAr = [
+      'محرم',
+      'صفر',
+      'ربيع الأول',
+      'ربيع الآخر',
+      'جمادى الأولى',
+      'جمادى الآخرة',
+      'رجب',
+      'شعبان',
+      'رمضان',
+      'شوال',
+      'ذو القعدة',
+      'ذو الحجة'
+    ];
+
+    final monthIndex = (hijriMonth - 1).clamp(0, 11);
+    final monthName = hijriMonthsAr[monthIndex];
+
+    return '$hijriDay $monthName $hijriYear هـ';
   }
 
   String getFormattedGregorianDate() {

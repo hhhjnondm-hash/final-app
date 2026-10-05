@@ -18,6 +18,7 @@ class IslamicReminderReceiver : BroadcastReceiver() {
         const val ACTION_TRIGGER_REMINDER = "com.islamyat.islamyat_app.ACTION_TRIGGER_REMINDER"
         private const val TAG = "IslamicReminderReceiver"
         private const val CHANNEL_ID = "islamic_reminders_v5"
+        const val UNIFIED_REMINDER_NOTIFICATION_ID = 7777
     }
 
     override fun onReceive(context: Context, intent: Intent?) {
@@ -34,7 +35,7 @@ class IslamicReminderReceiver : BroadcastReceiver() {
                 wakeLock?.acquire(5 * 1000L /* 5 seconds */)
 
                 try {
-                    val id = intent.getIntExtra("id", 9999)
+                    val id = intent.getIntExtra("id", UNIFIED_REMINDER_NOTIFICATION_ID)
                     val title = intent.getStringExtra("title") ?: "تذكير إيماني"
                     val body = intent.getStringExtra("body") ?: "سبحان الله وبحمده، سبحان الله العظيم"
                     val category = intent.getStringExtra("category") ?: "رفيق المسلم"
@@ -92,7 +93,7 @@ class IslamicReminderReceiver : BroadcastReceiver() {
 
         val openIntent = Intent(context, MainActivity::class.java)
         openIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        val pendingIntent = PendingIntent.getActivity(context, id, openIntent, flags)
+        val pendingIntent = PendingIntent.getActivity(context, UNIFIED_REMINDER_NOTIFICATION_ID, openIntent, flags)
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
@@ -109,8 +110,11 @@ class IslamicReminderReceiver : BroadcastReceiver() {
 
         val notificationManager = NotificationManagerCompat.from(context)
         try {
-            notificationManager.notify(id, notification)
-            Log.d(TAG, "Islamic reminder notification posted successfully with ID: $id ($title)")
+            // Cancel previous active reminder first to ensure only 1 clean reminder remains
+            notificationManager.cancel(UNIFIED_REMINDER_NOTIFICATION_ID)
+            // Post with unified ID so it gracefully replaces previous notification
+            notificationManager.notify(UNIFIED_REMINDER_NOTIFICATION_ID, notification)
+            Log.d(TAG, "Single Islamic reminder notification posted cleanly with ID: $UNIFIED_REMINDER_NOTIFICATION_ID ($title)")
         } catch (e: SecurityException) {
             Log.e(TAG, "SecurityException posting notification: ${e.message}")
         }

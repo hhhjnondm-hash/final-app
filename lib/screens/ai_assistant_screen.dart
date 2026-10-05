@@ -6,6 +6,8 @@ import '../widgets/developer_credits_badge.dart';
 import '../widgets/visual_effects/floating_particles.dart';
 import '../widgets/visual_effects/interactive_motion_card.dart';
 import '../widgets/visual_effects/star_glint.dart';
+import '../services/theme_service.dart';
+import '../widgets/theme_selection_modal.dart';
 
 class AiAssistantScreen extends StatefulWidget {
   final AiContextAttachment? initialContext;
@@ -231,8 +233,9 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
         ],
       ),
       actions: [
-        // Theme moon badge or history
+        // Theme Mode Toggle / Customize Button
         IconButton(
+          tooltip: 'تغيير ومظهر الثيم',
           icon: Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
@@ -240,9 +243,13 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
               shape: BoxShape.circle,
               border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.3)),
             ),
-            child: const Icon(Icons.nights_stay_rounded, color: Color(0xFFE8D29A), size: 16),
+            child: Icon(
+              ThemeService.instance.isLightMode ? Icons.wb_sunny_rounded : Icons.nights_stay_rounded,
+              color: const Color(0xFFE8D29A),
+              size: 16,
+            ),
           ),
-          onPressed: () {},
+          onPressed: () => ThemeService.instance.toggleDarkLight(),
         ),
         IconButton(
           icon: const Icon(Icons.bookmark_outline_rounded, color: Color(0xFFE8D29A), size: 20),

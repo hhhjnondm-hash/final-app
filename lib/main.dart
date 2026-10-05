@@ -16,9 +16,9 @@ import 'screens/azkar_screen.dart';
 import 'screens/hadith_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/splash_screen.dart';
-import 'services/app_initializer.dart';
 import 'l10n/localization.dart';
 import 'services/athan_service.dart';
+import 'services/theme_service.dart';
 
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -30,6 +30,7 @@ void main() async {
 
   // Fast lightweight initializations
   await AppLocalization.initialize();
+  await ThemeService.instance.init();
   
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -52,20 +53,26 @@ class IslamyatApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: appNavigatorKey,
-      title: 'Rafeeq',
-      debugShowCheckedModeBanner: false,
-      theme: DesignSystem.darkTheme,
-      darkTheme: DesignSystem.darkTheme,
-      themeMode: ThemeMode.dark,
-      localizationsDelegates: EasyLocalization.of(context)!.delegates,
-      supportedLocales: EasyLocalization.of(context)!.supportedLocales,
-      locale: EasyLocalization.of(context)!.locale,
-      builder: (context, child) {
-        return child ?? const SizedBox.shrink();
+    return ListenableBuilder(
+      listenable: ThemeService.instance,
+      builder: (context, _) {
+        final isDark = !ThemeService.instance.isLightMode;
+        return MaterialApp(
+          navigatorKey: appNavigatorKey,
+          title: 'Rafeeq',
+          debugShowCheckedModeBanner: false,
+          theme: DesignSystem.lightTheme,
+          darkTheme: DesignSystem.darkTheme,
+          themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+          localizationsDelegates: EasyLocalization.of(context)!.delegates,
+          supportedLocales: EasyLocalization.of(context)!.supportedLocales,
+          locale: EasyLocalization.of(context)!.locale,
+          builder: (context, child) {
+            return child ?? const SizedBox.shrink();
+          },
+          home: const SplashScreen(),
+        );
       },
-      home: const SplashScreen(),
     );
   }
 }
@@ -114,7 +121,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: DesignSystem.bgDarkest,
+      backgroundColor: DesignSystem.currentBgMain,
       body: IslamicBackground(
         child: Stack(
           children: [

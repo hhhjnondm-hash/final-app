@@ -16,6 +16,8 @@ import 'qibla_screen.dart';
 import 'surah_viewer_screen.dart';
 import 'tasbih_screen.dart';
 import '../widgets/developer_credits_badge.dart';
+import '../services/theme_service.dart';
+import '../widgets/theme_selection_modal.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -411,9 +413,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Theme Mode Toggle Pill
             InkWell(
               onTap: () {
-                setState(() {
-                  DesignSystem.isLightMode = !DesignSystem.isLightMode;
-                });
+                ThemeService.instance.toggleDarkLight();
+              },
+              onLongPress: () {
+                ThemeSelectionModal.show(context);
               },
               borderRadius: BorderRadius.circular(20),
               child: Container(
@@ -1343,6 +1346,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 subtitle: 'ابحث عن مسجد قريب',
                 icon: Icons.mosque_rounded,
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QiblaScreen())),
+              ),
+              _QuickToolData(
+                title: 'مظهر التطبيق',
+                subtitle: 'تخصيص الألوان والثيم',
+                icon: Icons.palette_rounded,
+                onTap: () => ThemeSelectionModal.show(context),
               ),
               _QuickToolData(
                 title: 'مواقيت الصلاة',

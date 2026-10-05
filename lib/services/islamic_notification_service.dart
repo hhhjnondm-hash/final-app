@@ -305,21 +305,23 @@ class IslamicNotificationService extends ChangeNotifier {
             break;
         }
 
-        await notifService.scheduleIslamicContentNotification(
-          id: notifId,
-          title: title,
-          body: item.text,
-          scheduledDate: scheduleTime,
-          category: item.category,
-        );
-
-        nativeReminders.add({
-          'id': notifId,
-          'title': title,
-          'body': item.text,
-          'category': item.category,
-          'timestampMs': scheduleTime.millisecondsSinceEpoch,
-        });
+        if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+          await notifService.scheduleIslamicContentNotification(
+            id: notifId,
+            title: title,
+            body: item.text,
+            scheduledDate: scheduleTime,
+            category: item.category,
+          );
+        } else {
+          nativeReminders.add({
+            'id': notifId,
+            'title': title,
+            'body': item.text,
+            'category': item.category,
+            'timestampMs': scheduleTime.millisecondsSinceEpoch,
+          });
+        }
       }
     }
 
@@ -368,26 +370,28 @@ class IslamicNotificationService extends ChangeNotifier {
         final scheduleTime = targetDate.add(Duration(days: dayOffset));
         final notifId = idBase + dayOffset;
 
-        await notifService.scheduleIslamicContentNotification(
-          id: notifId,
-          title: title,
-          body: body,
-          scheduledDate: scheduleTime,
-          category: category,
-        );
-
-        nativeReminders.add({
-          'id': notifId,
-          'title': title,
-          'body': body,
-          'category': category,
-          'timestampMs': scheduleTime.millisecondsSinceEpoch,
-        });
+        if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+          await notifService.scheduleIslamicContentNotification(
+            id: notifId,
+            title: title,
+            body: body,
+            scheduledDate: scheduleTime,
+            category: category,
+          );
+        } else {
+          nativeReminders.add({
+            'id': notifId,
+            'title': title,
+            'body': body,
+            'category': category,
+            'timestampMs': scheduleTime.millisecondsSinceEpoch,
+          });
+        }
       }
     }
 
-    // Register full list in Native Android AlarmClock system (wakes screen & fires even if app killed)
-    if (!kIsWeb && nativeReminders.isNotEmpty) {
+    // Register clean list in Native Android AlarmClock system (Single authoritative source on Android)
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android && nativeReminders.isNotEmpty) {
       try {
         const nativeChannel = MethodChannel('com.islamyat.islamyat_app/reminders_native');
         await nativeChannel.invokeMethod('scheduleRemindersList', {

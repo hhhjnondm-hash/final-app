@@ -205,6 +205,11 @@ class NotificationService extends ChangeNotifier {
     }
   }
 
+  // Unified single-active notification IDs (prevents notification clutter & duplicate spam)
+  static const int unifiedReminderNotificationId = 7777;
+  static const int unifiedPrayerNotificationId = 8888;
+  static const int unifiedMissedNotificationId = 8889;
+
   /// Trigger immediate prayer Athan notification
   Future<void> showPrayerAthanNotification({
     required int id,
@@ -223,6 +228,11 @@ class NotificationService extends ChangeNotifier {
     }
 
     try {
+      // Clear previous reminder notification to ensure only 1 clean notification remains in tray
+      await cancel(unifiedReminderNotificationId);
+      await cancel(unifiedMissedNotificationId);
+      await cancel(unifiedPrayerNotificationId);
+
       final channelId = isFajr ? athanFajrChannelId : athanChannelId;
       final rawSoundName = isFajr ? 'athan_fajr' : 'athan_sound';
 
@@ -235,7 +245,7 @@ class NotificationService extends ChangeNotifier {
         sound: RawResourceAndroidNotificationSound(rawSoundName),
         playSound: true,
         enableVibration: true,
-        audioAttributesUsage: AudioAttributesUsage.notification,
+        audioAttributesUsage: AudioAttributesUsage.alarm,
         category: AndroidNotificationCategory.alarm,
         visibility: NotificationVisibility.public,
         styleInformation: BigTextStyleInformation(
@@ -272,14 +282,14 @@ class NotificationService extends ChangeNotifier {
       );
 
       await _flutterLocalNotificationsPlugin.show(
-        id: id,
+        id: unifiedPrayerNotificationId,
         title: '🕌 حان الآن أَذَان $arabicName',
         body: 'حان وقت صلاة $arabicName - أقم صلاتك يرحمك الله',
         notificationDetails: notificationDetails,
         payload: 'prayer_$prayerName',
       );
 
-      debugPrint('✅ Prayer Athan Notification shown successfully for $arabicName (ID: $id)');
+      debugPrint('✅ Prayer Athan Notification shown cleanly for $arabicName (ID: $unifiedPrayerNotificationId)');
     } catch (e) {
       debugPrint('❌ Error showing prayer notification: $e');
     }
@@ -460,6 +470,11 @@ class NotificationService extends ChangeNotifier {
     }
 
     try {
+      // Clear previous notifications to keep drawer clean
+      await cancel(unifiedReminderNotificationId);
+      await cancel(unifiedPrayerNotificationId);
+      await cancel(unifiedMissedNotificationId);
+
       final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
         missedPrayerChannelId,
         'تذكير بالصلوات الفائتة',
@@ -488,14 +503,14 @@ class NotificationService extends ChangeNotifier {
       );
 
       await _flutterLocalNotificationsPlugin.show(
-        id: id,
+        id: unifiedMissedNotificationId,
         title: '⏰ تذكير: هل صليت صلاة $arabicName؟',
         body: 'قال تعالى: ﴿وَأَقِمِ الصَّلَاةَ لِذِكْرِي﴾ - سارع بأداء صلاتك',
         notificationDetails: notificationDetails,
         payload: 'missed_$prayerName',
       );
 
-      debugPrint('✅ Missed prayer notification sent for $arabicName (ID: $id)');
+      debugPrint('✅ Missed prayer notification sent cleanly for $arabicName (ID: $unifiedMissedNotificationId)');
     } catch (e) {
       debugPrint('❌ Error showing missed prayer notification: $e');
     }
@@ -639,17 +654,22 @@ class NotificationService extends ChangeNotifier {
       final tzDateTime = tz.TZDateTime.from(scheduledDate, tz.local);
       if (tzDateTime.isBefore(tz.TZDateTime.now(tz.local))) return;
 
-      try {
-        await _flutterLocalNotificationsPlugin.zonedSchedule(
-          id: id,
-          title: title,
-          body: body,
-          scheduledDate: tzDateTime,
-          notificationDetails: notificationDetails,
-          androidScheduleMode: AndroidScheduleMode.alarmClock,
-          payload: 'content_${category ?? "reminder"}',
-        );
-      } catch (e) {
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        // On Android, use 100% reliable Native AlarmManager (prevents double firing)
+        try {
+          await _nativeReminderChannel.invokeMethod('scheduleSingleReminder', {
+            'id': id,
+            'title': title,
+            'body': body,
+            'timestampMs': scheduledDate.millisecondsSinceEpoch,
+            'category': category ?? 'تذكير إيماني',
+          });
+          debugPrint('📅 Scheduled native Islamic reminder for $scheduledDate (ID: $id)');
+        } catch (e) {
+          debugPrint('Note: Native reminder single schedule: $e');
+        }
+      } else {
+        // On iOS & Web, use Flutter Local Notifications
         try {
           await _flutterLocalNotificationsPlugin.zonedSchedule(
             id: id,
@@ -657,10 +677,10 @@ class NotificationService extends ChangeNotifier {
             body: body,
             scheduledDate: tzDateTime,
             notificationDetails: notificationDetails,
-            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+            androidScheduleMode: AndroidScheduleMode.alarmClock,
             payload: 'content_${category ?? "reminder"}',
           );
-        } catch (e2) {
+        } catch (e) {
           await _flutterLocalNotificationsPlugin.zonedSchedule(
             id: id,
             title: title,
@@ -672,21 +692,6 @@ class NotificationService extends ChangeNotifier {
           );
         }
       }
-
-      // Schedule in Native Android AlarmClock for 100% precision even when phone is asleep/screen off
-      try {
-        await _nativeReminderChannel.invokeMethod('scheduleSingleReminder', {
-          'id': id,
-          'title': title,
-          'body': body,
-          'timestampMs': scheduledDate.millisecondsSinceEpoch,
-          'category': category ?? 'تذكير إيماني',
-        });
-      } catch (e) {
-        debugPrint('Note: Native reminder single schedule: $e');
-      }
-
-      debugPrint('📅 Scheduled Islamic content notification for $scheduledDate (ID: $id)');
     } catch (e) {
       debugPrint('❌ Error in scheduleIslamicContentNotification: $e');
     }
@@ -706,6 +711,9 @@ class NotificationService extends ChangeNotifier {
     }
 
     try {
+      // Clear previous reminder notification to ensure only 1 clean notification exists in tray
+      await cancel(unifiedReminderNotificationId);
+
       final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
         remindersChannelId,
         'التذكيرات الإيمانية اليومية',
@@ -733,7 +741,7 @@ class NotificationService extends ChangeNotifier {
       );
 
       await _flutterLocalNotificationsPlugin.show(
-        id: id,
+        id: unifiedReminderNotificationId,
         title: title,
         body: body,
         notificationDetails: notificationDetails,

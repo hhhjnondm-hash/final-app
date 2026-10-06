@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../utils/design_system.dart';
-import 'visual_effects/star_glint.dart';
 
 class PremiumBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -37,16 +36,16 @@ class PremiumBottomNav extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
             decoration: BoxDecoration(
-              color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C1017),
+              color: isLight ? const Color(0xFFFDFBF7) : const Color(0xFF0C1017),
               borderRadius: BorderRadius.circular(30),
               border: Border.all(
-                color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFC89B3C).withValues(alpha: 0.35),
+                color: isLight ? const Color(0xFFE6D7BA) : const Color(0xFFC89B3C).withValues(alpha: 0.35),
                 width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
                   color: isLight
-                      ? const Color(0xFF102A43).withValues(alpha: 0.08)
+                      ? const Color(0xFF8C7355).withValues(alpha: 0.12)
                       : Colors.black.withValues(alpha: 0.7),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
@@ -92,11 +91,13 @@ class PremiumBottomNav extends StatelessWidget {
     required bool isLight,
     required VoidCallback onTap,
   }) {
-    final activeTextColor = isLight ? const Color(0xFF0F172A) : const Color(0xFF07090E);
-    final inactiveTextColor = isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE);
+    final activeTextColor = isLight ? const Color(0xFFFFD56B) : const Color(0xFF07090E);
+    final inactiveTextColor = isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE);
     final activeBg = isLight
         ? const LinearGradient(
-            colors: [Color(0xFFE2E8F0), Color(0xFFCBD5E1)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1D3B58), Color(0xFF13283C)],
           )
         : const LinearGradient(
             begin: Alignment.topLeft,
@@ -122,10 +123,12 @@ class PremiumBottomNav extends StatelessWidget {
               gradient: isSelected ? activeBg : null,
               color: isSelected ? null : Colors.transparent,
               borderRadius: BorderRadius.circular(22),
-              boxShadow: isSelected && !isLight
+              boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: const Color(0xFFFFD56B).withValues(alpha: 0.5),
+                        color: isLight
+                            ? const Color(0xFF1D3B58).withValues(alpha: 0.35)
+                            : const Color(0xFFFFD56B).withValues(alpha: 0.5),
                         blurRadius: 14,
                         spreadRadius: 1,
                         offset: const Offset(0, 2),
@@ -141,7 +144,7 @@ class PremiumBottomNav extends StatelessWidget {
                   size: 19,
                   color: isSelected
                       ? activeTextColor
-                      : (isLight ? const Color(0xFF475569) : const Color(0xFFA0AEC0)),
+                      : (isLight ? const Color(0xFF78716C) : const Color(0xFFA0AEC0)),
                 ),
                 if (isSelected) ...[
                   const SizedBox(width: 5),

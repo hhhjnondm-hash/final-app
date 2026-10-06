@@ -23,40 +23,48 @@ class IslamicBackground extends StatelessWidget {
 
     return Stack(
       children: [
-        // 1. Dynamic Background: Bound to current active palette (Deep Sapphire, Emerald, Night, Sky Blue, Warm Sand, Soft Rose)
+        // 1. Photographic Scenery Layer (Daylight Mosque in Light Mode / Night Mosque in Dark Mode)
+        Positioned.fill(
+          child: Image.asset(
+            isLight ? 'assets/daylight_mosque_bg.jpg' : 'assets/home_hero_mosque.jpg',
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          ),
+        ),
+
+        // 2. Atmospheric Theme Scrim / Frosted Marble Veil
         Positioned.fill(
           child: Container(
             decoration: BoxDecoration(
-              color: palette.bgMain,
               gradient: isLight
                   ? LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        palette.bgMain,
-                        palette.bgSecondary,
-                        palette.bgMain.withValues(alpha: 0.95),
+                        const Color(0xFFFBF8F2).withValues(alpha: 0.88),
+                        const Color(0xFFF7F2E7).withValues(alpha: 0.82),
+                        const Color(0xFFEFE7D5).withValues(alpha: 0.92),
                       ],
                     )
-                  : RadialGradient(
-                      center: const Alignment(0.0, -0.3),
-                      radius: 1.3,
+                  : LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                       colors: [
-                        palette.cardElevated,
-                        palette.bgSecondary,
-                        palette.bgMain,
+                        palette.bgMain.withValues(alpha: 0.92),
+                        palette.bgSecondary.withValues(alpha: 0.85),
+                        palette.bgMain.withValues(alpha: 0.95),
                       ],
                     ),
             ),
           ),
         ),
 
-        // 2. Subtle Botanical Leaves & Islamic Sacred Geometry in Canvas matching active theme
+        // 3. Subtle Botanical Leaves & Islamic Sacred Geometry in Canvas
         if (showSacredGeometry)
           Positioned.fill(
             child: CustomPaint(
               painter: isLight
-                  ? _DaytimeCourtyardPainter(accentColor: palette.accentGlow)
+                  ? _DaytimeCourtyardPainter(accentColor: palette.goldAccent)
                   : _NightCourtyardPainter(goldColor: palette.goldAccent),
             ),
           ),

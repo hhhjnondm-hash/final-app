@@ -6,6 +6,7 @@ import '../utils/design_system.dart';
 import '../widgets/prayer_settings_sheet.dart';
 import 'dhikr_reader_screen.dart';
 import 'notification_settings_screen.dart';
+import '../widgets/islamic_background.dart';
 import '../widgets/visual_effects/floating_particles.dart';
 import '../widgets/visual_effects/shimmer_sweep.dart';
 import '../widgets/visual_effects/star_glint.dart';
@@ -51,15 +52,16 @@ class _AzkarScreenState extends State<AzkarScreen> {
   @override
   Widget build(BuildContext context) {
     final categories = AllAzkarData.categories;
-    final isLight = DesignSystem.isLightMode;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1280),
-            child: CustomScrollView(
+      body: IslamicBackground(
+        child: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1280),
+              child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
                 // 1. Top Header Bar (Rafeeq Logo + Search, Settings, Notification Buttons)
@@ -150,8 +152,9 @@ class _AzkarScreenState extends State<AzkarScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _showAzkarSearchDialog(BuildContext context, List<DhikrItem> allAzkar, bool isLight) {
     showDialog(
@@ -169,8 +172,13 @@ class _AzkarScreenState extends State<AzkarScreen> {
                   }).toList();
 
             return Dialog(
-              backgroundColor: isLight ? Colors.white : const Color(0xFF0F172A),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              backgroundColor: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F172A),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+                side: BorderSide(
+                  color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.3),
+                ),
+              ),
               insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
               child: Container(
                 padding: const EdgeInsets.all(18),
@@ -182,20 +190,31 @@ class _AzkarScreenState extends State<AzkarScreen> {
                       autofocus: true,
                       style: TextStyle(
                         fontFamily: 'Cairo',
-                        color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                        color: isLight ? const Color(0xFF1C1917) : Colors.white,
                       ),
                       decoration: InputDecoration(
                         hintText: 'ابحث في كافة الأذكار والأدعية...',
                         hintStyle: TextStyle(
                           fontFamily: 'Cairo',
-                          color: isLight ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          color: isLight ? const Color(0xFF78716C) : const Color(0xFF64748B),
                         ),
-                        prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFFFFD56B)),
+                        prefixIcon: Icon(
+                          Icons.search_rounded,
+                          color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
+                        ),
                         filled: true,
-                        fillColor: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF1E293B),
+                        fillColor: isLight ? const Color(0xFFF8F3E8) : const Color(0xFF1E293B),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
+                          borderSide: BorderSide(
+                            color: isLight ? const Color(0xFFE5D4B3) : Colors.transparent,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                            color: isLight ? const Color(0xFFE5D4B3) : Colors.transparent,
+                          ),
                         ),
                       ),
                       onChanged: (val) {
@@ -214,14 +233,17 @@ class _AzkarScreenState extends State<AzkarScreen> {
                                     : 'لا توجد نتائج مطابقة',
                                 style: TextStyle(
                                   fontFamily: 'Cairo',
-                                  color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                                  color: isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE),
                                 ),
                               ),
                             )
                           : ListView.separated(
                               physics: const BouncingScrollPhysics(),
                               itemCount: results.length,
-                              separatorBuilder: (_, __) => const Divider(height: 1),
+                              separatorBuilder: (_, __) => Divider(
+                                height: 1,
+                                color: isLight ? const Color(0xFFE5D4B3).withValues(alpha: 0.5) : Colors.white12,
+                              ),
                               itemBuilder: (context, idx) {
                                 final dhikr = results[idx];
                                 return ListTile(
@@ -232,7 +254,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                                       fontFamily: 'Cairo',
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14,
-                                      color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                                      color: isLight ? const Color(0xFF1C1917) : Colors.white,
                                     ),
                                   ),
                                   subtitle: Text(
@@ -242,12 +264,12 @@ class _AzkarScreenState extends State<AzkarScreen> {
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       fontSize: 12,
-                                      color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                                      color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
                                     ),
                                   ),
-                                  trailing: const Icon(
+                                  trailing: Icon(
                                     Icons.chevron_left_rounded,
-                                    color: Color(0xFFFFD56B),
+                                    color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                                   ),
                                   onTap: () {
                                     Navigator.pop(ctx);
@@ -287,7 +309,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color(0xFFFFD56B).withValues(alpha: 0.6),
+                  color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B).withValues(alpha: 0.6),
                   width: 1.2,
                 ),
               ),
@@ -295,9 +317,9 @@ class _AzkarScreenState extends State<AzkarScreen> {
                 child: Image.asset(
                   'assets/out logo app/darkapp.png',
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Icon(
+                  errorBuilder: (_, __, ___) => Icon(
                     Icons.mosque_rounded,
-                    color: Color(0xFFFFD56B),
+                    color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                     size: 22,
                   ),
                 ),
@@ -314,7 +336,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                     fontFamily: 'Cairo',
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
-                    color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                    color: isLight ? const Color(0xFF1C1917) : Colors.white,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -324,7 +346,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                     fontFamily: 'Cairo',
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: isLight ? const Color(0xFF64748B) : const Color(0xFFFFD56B).withValues(alpha: 0.85),
+                    color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B).withValues(alpha: 0.85),
                   ),
                 ),
               ],
@@ -342,10 +364,10 @@ class _AzkarScreenState extends State<AzkarScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                 decoration: BoxDecoration(
-                  color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF0E131C),
+                  color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0E131C),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFFC89B3C).withValues(alpha: 0.2),
+                    color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.2),
                   ),
                 ),
                 child: Row(
@@ -353,7 +375,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                     Icon(
                       Icons.search_rounded,
                       size: 16,
-                      color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                      color: isLight ? const Color(0xFF854D0E) : const Color(0xFF8E9BAE),
                     ),
                     const SizedBox(width: 6),
                     Text(
@@ -361,7 +383,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                       style: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 12,
-                        color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                        color: isLight ? const Color(0xFF1C1917) : const Color(0xFF8E9BAE),
                       ),
                     ),
                   ],
@@ -417,16 +439,16 @@ class _AzkarScreenState extends State<AzkarScreen> {
         height: 38,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF0E131C),
+          color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0E131C),
           border: Border.all(
-            color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFFC89B3C).withValues(alpha: 0.2),
+            color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.2),
           ),
         ),
         child: Center(
           child: Icon(
             icon,
             size: 18,
-            color: isLight ? const Color(0xFF475569) : const Color(0xFFA0AEC0),
+            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFA0AEC0),
           ),
         ),
       ),
@@ -438,18 +460,18 @@ class _AzkarScreenState extends State<AzkarScreen> {
     return ShimmerSweep(
       duration: const Duration(milliseconds: 3600),
       pauseDuration: const Duration(milliseconds: 3000),
-      shimmerColor: const Color(0xFFFFD56B),
+      shimmerColor: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
       child: Container(
         height: 180,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFC89B3C).withValues(alpha: 0.4),
+            color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.4),
             width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
-              color: isLight ? Colors.black.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.7),
+              color: isLight ? const Color(0xFFC89B3C).withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.7),
               blurRadius: 20,
               offset: const Offset(0, 6),
             ),
@@ -464,13 +486,13 @@ class _AzkarScreenState extends State<AzkarScreen> {
           borderRadius: BorderRadius.circular(24),
           child: FloatingParticles(
             numberOfParticles: 14,
-            particleColor: const Color(0xFFFFD56B),
+            particleColor: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
             child: Stack(
               fit: StackFit.expand,
               children: [
                 // High-res Mosque Sunset Panoramic Artwork
                 Image.asset(
-                  'assets/azkar_panoramic_hero.png',
+                  isLight ? 'assets/daylight_mosque_bg.jpg' : 'assets/azkar_panoramic_hero.png',
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Image.asset(
                     'assets/home_hero_mosque.jpg',
@@ -478,7 +500,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                   ),
                 ),
 
-                // Deep Dark Gradient Overlay for the right typography
+                // Deep Gradient Overlay for the right typography
                 Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -486,9 +508,9 @@ class _AzkarScreenState extends State<AzkarScreen> {
                       end: Alignment.centerLeft,
                       colors: isLight
                           ? [
-                              const Color(0xFFFFFFFF).withValues(alpha: 0.96),
-                              const Color(0xFFFFFFFF).withValues(alpha: 0.85),
-                              const Color(0xFFFFFFFF).withValues(alpha: 0.15),
+                              const Color(0xFFFFFDF8).withValues(alpha: 0.95),
+                              const Color(0xFFFFFDF8).withValues(alpha: 0.85),
+                              const Color(0xFFFFFDF8).withValues(alpha: 0.20),
                             ]
                           : [
                               const Color(0xFF07090E).withValues(alpha: 0.96),
@@ -509,7 +531,10 @@ class _AzkarScreenState extends State<AzkarScreen> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const StarGlint(size: 16),
+                          StarGlint(
+                            size: 16,
+                            color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'الأذكــــار',
@@ -517,7 +542,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                               fontFamily: 'Amiri',
                               fontSize: 34,
                               fontWeight: FontWeight.bold,
-                              color: isLight ? const Color(0xFF0F172A) : const Color(0xFFFFD56B),
+                              color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                               letterSpacing: 1.0,
                             ),
                           ),
@@ -530,7 +555,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                           Icon(
                             Icons.auto_awesome,
                             size: 14,
-                            color: const Color(0xFFFFD56B),
+                            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -539,7 +564,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                               fontFamily: 'Cairo',
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: isLight ? const Color(0xFF334155) : Colors.white,
+                              color: isLight ? const Color(0xFF1C1917) : Colors.white,
                             ),
                           ),
                         ],
@@ -550,7 +575,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                         style: TextStyle(
                           fontFamily: 'Cairo',
                           fontSize: 12,
-                          color: isLight ? const Color(0xFF64748B) : const Color(0xFFFFD56B).withValues(alpha: 0.85),
+                          color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B).withValues(alpha: 0.85),
                         ),
                       ),
                       Text(
@@ -558,7 +583,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                         style: TextStyle(
                           fontFamily: 'Cairo',
                           fontSize: 10.5,
-                          color: isLight ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          color: isLight ? const Color(0xFF78716C) : const Color(0xFF64748B),
                         ),
                       ),
                     ],
@@ -582,14 +607,14 @@ class _AzkarScreenState extends State<AzkarScreen> {
         final wirdCard = Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0D121B),
+            color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0D121B),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFFC89B3C).withValues(alpha: 0.25),
+              color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.25),
             ),
             boxShadow: [
               BoxShadow(
-                color: isLight ? Colors.black.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.5),
+                color: isLight ? const Color(0xFFC89B3C).withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.5),
                 blurRadius: 16,
                 offset: const Offset(0, 4),
               ),
@@ -605,20 +630,20 @@ class _AzkarScreenState extends State<AzkarScreen> {
                     children: [
                       PulsingHalo(
                         isActive: true,
-                        haloColor: const Color(0xFFFFD56B),
+                        haloColor: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
                         borderRadius: 12,
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF1E1708),
+                            color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF1E1708),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFFFFD56B).withValues(alpha: 0.4),
+                              color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.4),
                             ),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.calendar_month_outlined,
-                            color: Color(0xFFFFD56B),
+                            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                             size: 20,
                           ),
                         ),
@@ -633,7 +658,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                               fontFamily: 'Cairo',
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                              color: isLight ? const Color(0xFF1C1917) : Colors.white,
                             ),
                           ),
                           Text(
@@ -641,7 +666,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                             style: TextStyle(
                               fontFamily: 'Cairo',
                               fontSize: 11,
-                              color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                              color: isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE),
                             ),
                           ),
                         ],
@@ -664,12 +689,25 @@ class _AzkarScreenState extends State<AzkarScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFFD56B), Color(0xFFC89B3C)],
-                        ),
+                        gradient: isLight
+                            ? const LinearGradient(
+                                colors: [Color(0xFFFFDF7D), Color(0xFFE5A83B)],
+                              )
+                            : const LinearGradient(
+                                colors: [Color(0xFFFFD56B), Color(0xFFC89B3C)],
+                              ),
                         borderRadius: BorderRadius.circular(20),
+                        boxShadow: isLight
+                            ? [
+                                BoxShadow(
+                                  color: const Color(0xFFE5A83B).withValues(alpha: 0.3),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
+                                )
+                              ]
+                            : null,
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
@@ -678,14 +716,14 @@ class _AzkarScreenState extends State<AzkarScreen> {
                               fontFamily: 'Cairo',
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF07090E),
+                              color: isLight ? const Color(0xFF1C1917) : const Color(0xFF07090E),
                             ),
                           ),
-                          SizedBox(width: 4),
+                          const SizedBox(width: 4),
                           Icon(
                             Icons.chevron_left_rounded,
                             size: 18,
-                            color: Color(0xFF07090E),
+                            color: isLight ? const Color(0xFF1C1917) : const Color(0xFF07090E),
                           ),
                         ],
                       ),
@@ -705,8 +743,10 @@ class _AzkarScreenState extends State<AzkarScreen> {
                       child: LinearProgressIndicator(
                         value: 0.60,
                         minHeight: 8,
-                        backgroundColor: isLight ? const Color(0xFFE2E8F0) : const Color(0xFF1B2332),
-                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFD56B)),
+                        backgroundColor: isLight ? const Color(0xFFF1EAD8) : const Color(0xFF1B2332),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          isLight ? const Color(0xFFD97706) : const Color(0xFFFFD56B),
+                        ),
                       ),
                     ),
                   ),
@@ -717,7 +757,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                       fontFamily: 'Cairo',
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: isLight ? const Color(0xFF0F172A) : const Color(0xFFFFD56B),
+                      color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                     ),
                   ),
                 ],
@@ -743,11 +783,11 @@ class _AzkarScreenState extends State<AzkarScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFFC89B3C).withValues(alpha: 0.25),
+              color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.25),
             ),
             boxShadow: [
               BoxShadow(
-                color: isLight ? Colors.black.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.5),
+                color: isLight ? const Color(0xFFC89B3C).withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.5),
                 blurRadius: 16,
                 offset: const Offset(0, 4),
               ),
@@ -758,25 +798,30 @@ class _AzkarScreenState extends State<AzkarScreen> {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // Mosque night image
+                // Mosque image
                 Image.asset(
-                  'assets/azkar_categories.jpg',
+                  isLight ? 'assets/daylight_mosque_bg.jpg' : 'assets/azkar_categories.jpg',
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
-                    color: const Color(0xFF0A0F18),
+                    color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0A0F18),
                   ),
                 ),
 
-                // Dark gradient overlay
+                // Gradient overlay
                 Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
-                      colors: [
-                        const Color(0xFF07090E).withValues(alpha: 0.95),
-                        const Color(0xFF07090E).withValues(alpha: 0.55),
-                      ],
+                      colors: isLight
+                          ? [
+                              const Color(0xFFFFFDF8).withValues(alpha: 0.95),
+                              const Color(0xFFFFFDF8).withValues(alpha: 0.65),
+                            ]
+                          : [
+                              const Color(0xFF07090E).withValues(alpha: 0.95),
+                              const Color(0xFF07090E).withValues(alpha: 0.55),
+                            ],
                     ),
                   ),
                 ),
@@ -797,27 +842,27 @@ class _AzkarScreenState extends State<AzkarScreen> {
                               fontFamily: 'Cairo',
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFFFFD56B),
+                              color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                             ),
                           ),
                           const SizedBox(width: 6),
-                          const Icon(
+                          Icon(
                             Icons.nights_stay_outlined,
                             size: 16,
-                            color: Color(0xFFFFD56B),
+                            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                           ),
                         ],
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const Text(
+                          Text(
                             '«فَاذْكُرُونِي أَذْكُرْكُمْ»',
                             style: TextStyle(
                               fontFamily: 'Amiri',
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: isLight ? const Color(0xFF1C1917) : Colors.white,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -826,7 +871,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                             style: TextStyle(
                               fontFamily: 'Cairo',
                               fontSize: 10.5,
-                              color: const Color(0xFF8E9BAE),
+                              color: isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE),
                             ),
                           ),
                         ],
@@ -867,7 +912,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
         Icon(
           icon,
           size: 14,
-          color: const Color(0xFFFFD56B),
+          color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
         ),
         const SizedBox(width: 4),
         Column(
@@ -879,7 +924,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                 fontFamily: 'Cairo',
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                color: isLight ? const Color(0xFF1C1917) : Colors.white,
               ),
             ),
             Text(
@@ -887,7 +932,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
               style: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 10,
-                color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                color: isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE),
               ),
             ),
           ],
@@ -981,13 +1026,17 @@ class _AzkarScreenState extends State<AzkarScreen> {
                 (c) => c.type == catType,
                 orElse: () => categories[0],
               );
-              final bg = isLight ? (item['bg'] as Color).withValues(alpha: 0.08) : item['bg'] as Color;
+              final bg = isLight
+                  ? const Color(0xFFFFFDF8)
+                  : item['bg'] as Color;
               final accent = item['accent'] as Color;
 
               return InteractiveMotionCard(
                 borderRadius: 20,
                 backgroundColor: bg,
-                borderColor: accent.withValues(alpha: isLight ? 0.3 : 0.25),
+                borderColor: isLight
+                    ? const Color(0xFFE5D4B3)
+                    : accent.withValues(alpha: 0.25),
                 glowColor: accent,
                 onTap: () => _openCategory(context, category),
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
@@ -1001,12 +1050,17 @@ class _AzkarScreenState extends State<AzkarScreen> {
                       height: 42,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: accent.withValues(alpha: 0.18),
+                        color: isLight
+                            ? accent.withValues(alpha: 0.12)
+                            : accent.withValues(alpha: 0.18),
+                        border: isLight
+                            ? Border.all(color: accent.withValues(alpha: 0.25))
+                            : null,
                       ),
                       child: Center(
                         child: Icon(
                           item['icon'] as IconData,
-                          color: accent,
+                          color: isLight ? accent : accent,
                           size: 20,
                         ),
                       ),
@@ -1025,7 +1079,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                               fontFamily: 'Cairo',
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
-                              color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                              color: isLight ? const Color(0xFF1C1917) : Colors.white,
                             ),
                           ),
                         ),
@@ -1033,8 +1087,9 @@ class _AzkarScreenState extends State<AzkarScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFF151C28),
+                            color: isLight ? const Color(0xFFF1EAD8) : const Color(0xFF151C28),
                             borderRadius: BorderRadius.circular(10),
+                            border: isLight ? Border.all(color: const Color(0xFFE5D4B3)) : null,
                           ),
                           child: Text(
                             item['count'] as String,
@@ -1042,7 +1097,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                               fontFamily: 'Cairo',
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: isLight ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+                              color: isLight ? const Color(0xFF854D0E) : const Color(0xFFCBD5E1),
                             ),
                           ),
                         ),
@@ -1061,7 +1116,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                             style: TextStyle(
                               fontFamily: 'Cairo',
                               fontSize: 9.5,
-                              color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                              color: isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE),
                             ),
                           ),
                         ),
@@ -1070,12 +1125,13 @@ class _AzkarScreenState extends State<AzkarScreen> {
                           height: 24,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFF1B2332),
+                            color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF1B2332),
+                            border: isLight ? Border.all(color: const Color(0xFFE5D4B3)) : null,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.chevron_left_rounded,
                             size: 16,
-                            color: Color(0xFFFFD56B),
+                            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                           ),
                         ),
                       ],
@@ -1113,11 +1169,20 @@ class _AzkarScreenState extends State<AzkarScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0D121B),
+              color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0D121B),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFFC89B3C).withValues(alpha: 0.2),
+                color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.2),
               ),
+              boxShadow: isLight
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFFC89B3C).withValues(alpha: 0.06),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
             ),
             child: Row(
               children: [
@@ -1126,11 +1191,12 @@ class _AzkarScreenState extends State<AzkarScreen> {
                   height: 36,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF151C28),
+                    color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF151C28),
+                    border: isLight ? Border.all(color: const Color(0xFFE5D4B3)) : null,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.favorite_border_rounded,
-                    color: Color(0xFFFFD56B),
+                    color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                     size: 18,
                   ),
                 ),
@@ -1144,7 +1210,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                         fontFamily: 'Cairo',
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
-                        color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                        color: isLight ? const Color(0xFF1C1917) : Colors.white,
                       ),
                     ),
                     Text(
@@ -1152,7 +1218,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                       style: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 10.5,
-                        color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                        color: isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE),
                       ),
                     ),
                   ],
@@ -1168,11 +1234,20 @@ class _AzkarScreenState extends State<AzkarScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0D121B),
+              color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0D121B),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFFC89B3C).withValues(alpha: 0.2),
+                color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.2),
               ),
+              boxShadow: isLight
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFFC89B3C).withValues(alpha: 0.06),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
             ),
             child: Row(
               children: [
@@ -1181,11 +1256,12 @@ class _AzkarScreenState extends State<AzkarScreen> {
                   height: 36,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF151C28),
+                    color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF151C28),
+                    border: isLight ? Border.all(color: const Color(0xFFE5D4B3)) : null,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.history_rounded,
-                    color: Color(0xFFFFD56B),
+                    color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                     size: 18,
                   ),
                 ),
@@ -1199,7 +1275,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                         fontFamily: 'Cairo',
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
-                        color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                        color: isLight ? const Color(0xFF1C1917) : Colors.white,
                       ),
                     ),
                     Text(
@@ -1207,7 +1283,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                       style: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 10.5,
-                        color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                        color: isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE),
                       ),
                     ),
                   ],

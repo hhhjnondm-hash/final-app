@@ -10,6 +10,8 @@ import '../widgets/visual_effects/star_glint.dart';
 import '../widgets/visual_effects/pulsing_halo.dart';
 import '../widgets/visual_effects/interactive_motion_card.dart';
 import '../widgets/developer_credits_badge.dart';
+import '../widgets/islamic_background.dart';
+import '../utils/design_system.dart';
 import 'surah_viewer_screen.dart';
 
 class QuranScreen extends StatefulWidget {
@@ -165,9 +167,10 @@ class _QuranScreenState extends State<QuranScreen> {
   }
 
   void _showReciterSelectSheet() {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF0F1621),
+      backgroundColor: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1621),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -183,17 +186,17 @@ class _QuranScreenState extends State<QuranScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'اختر القارئ المفضل',
                       style: TextStyle(
                         fontFamily: 'Amiri',
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFFFFD56B),
+                        color: isLight ? const Color(0xFF1C1917) : const Color(0xFFFFD56B),
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: Color(0xFF94A3B8)),
+                      icon: Icon(Icons.close, color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8)),
                       onPressed: () => Navigator.pop(ctx),
                     ),
                   ],
@@ -217,16 +220,18 @@ class _QuranScreenState extends State<QuranScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('تم اختيار القارئ: ${r.nameArabic}', style: const TextStyle(fontFamily: 'Cairo')),
-                              backgroundColor: const Color(0xFF1F293D),
+                              backgroundColor: isLight ? const Color(0xFF854D0E) : const Color(0xFF1F293D),
                               duration: const Duration(seconds: 2),
                             ),
                           );
                         },
                         leading: CircleAvatar(
-                          backgroundColor: const Color(0xFF1B2433),
+                          backgroundColor: isLight ? const Color(0xFFF1EAD8) : const Color(0xFF1B2433),
                           child: Icon(
                             Icons.person_rounded,
-                            color: isSelected ? const Color(0xFFFFD56B) : const Color(0xFF94A3B8),
+                            color: isSelected
+                                ? (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B))
+                                : (isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8)),
                           ),
                         ),
                         title: Text(
@@ -234,15 +239,21 @@ class _QuranScreenState extends State<QuranScreen> {
                           style: TextStyle(
                             fontFamily: 'Cairo',
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            color: isSelected ? const Color(0xFFFFD56B) : const Color(0xFFF6F8FA),
+                            color: isSelected
+                                ? (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B))
+                                : (isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA)),
                           ),
                         ),
                         subtitle: Text(
                           r.style,
-                          style: const TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Color(0xFF94A3B8)),
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 11,
+                            color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
+                          ),
                         ),
                         trailing: isSelected
-                            ? const Icon(Icons.check_circle_rounded, color: Color(0xFFFFD56B))
+                            ? Icon(Icons.check_circle_rounded, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B))
                             : null,
                       );
                     },
@@ -257,9 +268,10 @@ class _QuranScreenState extends State<QuranScreen> {
   }
 
   void _showJuzSelectSheet() {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF0F1621),
+      backgroundColor: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1621),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -274,13 +286,13 @@ class _QuranScreenState extends State<QuranScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'الانتقال إلى الجزء (30 جزء)',
                       style: TextStyle(
                         fontFamily: 'Amiri',
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFFFFD56B),
+                        color: isLight ? const Color(0xFF1C1917) : const Color(0xFFFFD56B),
                       ),
                     ),
                     if (_selectedJuz != null)
@@ -289,7 +301,7 @@ class _QuranScreenState extends State<QuranScreen> {
                           setState(() => _selectedJuz = null);
                           Navigator.pop(ctx);
                         },
-                        child: const Text('إلغاء التحديد', style: TextStyle(color: Color(0xFFE8D29A), fontFamily: 'Cairo')),
+                        child: Text('إلغاء التحديد', style: TextStyle(color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE8D29A), fontFamily: 'Cairo')),
                       ),
                   ],
                 ),
@@ -319,10 +331,14 @@ class _QuranScreenState extends State<QuranScreen> {
                         borderRadius: BorderRadius.circular(10),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFFC89B3C) : const Color(0xFF161F2E),
+                            color: isSelected
+                                ? (isLight ? const Color(0xFFE5A83B) : const Color(0xFFC89B3C))
+                                : (isLight ? const Color(0xFFFBF4E4) : const Color(0xFF161F2E)),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: isSelected ? const Color(0xFFFFD56B) : const Color(0xFFC89B3C).withValues(alpha: 0.3),
+                              color: isSelected
+                                  ? (isLight ? const Color(0xFFB8860B) : const Color(0xFFFFD56B))
+                                  : (isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.3)),
                             ),
                           ),
                           child: Center(
@@ -332,7 +348,9 @@ class _QuranScreenState extends State<QuranScreen> {
                                 fontFamily: 'Cairo',
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: isSelected ? const Color(0xFF070B11) : const Color(0xFFF6F8FA),
+                                color: isSelected
+                                    ? const Color(0xFF1A1002)
+                                    : (isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA)),
                               ),
                             ),
                           ),
@@ -350,9 +368,10 @@ class _QuranScreenState extends State<QuranScreen> {
   }
 
   void _showSortOrderSheet() {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF0F1621),
+      backgroundColor: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1621),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -364,47 +383,47 @@ class _QuranScreenState extends State<QuranScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   'ترتيب السور',
                   style: TextStyle(
                     fontFamily: 'Amiri',
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFFFD56B),
+                    color: isLight ? const Color(0xFF1C1917) : const Color(0xFFFFD56B),
                   ),
                 ),
                 const SizedBox(height: 12),
                 ListTile(
-                  leading: const Icon(Icons.format_list_numbered, color: Color(0xFFFFD56B)),
-                  title: const Text('الترتيب المصحفي (1 إلى 114)', style: TextStyle(fontFamily: 'Cairo', color: Colors.white)),
-                  trailing: _sortOrder == SurahSortOrder.mushaf ? const Icon(Icons.check, color: Color(0xFFFFD56B)) : null,
+                  leading: Icon(Icons.format_list_numbered, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)),
+                  title: Text('الترتيب المصحفي (1 إلى 114)', style: TextStyle(fontFamily: 'Cairo', color: isLight ? const Color(0xFF1C1917) : Colors.white)),
+                  trailing: _sortOrder == SurahSortOrder.mushaf ? Icon(Icons.check, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)) : null,
                   onTap: () {
                     setState(() => _sortOrder = SurahSortOrder.mushaf);
                     Navigator.pop(ctx);
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.history_edu_rounded, color: Color(0xFFFFD56B)),
-                  title: const Text('حسب ترتيب النزول', style: TextStyle(fontFamily: 'Cairo', color: Colors.white)),
-                  trailing: _sortOrder == SurahSortOrder.revelation ? const Icon(Icons.check, color: Color(0xFFFFD56B)) : null,
+                  leading: Icon(Icons.history_edu_rounded, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)),
+                  title: Text('حسب ترتيب النزول', style: TextStyle(fontFamily: 'Cairo', color: isLight ? const Color(0xFF1C1917) : Colors.white)),
+                  trailing: _sortOrder == SurahSortOrder.revelation ? Icon(Icons.check, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)) : null,
                   onTap: () {
                     setState(() => _sortOrder = SurahSortOrder.revelation);
                     Navigator.pop(ctx);
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.format_line_spacing_rounded, color: Color(0xFFFFD56B)),
-                  title: const Text('حسب عدد الآيات (الأطول أولاً)', style: TextStyle(fontFamily: 'Cairo', color: Colors.white)),
-                  trailing: _sortOrder == SurahSortOrder.ayahCount ? const Icon(Icons.check, color: Color(0xFFFFD56B)) : null,
+                  leading: Icon(Icons.format_line_spacing_rounded, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)),
+                  title: Text('حسب عدد الآيات (الأطول أولاً)', style: TextStyle(fontFamily: 'Cairo', color: isLight ? const Color(0xFF1C1917) : Colors.white)),
+                  trailing: _sortOrder == SurahSortOrder.ayahCount ? Icon(Icons.check, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)) : null,
                   onTap: () {
                     setState(() => _sortOrder = SurahSortOrder.ayahCount);
                     Navigator.pop(ctx);
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.sort_by_alpha_rounded, color: Color(0xFFFFD56B)),
-                  title: const Text('الترتيب الأبجدي (أ - ي)', style: TextStyle(fontFamily: 'Cairo', color: Colors.white)),
-                  trailing: _sortOrder == SurahSortOrder.alphabetical ? const Icon(Icons.check, color: Color(0xFFFFD56B)) : null,
+                  leading: Icon(Icons.sort_by_alpha_rounded, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)),
+                  title: Text('الترتيب الأبجدي (أ - ي)', style: TextStyle(fontFamily: 'Cairo', color: isLight ? const Color(0xFF1C1917) : Colors.white)),
+                  trailing: _sortOrder == SurahSortOrder.alphabetical ? Icon(Icons.check, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)) : null,
                   onTap: () {
                     setState(() => _sortOrder = SurahSortOrder.alphabetical);
                     Navigator.pop(ctx);
@@ -419,9 +438,10 @@ class _QuranScreenState extends State<QuranScreen> {
   }
 
   void _showClassificationSheet() {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF0F1621),
+      backgroundColor: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1621),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -443,13 +463,13 @@ class _QuranScreenState extends State<QuranScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   'تصنيف السور',
                   style: TextStyle(
                     fontFamily: 'Amiri',
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFFFD56B),
+                    color: isLight ? const Color(0xFF1C1917) : const Color(0xFFFFD56B),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -457,16 +477,23 @@ class _QuranScreenState extends State<QuranScreen> {
                   final id = c['id'] as int;
                   final isSelected = _selectedSidebarCategory == id;
                   return ListTile(
-                    leading: Icon(c['icon'] as IconData, color: isSelected ? const Color(0xFFFFD56B) : const Color(0xFF94A3B8)),
+                    leading: Icon(
+                      c['icon'] as IconData,
+                      color: isSelected
+                          ? (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B))
+                          : (isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8)),
+                    ),
                     title: Text(
                       c['title'] as String,
                       style: TextStyle(
                         fontFamily: 'Cairo',
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? const Color(0xFFFFD56B) : const Color(0xFFF6F8FA),
+                        color: isSelected
+                            ? (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B))
+                            : (isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA)),
                       ),
                     ),
-                    trailing: isSelected ? const Icon(Icons.check, color: Color(0xFFFFD56B)) : null,
+                    trailing: isSelected ? Icon(Icons.check, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)) : null,
                     onTap: () {
                       setState(() {
                         _selectedSidebarCategory = id;
@@ -487,110 +514,126 @@ class _QuranScreenState extends State<QuranScreen> {
   @override
   Widget build(BuildContext context) {
     final filteredSurahs = _getFilteredSurahs();
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF070B11),
-      body: Directionality(
-        textDirection: TextDirection.rtl,
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              // 1. Top Royal Hero Mosque Arch Banner with Navigation Icons
-              _buildTopHeroMosqueBanner(context),
+    return IslamicBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Directionality(
+          textDirection: TextDirection.rtl,
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                // 1. Top Royal Hero Mosque Arch Banner with Navigation Icons
+                _buildTopHeroMosqueBanner(context, isLight),
 
-              const SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-              // 2. Search Box
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _buildSearchBox(),
-              ),
+                // 2. Search Box
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _buildSearchBox(isLight),
+                ),
 
-              const SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-              // 3. Top Filter Pills Row (الكل, مكية, مدنية, حسب الترتيب, تصنيف)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _buildFilterPillsRow(),
-              ),
+                // 3. Top Filter Pills Row (الكل, مكية, مدنية, حسب الترتيب, تصنيف)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _buildFilterPillsRow(isLight),
+                ),
 
-              const SizedBox(height: 12),
+                const SizedBox(height: 12),
 
-              // 4. Main Body: Left Sidebar (Quran Navigation Categories) + Right Surah Cards List
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Left Quran Categories Sidebar
-                      _buildLeftCategorySidebar(),
+                // 4. Main Body: Left Sidebar (Quran Navigation Categories) + Right Surah Cards List
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Left Quran Categories Sidebar
+                        _buildLeftCategorySidebar(isLight),
 
-                      const SizedBox(width: 10),
+                        const SizedBox(width: 10),
 
-                      // Right Surahs List
-                      Expanded(
-                        child: filteredSurahs.isEmpty
-                            ? Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.search_off_rounded, color: Color(0xFF64748B), size: 48),
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      'لا توجد نتائج مطابقة',
-                                      style: TextStyle(color: Color(0xFF94A3B8), fontFamily: 'Cairo'),
-                                    ),
-                                    if (_selectedJuz != null || _searchQuery.isNotEmpty)
-                                      TextButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _selectedJuz = null;
-                                            _searchQuery = '';
-                                            _searchController.clear();
-                                            _selectedPillIndex = 0;
-                                            _selectedSidebarCategory = 0;
-                                          });
-                                        },
-                                        child: const Text('إعادة الضبط', style: TextStyle(fontFamily: 'Cairo', color: Color(0xFFFFD56B))),
+                        // Right Surahs List
+                        Expanded(
+                          child: filteredSurahs.isEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.search_off_rounded,
+                                        color: isLight ? const Color(0xFF78716C) : const Color(0xFF64748B),
+                                        size: 48,
                                       ),
-                                  ],
-                                ),
-                              )
-                            : ListView.builder(
-                                physics: const BouncingScrollPhysics(),
-                                padding: const EdgeInsets.only(bottom: 120),
-                                itemCount: filteredSurahs.length + 1,
-                                itemBuilder: (context, index) {
-                                  if (index == filteredSurahs.length) {
-                                    return const Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 16),
-                                      child: DeveloperCreditsBadge(compact: true),
-                                    );
-                                  }
-                                  final surah = filteredSurahs[index];
-                                  final isFav = _storage.isFavorite(surah.number);
-                                  final isPlaying = _playingSurahNumber == surah.number;
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'لا توجد نتائج مطابقة',
+                                        style: TextStyle(
+                                          color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
+                                          fontFamily: 'Cairo',
+                                        ),
+                                      ),
+                                      if (_selectedJuz != null || _searchQuery.isNotEmpty)
+                                        TextButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              _selectedJuz = null;
+                                              _searchQuery = '';
+                                              _searchController.clear();
+                                              _selectedPillIndex = 0;
+                                              _selectedSidebarCategory = 0;
+                                            });
+                                          },
+                                          child: Text(
+                                            'إعادة الضبط',
+                                            style: TextStyle(
+                                              fontFamily: 'Cairo',
+                                              color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                )
+                              : ListView.builder(
+                                  physics: const BouncingScrollPhysics(),
+                                  padding: const EdgeInsets.only(bottom: 120),
+                                  itemCount: filteredSurahs.length + 1,
+                                  itemBuilder: (context, index) {
+                                    if (index == filteredSurahs.length) {
+                                      return const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 16),
+                                        child: DeveloperCreditsBadge(compact: true),
+                                      );
+                                    }
+                                    final surah = filteredSurahs[index];
+                                    final isFav = _storage.isFavorite(surah.number);
+                                    final isPlaying = _playingSurahNumber == surah.number;
 
-                                  return _buildSurahRowCard(surah, isFav, isPlaying);
-                                },
-                              ),
-                      ),
-                    ],
+                                    return _buildSurahRowCard(surah, isFav, isPlaying, isLight);
+                                  },
+                                ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
+        bottomNavigationBar: _audioQuranService.isPlaying ? _buildLiveAudioPlayerBar(isLight) : null,
       ),
-      bottomNavigationBar: _audioQuranService.isPlaying ? _buildLiveAudioPlayerBar() : null,
     );
   }
 
   /// Interactive Audio Mini Player Bar shown when any Surah is playing
-  Widget _buildLiveAudioPlayerBar() {
+  Widget _buildLiveAudioPlayerBar(bool isLight) {
     final curSurah = _audioQuranService.currentSurah;
     final curReciter = _audioQuranService.currentReciter;
 
@@ -598,12 +641,17 @@ class _QuranScreenState extends State<QuranScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF141C2B),
+        color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF141C2B),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFFFD56B).withValues(alpha: 0.6), width: 1.2),
+        border: Border.all(
+          color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.6),
+          width: 1.2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFFD56B).withValues(alpha: 0.2),
+            color: isLight
+                ? const Color(0xFF8C7355).withValues(alpha: 0.15)
+                : const Color(0xFFFFD56B).withValues(alpha: 0.2),
             blurRadius: 18,
             offset: const Offset(0, 4),
           ),
@@ -617,11 +665,17 @@ class _QuranScreenState extends State<QuranScreen> {
             Container(
               width: 38,
               height: 38,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(colors: [Color(0xFFFFD56B), Color(0xFFC89B3C)]),
+                gradient: isLight
+                    ? const LinearGradient(colors: [Color(0xFFFFDF7D), Color(0xFFE5A83B)])
+                    : const LinearGradient(colors: [Color(0xFFFFD56B), Color(0xFFC89B3C)]),
               ),
-              child: const Icon(Icons.volume_up_rounded, color: Color(0xFF070B11), size: 22),
+              child: Icon(
+                Icons.volume_up_rounded,
+                color: isLight ? const Color(0xFF1A1002) : const Color(0xFF070B11),
+                size: 22,
+              ),
             ),
             const SizedBox(width: 12),
 
@@ -633,19 +687,19 @@ class _QuranScreenState extends State<QuranScreen> {
                 children: [
                   Text(
                     'سورة ${curSurah.nameArabic}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Amiri',
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFFF6F8FA),
+                      color: isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA),
                     ),
                   ),
                   Text(
                     curReciter.nameArabic,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 11,
-                      color: Color(0xFFE8D29A),
+                      color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE8D29A),
                     ),
                   ),
                 ],
@@ -656,7 +710,7 @@ class _QuranScreenState extends State<QuranScreen> {
             IconButton(
               icon: Icon(
                 _audioQuranService.isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
-                color: const Color(0xFFFFD56B),
+                color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                 size: 34,
               ),
               onPressed: () => _audioQuranService.togglePlayPause(),
@@ -664,7 +718,11 @@ class _QuranScreenState extends State<QuranScreen> {
 
             // Stop button
             IconButton(
-              icon: const Icon(Icons.stop_rounded, color: Color(0xFF94A3B8), size: 24),
+              icon: Icon(
+                Icons.stop_rounded,
+                color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
+                size: 24,
+              ),
               onPressed: () => _audioQuranService.stop(),
             ),
           ],
@@ -674,30 +732,45 @@ class _QuranScreenState extends State<QuranScreen> {
   }
 
   /// Top Mosque Arch Hero Banner matching the screenshot
-  Widget _buildTopHeroMosqueBanner(BuildContext context) {
+  Widget _buildTopHeroMosqueBanner(BuildContext context, bool isLight) {
     return ShimmerSweep(
       duration: const Duration(milliseconds: 3600),
       pauseDuration: const Duration(milliseconds: 3000),
-      shimmerColor: const Color(0xFFFFD56B),
+      shimmerColor: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
       child: Container(
         width: double.infinity,
         height: 175,
         margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.35), width: 1.2),
-          gradient: const RadialGradient(
-            center: Alignment(0, -0.4),
-            radius: 1.2,
-            colors: [
-              Color(0xFF261D0F),
-              Color(0xFF131A26),
-              Color(0xFF070B11),
-            ],
+          border: Border.all(
+            color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.35),
+            width: 1.2,
           ),
+          gradient: isLight
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFFFF7E6),
+                    Color(0xFFFAF0D9),
+                    Color(0xFFF3E3BD),
+                  ],
+                )
+              : const RadialGradient(
+                  center: Alignment(0, -0.4),
+                  radius: 1.2,
+                  colors: [
+                    Color(0xFF261D0F),
+                    Color(0xFF131A26),
+                    Color(0xFF070B11),
+                  ],
+                ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFC89B3C).withValues(alpha: 0.15),
+              color: isLight
+                  ? const Color(0xFF8C7355).withValues(alpha: 0.12)
+                  : const Color(0xFFC89B3C).withValues(alpha: 0.15),
               blurRadius: 28,
               spreadRadius: 2,
             ),
@@ -705,180 +778,221 @@ class _QuranScreenState extends State<QuranScreen> {
         ),
         child: FloatingParticles(
           numberOfParticles: 14,
-          particleColor: const Color(0xFFFFD56B),
+          particleColor: isLight ? const Color(0xFFD97706) : const Color(0xFFFFD56B),
           child: Stack(
             children: [
               // Background subtle lantern and crescent effects
               Positioned(
                 left: 12,
                 top: 40,
-                child: Icon(Icons.light_mode_rounded, color: const Color(0xFFE8D29A).withValues(alpha: 0.6), size: 28),
+                child: Icon(
+                  Icons.light_mode_rounded,
+                  color: isLight ? const Color(0xFFB8860B).withValues(alpha: 0.4) : const Color(0xFFE8D29A).withValues(alpha: 0.6),
+                  size: 28,
+                ),
               ),
               Positioned(
                 right: 12,
                 top: 40,
-                child: Icon(Icons.light_mode_rounded, color: const Color(0xFFE8D29A).withValues(alpha: 0.6), size: 28),
+                child: Icon(
+                  Icons.light_mode_rounded,
+                  color: isLight ? const Color(0xFFB8860B).withValues(alpha: 0.4) : const Color(0xFFE8D29A).withValues(alpha: 0.6),
+                  size: 28,
+                ),
               ),
-              const Positioned(
+              Positioned(
                 top: 24,
                 left: 0,
                 right: 0,
                 child: Center(
-                  child: Icon(Icons.nightlight_round, color: Color(0xFFFFD56B), size: 28),
+                  child: Icon(
+                    Icons.nightlight_round,
+                    color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
+                    size: 28,
+                  ),
                 ),
               ),
-              const Positioned(
+              Positioned(
                 top: 20,
                 right: 32,
                 child: StarGlint(size: 14),
               ),
 
-          // Top Header Icons Bar (Back, Search, Settings, Mosque Emblem)
-          Positioned(
-            top: 10,
-            left: 12,
-            right: 12,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Right: Back arrow button
-                IconButton(
-                  icon: const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFE8D29A), size: 18),
-                  onPressed: () => Navigator.maybePop(context),
-                  tooltip: 'رجوع',
-                ),
+              // Top Header Icons Bar (Back, Search, Settings, Mosque Emblem)
+              Positioned(
+                top: 10,
+                left: 12,
+                right: 12,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Right: Back arrow button
+                    IconButton(
+                      icon: Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE8D29A),
+                        size: 18,
+                      ),
+                      onPressed: () => Navigator.maybePop(context),
+                      tooltip: 'رجوع',
+                    ),
 
-                // Left: Icons (Search, Reciter Settings, Mosque Juz/Hizb)
-                Row(
+                    // Left: Icons (Search, Reciter Settings, Mosque Juz/Hizb)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.search_rounded,
+                            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE8D29A),
+                            size: 20,
+                          ),
+                          tooltip: 'البحث عن سورة',
+                          onPressed: () {
+                            _searchFocusNode.requestFocus();
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.person_pin_rounded,
+                            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE8D29A),
+                            size: 20,
+                          ),
+                          tooltip: 'اختيار القارئ',
+                          onPressed: _showReciterSelectSheet,
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.mosque_outlined,
+                            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE8D29A),
+                            size: 20,
+                          ),
+                          tooltip: 'الأجزاء والأحزاب',
+                          onPressed: _showJuzSelectSheet,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Center Calligraphy: ﴿ القُرْآن الكَرِيم ﴾ & كلام الله .. هدايةٌ لكُلّ قلب
+              Positioned(
+                top: 55,
+                left: 0,
+                right: 0,
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.search_rounded, color: Color(0xFFE8D29A), size: 20),
-                      tooltip: 'البحث عن سورة',
-                      onPressed: () {
-                        _searchFocusNode.requestFocus();
-                      },
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('✦ ', style: TextStyle(color: isLight ? const Color(0xFF854D0E) : const Color(0xFFC89B3C), fontSize: 13)),
+                        Text(
+                          'القُرْآن الكَرِيم',
+                          style: TextStyle(
+                            fontFamily: 'Amiri',
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        Text(' ✦', style: TextStyle(color: isLight ? const Color(0xFF854D0E) : const Color(0xFFC89B3C), fontSize: 13)),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.person_pin_rounded, color: Color(0xFFE8D29A), size: 20),
-                      tooltip: 'اختيار القارئ',
-                      onPressed: _showReciterSelectSheet,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.mosque_outlined, color: Color(0xFFE8D29A), size: 20),
-                      tooltip: 'الأجزاء والأحزاب',
-                      onPressed: _showJuzSelectSheet,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Center Calligraphy: ﴿ القُرْآن الكَرِيم ﴾ & كلام الله .. هدايةٌ لكُلّ قلب
-          Positioned(
-            top: 55,
-            left: 0,
-            right: 0,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text('✦ ', style: TextStyle(color: Color(0xFFC89B3C), fontSize: 13)),
+                    const SizedBox(height: 2),
                     Text(
-                      'القُرْآن الكَرِيم',
+                      'كلام الله .. هدايةٌ لكُلّ قلب',
                       style: TextStyle(
-                        fontFamily: 'Amiri',
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFF6F8FA),
-                        letterSpacing: 0.5,
+                        fontFamily: 'Cairo',
+                        fontSize: 11,
+                        color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE8D29A),
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    Text(' ✦', style: TextStyle(color: Color(0xFFC89B3C), fontSize: 13)),
                   ],
                 ),
-                const SizedBox(height: 2),
-                const Text(
-                  'كلام الله .. هدايةٌ لكُلّ قلب',
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 11,
-                    color: Color(0xFFE8D29A),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
 
-          // Right Quran Quote inside Arch Banner: ﴿ إِنَّ هَٰذَا الْقُرْآنَ يَهْدِي لِلَّتِي هِيَ أَقْوَمُ ﴾ [الإسراء: 9]
-          Positioned(
-            right: 14,
-            bottom: 12,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'إِنَّ هَٰذَا الْقُرْآنَ يَهْدِي\nلِلَّتِي هِيَ أَقْوَمُ',
-                  style: TextStyle(
-                    fontFamily: 'Amiri',
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFF6F8FA),
-                    height: 1.3,
-                  ),
+              // Right Quran Quote inside Arch Banner: ﴿ إِنَّ هَٰذَا الْقُرْآنَ يَهْدِي لِلَّتِي هِيَ أَقْوَمُ ﴾ [الإسراء: 9]
+              Positioned(
+                right: 14,
+                bottom: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'إِنَّ هَٰذَا الْقُرْآنَ يَهْدِي\nلِلَّتِي هِيَ أَقْوَمُ',
+                      style: TextStyle(
+                        fontFamily: 'Amiri',
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA),
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '[الإسراء : 9]',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 9,
+                        color: isLight ? const Color(0xFF854D0E) : const Color(0xFFC89B3C),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 2),
-                Text(
-                  '[الإسراء : 9]',
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 9,
-                    color: Color(0xFFC89B3C),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-    ),
-  ),
-);
+    );
   }
 
   /// Search Bar with Magnifier Icon & "ابحث عن سورة ..."
-  Widget _buildSearchBox() {
+  Widget _buildSearchBox(bool isLight) {
     return Container(
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF101722),
+        color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF101722),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.25)),
+        border: Border.all(
+          color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.25),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.08) : Colors.black12,
+            blurRadius: 8,
+          ),
+        ],
       ),
       child: Row(
         children: [
-          const Icon(Icons.search_rounded, color: Color(0xFF64748B), size: 20),
+          Icon(
+            Icons.search_rounded,
+            color: isLight ? const Color(0xFF854D0E) : const Color(0xFF64748B),
+            size: 20,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
               controller: _searchController,
               focusNode: _searchFocusNode,
               onChanged: (val) => setState(() => _searchQuery = val),
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 13,
-                color: Color(0xFFF6F8FA),
+                color: isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA),
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'ابحث عن سورة ...',
                 hintStyle: TextStyle(
                   fontFamily: 'Cairo',
-                  color: Color(0xFF64748B),
+                  color: isLight ? const Color(0xFF78716C) : const Color(0xFF64748B),
                   fontSize: 12,
                 ),
                 border: InputBorder.none,
@@ -893,7 +1007,11 @@ class _QuranScreenState extends State<QuranScreen> {
                 _searchController.clear();
                 setState(() => _searchQuery = '');
               },
-              child: const Icon(Icons.clear_rounded, color: Color(0xFF94A3B8), size: 18),
+              child: Icon(
+                Icons.clear_rounded,
+                color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
+                size: 18,
+              ),
             ),
         ],
       ),
@@ -901,7 +1019,7 @@ class _QuranScreenState extends State<QuranScreen> {
   }
 
   /// Top Filter Pills Row (الكل, مكية, مدنية, حسب الترتيب, تصنيف)
-  Widget _buildFilterPillsRow() {
+  Widget _buildFilterPillsRow(bool isLight) {
     final pills = [
       {'title': 'الكل', 'id': 0},
       {'title': 'مكية', 'id': 1},
@@ -934,19 +1052,35 @@ class _QuranScreenState extends State<QuranScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
                   gradient: isSelected
-                      ? const LinearGradient(
-                          colors: [Color(0xFFFFD56B), Color(0xFFC89B3C)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        )
+                      ? (isLight
+                          ? const LinearGradient(
+                              colors: [Color(0xFFFFDF7D), Color(0xFFE5A83B)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : const LinearGradient(
+                              colors: [Color(0xFFFFD56B), Color(0xFFC89B3C)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ))
                       : null,
-                  color: isSelected ? null : const Color(0xFF101722),
+                  color: isSelected
+                      ? null
+                      : (isLight ? const Color(0xFFFFFDF8) : const Color(0xFF101722)),
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFFFFD56B)
-                        : const Color(0xFFC89B3C).withValues(alpha: 0.25),
+                        ? (isLight ? const Color(0xFFB8860B) : const Color(0xFFFFD56B))
+                        : (isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.25)),
                   ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.35 : 0.3),
+                            blurRadius: 10,
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Text(
                   p['title'] as String,
@@ -954,7 +1088,9 @@ class _QuranScreenState extends State<QuranScreen> {
                     fontFamily: 'Cairo',
                     fontSize: 11,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    color: isSelected ? const Color(0xFF070B11) : const Color(0xFFF6F8FA),
+                    color: isSelected
+                        ? const Color(0xFF1A1002)
+                        : (isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA)),
                   ),
                 ),
               ),
@@ -966,7 +1102,7 @@ class _QuranScreenState extends State<QuranScreen> {
   }
 
   /// Left Categories Navigation Sidebar
-  Widget _buildLeftCategorySidebar() {
+  Widget _buildLeftCategorySidebar(bool isLight) {
     final categories = [
       {'title': 'جميع السور', 'count': '114', 'icon': Icons.menu_book_rounded, 'id': 0},
       {'title': 'المكية', 'count': '86', 'icon': Icons.mosque_rounded, 'id': 1},
@@ -981,9 +1117,17 @@ class _QuranScreenState extends State<QuranScreen> {
     return Container(
       width: 96,
       decoration: BoxDecoration(
-        color: const Color(0xFF0A0F17),
+        color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0A0F17),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.2)),
+        border: Border.all(
+          color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.08) : Colors.black12,
+            blurRadius: 8,
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -1000,13 +1144,21 @@ class _QuranScreenState extends State<QuranScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
                 decoration: BoxDecoration(
                   gradient: isSelected
-                      ? const LinearGradient(
-                          colors: [Color(0xFF2A2012), Color(0xFF161C26)],
-                        )
+                      ? (isLight
+                          ? const LinearGradient(
+                              colors: [Color(0xFFFDF0D5), Color(0xFFFCE7B8)],
+                            )
+                          : const LinearGradient(
+                              colors: [Color(0xFF2A2012), Color(0xFF161C26)],
+                            ))
                       : null,
                   borderRadius: BorderRadius.circular(12),
                   border: isSelected
-                      ? Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.6))
+                      ? Border.all(
+                          color: isLight
+                              ? const Color(0xFFC89B3C)
+                              : const Color(0xFFC89B3C).withValues(alpha: 0.6),
+                        )
                       : null,
                 ),
                 child: Column(
@@ -1015,7 +1167,9 @@ class _QuranScreenState extends State<QuranScreen> {
                     Icon(
                       cat['icon'] as IconData,
                       size: 18,
-                      color: isSelected ? const Color(0xFFFFD56B) : const Color(0xFF94A3B8),
+                      color: isSelected
+                          ? (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B))
+                          : (isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8)),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -1025,7 +1179,9 @@ class _QuranScreenState extends State<QuranScreen> {
                         fontFamily: 'Cairo',
                         fontSize: 10,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? const Color(0xFFFFD56B) : const Color(0xFFF6F8FA),
+                        color: isSelected
+                            ? (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B))
+                            : (isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA)),
                       ),
                     ),
                     if ((cat['count'] as String).isNotEmpty)
@@ -1034,7 +1190,9 @@ class _QuranScreenState extends State<QuranScreen> {
                         style: TextStyle(
                           fontFamily: 'Cairo',
                           fontSize: 9,
-                          color: isSelected ? const Color(0xFFE8D29A) : const Color(0xFF64748B),
+                          color: isSelected
+                              ? (isLight ? const Color(0xFF854D0E) : const Color(0xFFE8D29A))
+                              : (isLight ? const Color(0xFF78716C) : const Color(0xFF64748B)),
                         ),
                       ),
                   ],
@@ -1050,12 +1208,14 @@ class _QuranScreenState extends State<QuranScreen> {
             margin: const EdgeInsets.all(6),
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFF131A26),
+              color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF131A26),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.3)),
+              border: Border.all(
+                color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.3),
+              ),
             ),
             child: Column(
-              children: const [
+              children: [
                 Text(
                   '﴿ وَرَتِّلِ الْقُرْآنَ\nتَرْتِيلًا ﴾',
                   textAlign: TextAlign.center,
@@ -1063,17 +1223,17 @@ class _QuranScreenState extends State<QuranScreen> {
                     fontFamily: 'Amiri',
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFE8D29A),
+                    color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE8D29A),
                     height: 1.2,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   '[المزمل: 4]',
                   style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 7,
-                    color: Color(0xFF64748B),
+                    color: isLight ? const Color(0xFF78716C) : const Color(0xFF64748B),
                   ),
                 ),
               ],
@@ -1085,15 +1245,15 @@ class _QuranScreenState extends State<QuranScreen> {
   }
 
   /// Individual Surah Card Row matching the screenshot layout
-  Widget _buildSurahRowCard(SurahMeta surah, bool isFav, bool isPlaying) {
+  Widget _buildSurahRowCard(SurahMeta surah, bool isFav, bool isPlaying, bool isLight) {
     return InteractiveMotionCard(
       margin: const EdgeInsets.only(bottom: 8),
       borderRadius: 16,
-      backgroundColor: const Color(0xFF0F1621),
+      backgroundColor: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1621),
       borderColor: isPlaying
-          ? const Color(0xFFFFD56B)
-          : const Color(0xFFC89B3C).withValues(alpha: 0.25),
-      glowColor: const Color(0xFFFFD56B),
+          ? (isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B))
+          : (isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.25)),
+      glowColor: isLight ? const Color(0xFFE5A83B) : const Color(0xFFFFD56B),
       onTap: () {
         Navigator.push(
           context,
@@ -1111,14 +1271,14 @@ class _QuranScreenState extends State<QuranScreen> {
           children: [
             // Star/Octagram Number Badge: 1, 2, 3...
             if (isPlaying)
-              const PulsingHalo(
+              PulsingHalo(
                 isActive: true,
-                haloColor: Color(0xFFFFD56B),
+                haloColor: isLight ? const Color(0xFFD97706) : const Color(0xFFFFD56B),
                 borderRadius: 20,
-                child: StarGlint(size: 14),
+                child: const StarGlint(size: 14),
               )
             else
-              _buildOctagramNumberBadge(surah.number),
+              _buildOctagramNumberBadge(surah.number, isLight),
 
             const SizedBox(width: 10),
 
@@ -1133,11 +1293,13 @@ class _QuranScreenState extends State<QuranScreen> {
                     children: [
                       Text(
                         'سُورَةُ ${surah.nameArabic}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Amiri',
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFFF6F8FA),
+                          color: isLight
+                              ? (isPlaying ? const Color(0xFF854D0E) : const Color(0xFF1C1917))
+                              : const Color(0xFFF6F8FA),
                         ),
                       ),
                       if (isPlaying) ...[
@@ -1146,106 +1308,115 @@ class _QuranScreenState extends State<QuranScreen> {
                       ],
                     ],
                   ),
-                      Text(
-                        surah.nameEnglish,
-                        style: const TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 10,
-                          color: Color(0xFF94A3B8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Ayahs Count & Type (7 آيات / مكية)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${surah.ayahCount} آيات',
-                      style: const TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 11,
-                        color: Color(0xFFE8D29A),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      surah.isMeccan ? 'مكية' : 'مدنية',
-                      style: const TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 10,
-                        color: Color(0xFF64748B),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(width: 8),
-
-                // Circular Audio Play Button
-                InkWell(
-                  onTap: () => _playSurah(surah.number),
-                  borderRadius: BorderRadius.circular(18),
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFF141C28),
-                      border: Border.all(
-                        color: isPlaying
-                            ? const Color(0xFFFFD56B)
-                            : const Color(0xFFC89B3C).withValues(alpha: 0.4),
-                      ),
-                    ),
-                    child: Icon(
-                      isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                      color: const Color(0xFFFFD56B),
-                      size: 18,
+                  Text(
+                    surah.nameEnglish,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 10,
+                      color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
                     ),
                   ),
-                ),
+                ],
+              ),
+            ),
 
-                const SizedBox(width: 6),
-
-                // Favorite Star Icon Button
-                IconButton(
-                  icon: Icon(
-                    isFav ? Icons.star_rounded : Icons.star_border_rounded,
-                    color: isFav ? const Color(0xFFFFD56B) : const Color(0xFF64748B),
-                    size: 20,
+            // Ayahs Count & Type (7 آيات / مكية)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${surah.ayahCount} آيات',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 11,
+                    color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE8D29A),
+                    fontWeight: FontWeight.w600,
                   ),
-                  onPressed: () => _storage.toggleFavorite(surah.number),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                ),
+                Text(
+                  surah.isMeccan ? 'مكية' : 'مدنية',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 10,
+                    color: isLight ? const Color(0xFF78716C) : const Color(0xFF64748B),
+                  ),
                 ),
               ],
             ),
-          ),
+
+            const SizedBox(width: 8),
+
+            // Circular Audio Play Button
+            InkWell(
+              onTap: () => _playSurah(surah.number),
+              borderRadius: BorderRadius.circular(18),
+              child: Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isPlaying
+                      ? (isLight ? const Color(0xFFE5A83B) : const Color(0xFFFFD56B))
+                      : (isLight ? const Color(0xFFFBF4E4) : const Color(0xFF141C28)),
+                  border: Border.all(
+                    color: isPlaying
+                        ? (isLight ? const Color(0xFFB8860B) : const Color(0xFFFFD56B))
+                        : (isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.4)),
+                  ),
+                ),
+                child: Icon(
+                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  color: isPlaying
+                      ? (isLight ? const Color(0xFF1A1002) : const Color(0xFF070B11))
+                      : (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)),
+                  size: 18,
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 6),
+
+            // Favorite Star Icon Button
+            IconButton(
+              icon: Icon(
+                isFav ? Icons.star_rounded : Icons.star_border_rounded,
+                color: isFav
+                    ? (isLight ? const Color(0xFFD97706) : const Color(0xFFFFD56B))
+                    : (isLight ? const Color(0xFF78716C) : const Color(0xFF64748B)),
+                size: 20,
+              ),
+              onPressed: () => _storage.toggleFavorite(surah.number),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   /// Octagram Number Emblem
-  Widget _buildOctagramNumberBadge(int number) {
+  Widget _buildOctagramNumberBadge(int number, bool isLight) {
     return Container(
       width: 34,
       height: 34,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: const Color(0xFF131A26),
-        border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.5), width: 1.2),
+        color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF131A26),
+        border: Border.all(
+          color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFC89B3C).withValues(alpha: 0.5),
+          width: 1.2,
+        ),
       ),
       child: Center(
         child: Text(
           '$number',
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Cairo',
             fontSize: 12,
             fontWeight: FontWeight.bold,
-            color: Color(0xFFFFD56B),
+            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
           ),
         ),
       ),

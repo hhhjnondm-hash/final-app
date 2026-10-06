@@ -17,13 +17,17 @@ class HadithDetailsSheet extends StatelessWidget {
     final service = HadithService();
     final isFav = service.isFavorite(hadith.id);
 
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       padding: const EdgeInsets.all(DesignSystem.spacingL),
       decoration: BoxDecoration(
-        color: DesignSystem.bgDarkest,
+        color: isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgDarkest,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(DesignSystem.radiusLarge)),
-        border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.4)),
+        border: Border.all(
+          color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.4),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -34,7 +38,9 @@ class HadithDetailsSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: DesignSystem.textMuted.withValues(alpha: 0.4),
+                color: isLight
+                    ? const Color(0xFF78716C).withValues(alpha: 0.3)
+                    : DesignSystem.textMuted.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -51,29 +57,37 @@ class HadithDetailsSheet extends StatelessWidget {
                 children: [
                   Text(
                     hadith.book,
-                    style: const TextStyle(
-                      color: DesignSystem.goldLight,
+                    style: TextStyle(
+                      color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
                     'الحديث رقم ${hadith.number} • ${hadith.grade}',
-                    style: const TextStyle(color: DesignSystem.textMuted, fontSize: 12),
+                    style: TextStyle(
+                      color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
               IconButton(
                 icon: Icon(
                   isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                  color: isFav ? const Color(0xFFE11D48) : DesignSystem.textWhite,
+                  color: isFav
+                      ? const Color(0xFFE11D48)
+                      : (isLight ? const Color(0xFF78716C) : DesignSystem.textWhite),
                 ),
                 onPressed: () => service.toggleFavorite(hadith.id),
               ),
             ],
           ),
 
-          const Divider(color: Colors.white12, height: 24),
+          Divider(
+            color: isLight ? const Color(0xFFE5D4B3) : Colors.white12,
+            height: 24,
+          ),
 
           // Scrollable Hadith Text & Explanation
           Expanded(
@@ -86,16 +100,20 @@ class HadithDetailsSheet extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(DesignSystem.spacingL),
                     decoration: BoxDecoration(
-                      color: DesignSystem.bgCard.withValues(alpha: 0.9),
+                      color: isLight
+                          ? const Color(0xFFFBF4E4)
+                          : DesignSystem.bgCard.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
-                      border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Text(
                       hadith.text,
                       textAlign: TextAlign.justify,
                       textDirection: TextDirection.rtl,
-                      style: const TextStyle(
-                        color: DesignSystem.textWhite,
+                      style: TextStyle(
+                        color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                         fontSize: 18,
                         height: 2.0,
                         fontWeight: FontWeight.bold,
@@ -109,31 +127,47 @@ class HadithDetailsSheet extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(DesignSystem.spacingM),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.04),
+                      color: isLight ? const Color(0xFFF5EFE0) : Colors.white.withValues(alpha: 0.04),
                       borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                      border: Border.all(
+                        color: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.08),
+                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.person_outline_rounded, color: DesignSystem.goldLight, size: 16),
+                            Icon(
+                              Icons.person_outline_rounded,
+                              color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                              size: 16,
+                            ),
                             const SizedBox(width: 6),
                             Text(
                               'الراوي: ${hadith.narrator}',
-                              style: const TextStyle(color: DesignSystem.textWhite, fontSize: 12),
+                              style: TextStyle(
+                                color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 6),
                         Row(
                           children: [
-                            const Icon(Icons.bookmark_outline_rounded, color: DesignSystem.goldLight, size: 16),
+                            Icon(
+                              Icons.bookmark_outline_rounded,
+                              color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                              size: 16,
+                            ),
                             const SizedBox(width: 6),
                             Text(
                               'الباب: ${hadith.chapter}',
-                              style: const TextStyle(color: DesignSystem.textWhite, fontSize: 12),
+                              style: TextStyle(
+                                color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
@@ -143,10 +177,10 @@ class HadithDetailsSheet extends StatelessWidget {
 
                   if (hadith.explanation.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'شرح وبيان الحديث:',
                       style: TextStyle(
-                        color: DesignSystem.goldLight,
+                        color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
@@ -155,13 +189,13 @@ class HadithDetailsSheet extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(DesignSystem.spacingM),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.03),
+                        color: isLight ? const Color(0xFFF5EFE0) : Colors.white.withValues(alpha: 0.03),
                         borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
                       ),
                       child: Text(
                         hadith.explanation,
-                        style: const TextStyle(
-                          color: DesignSystem.textMuted,
+                        style: TextStyle(
+                          color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
                           fontSize: 13,
                           height: 1.6,
                         ),
@@ -182,11 +216,22 @@ class HadithDetailsSheet extends StatelessWidget {
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    side: const BorderSide(color: Colors.white24),
+                    side: BorderSide(
+                      color: isLight ? const Color(0xFFE5D4B3) : Colors.white24,
+                    ),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusPill)),
                   ),
-                  icon: const Icon(Icons.copy_rounded, color: DesignSystem.textWhite, size: 16),
-                  label: const Text('نسخ الحديث', style: TextStyle(color: DesignSystem.textWhite)),
+                  icon: Icon(
+                    Icons.copy_rounded,
+                    color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
+                    size: 16,
+                  ),
+                  label: Text(
+                    'نسخ الحديث',
+                    style: TextStyle(
+                      color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
+                    ),
+                  ),
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: '${hadith.text}\n[${hadith.book} - ${hadith.narrator}]'));
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -203,8 +248,8 @@ class HadithDetailsSheet extends StatelessWidget {
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    backgroundColor: DesignSystem.gold,
-                    foregroundColor: DesignSystem.bgDarkest,
+                    backgroundColor: isLight ? const Color(0xFFE5A83B) : DesignSystem.gold,
+                    foregroundColor: const Color(0xFF1A1002),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusPill)),
                   ),
                   icon: const Icon(Icons.share_rounded, size: 16),

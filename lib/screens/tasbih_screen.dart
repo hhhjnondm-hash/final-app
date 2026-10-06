@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/celebration_achievement_dialog.dart';
 import '../widgets/developer_credits_badge.dart';
+import '../widgets/islamic_background.dart';
 import '../widgets/visual_effects/floating_particles.dart';
 import '../widgets/visual_effects/interactive_motion_card.dart';
 import '../widgets/visual_effects/star_glint.dart';
@@ -616,6 +617,7 @@ class _TasbihScreenState extends State<TasbihScreen> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final activeDhikr = _isAutoPostPrayerMode
         ? (_postPrayerPhase == 0
             ? 'سُبْحَانَ اللَّه (1/3)'
@@ -631,171 +633,160 @@ class _TasbihScreenState extends State<TasbihScreen> with TickerProviderStateMix
     final percentInt = (progress * 100).toInt();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF070B11),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // 1. Background Cinematic Lantern Mosque Artwork
-          Image.asset(
-            'assets/quran_viewer_left_bg.jpg',
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => Image.asset(
-              'assets/home_hero_mosque.jpg',
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(color: const Color(0xFF070B11)),
-            ),
-          ),
-
-          // Layer 2: Dark Atmospheric Scrim with Royal Radial Glow
-          Container(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: Alignment.center,
-                radius: 1.2,
-                colors: [
-                  const Color(0xFF0D1726).withValues(alpha: 0.82),
-                  const Color(0xFF070B11).withValues(alpha: 0.94),
-                  const Color(0xFF030508).withValues(alpha: 0.98),
-                ],
+      backgroundColor: Colors.transparent,
+      body: IslamicBackground(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Layer: Floating Golden Dust Particles
+            Positioned.fill(
+              child: RepaintBoundary(
+                child: FloatingParticles(
+                  numberOfParticles: isLight ? 10 : 18,
+                  particleColor: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
+                ),
               ),
             ),
-          ),
 
-          // Layer 3: Floating Golden Dust Particles
-          const Positioned.fill(
-            child: RepaintBoundary(
-              child: FloatingParticles(
-                numberOfParticles: 18,
-                particleColor: Color(0xFFFFD56B),
-              ),
-            ),
-          ),
+            // Main Scrollable Content
+            SafeArea(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 8),
 
-          // Main Scrollable Content
-          SafeArea(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                children: [
-                  const SizedBox(height: 8),
+                    // 1. Top Header: [Settings Gear] | [السبحة الإلكترونية] | [Material Badge]
+                    _buildHeader(isLight),
 
-                  // 1. Top Header: [Settings Gear] | [السبحة الإلكترونية] | [Material Badge]
-                  _buildHeader(),
+                    const SizedBox(height: 12),
 
-                  const SizedBox(height: 12),
+                    // 2. Horizontal Dhikr Selector Carousel
+                    if (!_isAutoPostPrayerMode) _buildDhikrHorizontalSelector(),
 
-                  // 2. Horizontal Dhikr Selector Carousel
-                  if (!_isAutoPostPrayerMode) _buildDhikrHorizontalSelector(),
-
-                  // 2.5 Active Dhikr Virtue Callout Ribbon
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF1E2838).withValues(alpha: 0.8),
-                            const Color(0xFF121B2A).withValues(alpha: 0.6),
+                    // 2.5 Active Dhikr Virtue Callout Ribbon
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: isLight
+                                ? [
+                                    const Color(0xFFFBF4E4),
+                                    const Color(0xFFF5EBD7),
+                                  ]
+                                : [
+                                    const Color(0xFF1E2838).withValues(alpha: 0.8),
+                                    const Color(0xFF121B2A).withValues(alpha: 0.6),
+                                  ],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.35),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            if (isLight)
+                              BoxShadow(
+                                color: const Color(0xFFC89B3C).withValues(alpha: 0.06),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFFFFD56B).withValues(alpha: 0.35),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.auto_awesome_rounded, color: Color(0xFFFFD56B), size: 14),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              activeVirtue,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontFamily: 'Cairo',
-                                color: Color(0xFFFFE58F),
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.auto_awesome_rounded, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B), size: 14),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                activeVirtue,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontFamily: 'Cairo',
+                                  color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFE58F),
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 10),
+                    const SizedBox(height: 10),
 
-                  // 3. Central Photorealistic 3D Circular Misbaha Dial
-                  _buildCentral3DMisbaha(activeDhikr),
+                    // 3. Central Photorealistic 3D Circular Misbaha Dial
+                    _buildCentral3DMisbaha(activeDhikr),
 
-                  const SizedBox(height: 18),
+                    const SizedBox(height: 18),
 
-                  // 4. Action Controls: [إعادة (Reset)] | [ + اضغط للتسبيح (Grand 3D)] | [تراجع (Undo)]
-                  _buildActionButtonsRow(),
+                    // 4. Action Controls: [إعادة (Reset)] | [ + اضغط للتسبيح (Grand 3D)] | [تراجع (Undo)]
+                    _buildActionButtonsRow(),
 
-                  const SizedBox(height: 22),
+                    const SizedBox(height: 22),
 
-                  // 5. Daily Goal Card: [الهدف اليومي للتسبيح] + [33 | 100 | 500 | 1000] + Glowing Progress Bar
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: InteractiveMotionCard(
-                      borderRadius: 22,
-                      child: _buildDailyGoalCard(progress, percentInt),
+                    // 5. Daily Goal Card: [الهدف اليومي للتسبيح] + [33 | 100 | 500 | 1000] + Glowing Progress Bar
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: InteractiveMotionCard(
+                        borderRadius: 22,
+                        child: _buildDailyGoalCard(progress, percentInt),
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 14),
+                    const SizedBox(height: 14),
 
-                  // 6. Statistics Card: [إحصائيات التسبيح]
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: InteractiveMotionCard(
-                      borderRadius: 22,
-                      child: _buildStatisticsCard(),
+                    // 6. Statistics Card: [إحصائيات التسبيح]
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: InteractiveMotionCard(
+                        borderRadius: 22,
+                        child: _buildStatisticsCard(),
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 14),
+                    const SizedBox(height: 14),
 
-                  // 7. Customization Banner
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: InteractiveMotionCard(
-                      onTap: _showCustomizationSheet,
-                      borderRadius: 22,
-                      child: _buildCustomizationBanner(),
+                    // 7. Customization Banner
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: InteractiveMotionCard(
+                        onTap: _showCustomizationSheet,
+                        borderRadius: 22,
+                        child: _buildCustomizationBanner(),
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  // 8. Bottom Islamic Ornament
-                  _buildFooterOrnament(),
+                    // 8. Bottom Islamic Ornament
+                    _buildFooterOrnament(),
 
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                  // 9. Developer Rights Badge
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: DeveloperCreditsBadge(),
-                  ),
+                    // 9. Developer Rights Badge
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: DeveloperCreditsBadge(),
+                    ),
 
-                  const SizedBox(height: 28),
-                ],
+                    const SizedBox(height: 28),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   /// Top Header
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isLight) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -804,41 +795,44 @@ class _TasbihScreenState extends State<TasbihScreen> with TickerProviderStateMix
           // Left: Settings Button
           _buildCircleIconButton(
             icon: Icons.tune_rounded,
+            isLight: isLight,
             onTap: _showCustomizationSheet,
           ),
 
           // Center: Title & Subtitle with Gold Ornament
           Column(
             children: [
-              const Row(
+              Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  StarGlint(size: 14, color: Color(0xFFFFD56B)),
-                  SizedBox(width: 6),
+                  StarGlint(size: 14, color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B)),
+                  const SizedBox(width: 6),
                   Text(
                     'السبحة الإلكترونية ثلاثية الأبعاد',
                     style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 18,
                       fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(color: Color(0xFFFFD56B), blurRadius: 10),
-                      ],
+                      color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                      shadows: isLight
+                          ? null
+                          : const [
+                              Shadow(color: Color(0xFFFFD56B), blurRadius: 10),
+                            ],
                     ),
                   ),
-                  SizedBox(width: 6),
-                  StarGlint(size: 14, color: Color(0xFFFFD56B)),
+                  const SizedBox(width: 6),
+                  StarGlint(size: 14, color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B)),
                 ],
               ),
               const SizedBox(height: 2),
-              const Text(
+              Text(
                 'اذكر الله واطمئن قلبك • تفاعل فيزيائي وخرز ثلاثي الأبعاد',
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 10.5,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFFFFD56B),
+                  color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                 ),
               ),
             ],
@@ -847,6 +841,7 @@ class _TasbihScreenState extends State<TasbihScreen> with TickerProviderStateMix
           // Right: Reset to Default Button
           _buildCircleIconButton(
             icon: Icons.refresh_rounded,
+            isLight: isLight,
             onTap: _resetCounter,
           ),
         ],
@@ -857,6 +852,7 @@ class _TasbihScreenState extends State<TasbihScreen> with TickerProviderStateMix
   Widget _buildCircleIconButton({
     required IconData icon,
     required VoidCallback onTap,
+    required bool isLight,
   }) {
     return InkWell(
       onTap: onTap,
@@ -866,14 +862,16 @@ class _TasbihScreenState extends State<TasbihScreen> with TickerProviderStateMix
         height: 40,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: const Color(0xFF131B26).withValues(alpha: 0.9),
+          color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF131B26).withValues(alpha: 0.9),
           border: Border.all(
-            color: const Color(0xFFFFD56B).withValues(alpha: 0.4),
+            color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.4),
             width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.4),
+              color: isLight
+                  ? const Color(0xFFC89B3C).withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.4),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -883,7 +881,7 @@ class _TasbihScreenState extends State<TasbihScreen> with TickerProviderStateMix
           child: Icon(
             icon,
             size: 20,
-            color: const Color(0xFFFFD56B),
+            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
           ),
         ),
       ),

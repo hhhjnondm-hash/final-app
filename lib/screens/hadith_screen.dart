@@ -7,6 +7,7 @@ import '../widgets/hadith_card.dart';
 import '../widgets/hadith_details_sheet.dart';
 import '../widgets/hadith_hero_card.dart';
 import '../widgets/developer_credits_badge.dart';
+import '../widgets/islamic_background.dart';
 
 class HadithScreen extends StatefulWidget {
   const HadithScreen({super.key});
@@ -40,6 +41,7 @@ class _HadithScreenState extends State<HadithScreen> {
   @override
   Widget build(BuildContext context) {
     final allAhadith = HadithData.ahadith;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     final filteredAhadith = allAhadith.where((h) {
       final matchesCat = _selectedCategory == HadithCategory.all || h.category == _selectedCategory;
@@ -52,27 +54,28 @@ class _HadithScreenState extends State<HadithScreen> {
       return matchesCat && matchesBook && matchesSearch;
     }).toList();
 
-    return Scaffold(
-      backgroundColor: DesignSystem.bgDarkest,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1000),
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                // 1. Top Luxury Header
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      DesignSystem.spacingL,
-                      DesignSystem.spacingM,
-                      DesignSystem.spacingL,
-                      DesignSystem.spacingS,
+    return IslamicBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1000),
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  // 1. Top Luxury Header
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        DesignSystem.spacingL,
+                        DesignSystem.spacingM,
+                        DesignSystem.spacingL,
+                        DesignSystem.spacingS,
+                      ),
+                      child: _buildHeader(context, isLight),
                     ),
-                    child: _buildHeader(context),
                   ),
-                ),
 
                 // 2. Search Bar
                 SliverToBoxAdapter(
@@ -81,7 +84,7 @@ class _HadithScreenState extends State<HadithScreen> {
                       horizontal: DesignSystem.spacingL,
                       vertical: DesignSystem.spacingS,
                     ),
-                    child: _buildSearchBar(),
+                    child: _buildSearchBar(isLight),
                   ),
                 ),
 
@@ -104,7 +107,7 @@ class _HadithScreenState extends State<HadithScreen> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(DesignSystem.spacingL),
-                    child: _buildStatsAndStreakRow(),
+                    child: _buildStatsAndStreakRow(isLight),
                   ),
                 ),
 
@@ -112,7 +115,7 @@ class _HadithScreenState extends State<HadithScreen> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: DesignSystem.spacingS),
-                    child: _buildCategoriesBar(),
+                    child: _buildCategoriesBar(isLight),
                   ),
                 ),
 
@@ -129,14 +132,18 @@ class _HadithScreenState extends State<HadithScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Row(
+                          Row(
                             children: [
-                              Icon(Icons.library_books_rounded, color: DesignSystem.goldLight, size: 20),
-                              SizedBox(width: 8),
+                              Icon(
+                                Icons.library_books_rounded,
+                                color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
                               Text(
                                 'أمهات كتب الحديث الشريف',
                                 style: TextStyle(
-                                  color: DesignSystem.textWhite,
+                                  color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -146,7 +153,13 @@ class _HadithScreenState extends State<HadithScreen> {
                           if (_selectedBookFilter != null)
                             InkWell(
                               onTap: () => setState(() => _selectedBookFilter = null),
-                              child: const Text('إلغاء الفلتر', style: TextStyle(color: DesignSystem.goldLight, fontSize: 12)),
+                              child: Text(
+                                'إلغاء الفلتر',
+                                style: TextStyle(
+                                  color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                                  fontSize: 12,
+                                ),
+                              ),
                             ),
                         ],
                       ),
@@ -165,7 +178,7 @@ class _HadithScreenState extends State<HadithScreen> {
                           final book = HadithData.books[index];
                           final isSelected = _selectedBookFilter != null && book.titleArabic.contains(_selectedBookFilter!);
 
-                          return _buildBookCard(book, isSelected);
+                          return _buildBookCard(book, isSelected, isLight);
                         },
                       ),
                     ),
@@ -184,17 +197,20 @@ class _HadithScreenState extends State<HadithScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'الأحاديث النبوية',
                           style: TextStyle(
-                            color: DesignSystem.textWhite,
+                            color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
                           '${filteredAhadith.length} حديث',
-                          style: const TextStyle(color: DesignSystem.textMuted, fontSize: 12),
+                          style: TextStyle(
+                            color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
@@ -209,13 +225,20 @@ class _HadithScreenState extends State<HadithScreen> {
                           child: Container(
                             padding: const EdgeInsets.all(DesignSystem.spacingXL),
                             alignment: Alignment.center,
-                            child: const Column(
+                            child: Column(
                               children: [
-                                Icon(Icons.search_off_rounded, color: DesignSystem.textMuted, size: 48),
-                                SizedBox(height: 12),
+                                Icon(
+                                  Icons.search_off_rounded,
+                                  color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                                  size: 48,
+                                ),
+                                const SizedBox(height: 12),
                                 Text(
                                   'لا توجد أحاديث مطابقة لبحثك',
-                                  style: TextStyle(color: DesignSystem.textMuted, fontSize: 14),
+                                  style: TextStyle(
+                                    color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                                    fontSize: 14,
+                                  ),
                                 ),
                               ],
                             ),
@@ -257,11 +280,12 @@ class _HadithScreenState extends State<HadithScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
-  Widget _buildHeader(BuildContext context) {
-    return const Row(
+  Widget _buildHeader(BuildContext context, bool isLight) {
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Column(
@@ -270,18 +294,18 @@ class _HadithScreenState extends State<HadithScreen> {
             Text(
               'الأحاديث النبوية',
               style: TextStyle(
-                color: DesignSystem.textWhite,
+                color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 2),
+            const SizedBox(height: 2),
             Text(
               'خير الناس أنفعهم للناس • سنة المصطفى ﷺ',
               style: TextStyle(
-                color: DesignSystem.goldLight,
+                color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                 fontSize: 12,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -290,23 +314,40 @@ class _HadithScreenState extends State<HadithScreen> {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(bool isLight) {
     return Container(
       decoration: BoxDecoration(
-        color: DesignSystem.bgCard.withValues(alpha: 0.7),
+        color: isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgCard.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(
+          color: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.08),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.08) : Colors.black12,
+            blurRadius: 8,
+          ),
+        ],
       ),
       child: TextField(
-        style: const TextStyle(color: DesignSystem.textWhite),
+        style: TextStyle(color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite),
         onChanged: (val) => setState(() => _searchQuery = val.trim()),
         decoration: InputDecoration(
           hintText: 'ابحث في نصوص الأحاديث، الراوي، أو الباب...',
-          hintStyle: const TextStyle(color: DesignSystem.textMuted, fontSize: 13),
-          prefixIcon: const Icon(Icons.search_rounded, color: DesignSystem.goldLight),
+          hintStyle: TextStyle(
+            color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+            fontSize: 13,
+          ),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+          ),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear_rounded, color: DesignSystem.textMuted),
+                  icon: Icon(
+                    Icons.clear_rounded,
+                    color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                  ),
                   onPressed: () => setState(() => _searchQuery = ''),
                 )
               : null,
@@ -317,7 +358,7 @@ class _HadithScreenState extends State<HadithScreen> {
     );
   }
 
-  Widget _buildStatsAndStreakRow() {
+  Widget _buildStatsAndStreakRow(bool isLight) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 600;
@@ -325,15 +366,15 @@ class _HadithScreenState extends State<HadithScreen> {
         if (isMobile) {
           return Column(
             children: [
-              _buildStreakCard(),
+              _buildStreakCard(isLight),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(child: _buildStatItem('إجمالي الأحاديث', '42,759', Icons.menu_book_rounded)),
+                  Expanded(child: _buildStatItem('إجمالي الأحاديث', '42,759', Icons.menu_book_rounded, isLight)),
                   const SizedBox(width: 8),
-                  Expanded(child: _buildStatItem('أحاديث اليوم', '${_service.todayReadCount}', Icons.today_rounded)),
+                  Expanded(child: _buildStatItem('أحاديث اليوم', '${_service.todayReadCount}', Icons.today_rounded, isLight)),
                   const SizedBox(width: 8),
-                  Expanded(child: _buildStatItem('المفضلة', '${_service.favoriteHadithIds.length}', Icons.favorite_rounded)),
+                  Expanded(child: _buildStatItem('المفضلة', '${_service.favoriteHadithIds.length}', Icons.favorite_rounded, isLight)),
                 ],
               ),
             ],
@@ -342,26 +383,34 @@ class _HadithScreenState extends State<HadithScreen> {
 
         return Row(
           children: [
-            Expanded(flex: 2, child: _buildStreakCard()),
+            Expanded(flex: 2, child: _buildStreakCard(isLight)),
             const SizedBox(width: 14),
-            Expanded(child: _buildStatItem('إجمالي الأحاديث', '42,759', Icons.menu_book_rounded)),
+            Expanded(child: _buildStatItem('إجمالي الأحاديث', '42,759', Icons.menu_book_rounded, isLight)),
             const SizedBox(width: 10),
-            Expanded(child: _buildStatItem('أحاديث اليوم', '${_service.todayReadCount}', Icons.today_rounded)),
+            Expanded(child: _buildStatItem('أحاديث اليوم', '${_service.todayReadCount}', Icons.today_rounded, isLight)),
             const SizedBox(width: 10),
-            Expanded(child: _buildStatItem('المفضلة', '${_service.favoriteHadithIds.length}', Icons.favorite_rounded)),
+            Expanded(child: _buildStatItem('المفضلة', '${_service.favoriteHadithIds.length}', Icons.favorite_rounded, isLight)),
           ],
         );
       },
     );
   }
 
-  Widget _buildStreakCard() {
+  Widget _buildStreakCard(bool isLight) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: DesignSystem.bgCard.withValues(alpha: 0.8),
+        color: isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgCard.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.3),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.08) : Colors.black12,
+            blurRadius: 8,
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -370,14 +419,17 @@ class _HadithScreenState extends State<HadithScreen> {
             height: 48,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: DesignSystem.gold, width: 2.5),
-              color: DesignSystem.gold.withValues(alpha: 0.1),
+              border: Border.all(
+                color: isLight ? const Color(0xFF854D0E) : DesignSystem.gold,
+                width: 2.5,
+              ),
+              color: isLight ? const Color(0xFFFBF4E4) : DesignSystem.gold.withValues(alpha: 0.1),
             ),
             child: Center(
               child: Text(
                 '${_service.readStreakDays}',
-                style: const TextStyle(
-                  color: DesignSystem.goldLight,
+                style: TextStyle(
+                  color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -385,22 +437,25 @@ class _HadithScreenState extends State<HadithScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'سلسلة القراءة اليومية 🔥',
                   style: TextStyle(
-                    color: DesignSystem.textWhite,
+                    color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   'أحسنت! واصل قراءة الأحاديث يومياً',
-                  style: TextStyle(color: DesignSystem.textMuted, fontSize: 10),
+                  style: TextStyle(
+                    color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                    fontSize: 10,
+                  ),
                 ),
               ],
             ),
@@ -410,29 +465,44 @@ class _HadithScreenState extends State<HadithScreen> {
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon) {
+  Widget _buildStatItem(String label, String value, IconData icon, bool isLight) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
-        color: DesignSystem.bgCard.withValues(alpha: 0.7),
+        color: isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgCard.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(
+          color: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.08),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.06) : Colors.black12,
+            blurRadius: 6,
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Icon(icon, color: DesignSystem.goldLight, size: 18),
+          Icon(
+            icon,
+            color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+            size: 18,
+          ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              color: DesignSystem.goldLight,
+            style: TextStyle(
+              color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ),
           Text(
             label,
-            style: const TextStyle(color: DesignSystem.textMuted, fontSize: 9),
+            style: TextStyle(
+              color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+              fontSize: 9,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -441,7 +511,7 @@ class _HadithScreenState extends State<HadithScreen> {
     );
   }
 
-  Widget _buildCategoriesBar() {
+  Widget _buildCategoriesBar(bool isLight) {
     final categories = [
       {'title': 'كل الأحاديث', 'cat': HadithCategory.all},
       {'title': 'الإيمان والتوحيد', 'cat': HadithCategory.faith},
@@ -471,19 +541,36 @@ class _HadithScreenState extends State<HadithScreen> {
                 duration: const Duration(milliseconds: 250),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  gradient: isSelected ? DesignSystem.goldGradient : null,
-                  color: isSelected ? null : DesignSystem.bgCard.withValues(alpha: 0.7),
+                  gradient: isSelected
+                      ? (isLight
+                          ? const LinearGradient(colors: [Color(0xFFFFDF7D), Color(0xFFE5A83B)])
+                          : DesignSystem.goldGradient)
+                      : null,
+                  color: isSelected
+                      ? null
+                      : (isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgCard.withValues(alpha: 0.7)),
                   borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
                   border: Border.all(
-                    color: isSelected ? DesignSystem.gold : Colors.white.withValues(alpha: 0.1),
+                    color: isSelected
+                        ? (isLight ? const Color(0xFFB8860B) : DesignSystem.gold)
+                        : (isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.1)),
                   ),
-                  boxShadow: isSelected ? DesignSystem.goldGlow : null,
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.35 : 0.4),
+                            blurRadius: 10,
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Center(
                   child: Text(
                     item['title'] as String,
                     style: TextStyle(
-                      color: isSelected ? DesignSystem.bgDarkest : DesignSystem.textWhite,
+                      color: isSelected
+                          ? const Color(0xFF1A1002)
+                          : (isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite),
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       fontSize: 12,
                     ),
@@ -497,7 +584,7 @@ class _HadithScreenState extends State<HadithScreen> {
     );
   }
 
-  Widget _buildBookCard(HadithBook book, bool isSelected) {
+  Widget _buildBookCard(HadithBook book, bool isSelected, bool isLight) {
     return InkWell(
       onTap: () {
         setState(() {
@@ -510,24 +597,39 @@ class _HadithScreenState extends State<HadithScreen> {
         margin: const EdgeInsets.only(left: 10),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: DesignSystem.bgCard.withValues(alpha: 0.8),
+          color: isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgCard.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? DesignSystem.gold : Colors.white.withValues(alpha: 0.08),
+            color: isSelected
+                ? (isLight ? const Color(0xFF854D0E) : DesignSystem.gold)
+                : (isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.08)),
             width: isSelected ? 1.5 : 1.0,
           ),
-          boxShadow: isSelected ? DesignSystem.goldGlow : null,
+          boxShadow: [
+            BoxShadow(
+              color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.08) : Colors.black12,
+              blurRadius: 8,
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(book.icon, color: isSelected ? DesignSystem.goldLight : DesignSystem.textMuted, size: 22),
+            Icon(
+              book.icon,
+              color: isSelected
+                  ? (isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight)
+                  : (isLight ? const Color(0xFF78716C) : DesignSystem.textMuted),
+              size: 22,
+            ),
             const SizedBox(height: 8),
             Text(
               book.titleArabic,
               style: TextStyle(
-                color: isSelected ? DesignSystem.goldLight : DesignSystem.textWhite,
+                color: isSelected
+                    ? (isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight)
+                    : (isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite),
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
@@ -537,7 +639,10 @@ class _HadithScreenState extends State<HadithScreen> {
             const SizedBox(height: 2),
             Text(
               '${book.hadithCount} حديث',
-              style: const TextStyle(color: DesignSystem.textMuted, fontSize: 10),
+              style: TextStyle(
+                color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                fontSize: 10,
+              ),
             ),
           ],
         ),

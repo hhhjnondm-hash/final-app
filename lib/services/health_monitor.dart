@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'mp3quran_api_service_v2.dart';
 import 'radio_api_service.dart';
-import 'asset_validator.dart';
 import 'download_integrity_verifier.dart';
 import 'reciter_image_registry.dart';
 import '../repositories/prayer_repository.dart';

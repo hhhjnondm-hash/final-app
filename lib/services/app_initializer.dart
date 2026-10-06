@@ -13,6 +13,7 @@ import 'quran_storage_service.dart';
 import 'storage_service.dart';
 import 'location_service.dart';
 import 'notification_service.dart';
+import 'athan_service.dart';
 import 'hive_database_service.dart';
 import 'error_handler.dart';
 import 'health_monitor.dart';
@@ -181,6 +182,7 @@ class AppInitializer {
       PrayerTimeCalculator();
       LocationService();
       await NotificationService().initialize();
+      await AthanService().initialize();
       IslamicNotificationService();
       AiAssistantService();
       Mp3QuranApiServiceV2();

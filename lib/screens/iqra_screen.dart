@@ -10,6 +10,8 @@ import '../widgets/iqra_audio_hero.dart';
 import '../widgets/iqra_mushaf_view.dart';
 import '../widgets/iqra_settings_sheet.dart';
 import '../widgets/iqra_tafsir_sheet.dart';
+import '../widgets/islamic_background.dart';
+import '../utils/design_system.dart';
 
 class IqraScreen extends StatefulWidget {
   const IqraScreen({super.key});
@@ -157,81 +159,85 @@ class _IqraScreenState extends State<IqraScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF070B11),
-      body: Directionality(
-        textDirection: TextDirection.rtl,
-        child: SafeArea(
-          bottom: false,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 900),
-              child: CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  // 1. Top Header Bar matching screenshot
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      child: _buildHeader(context),
-                    ),
-                  ),
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
-                  // 2. Audio Player Hero Card
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                      child: IqraAudioHero(
-                        currentSurah: _currentSurah,
-                        activeAyahNumber: _activeAyahNumber,
-                        activeAyahText: _getActiveAyahText(),
-                        onReciterChangeTap: () => _showReciterSelector(context),
-                        onSurahChangeTap: () => _showSurahSelector(context),
-                        onNextAyah: _nextAyah,
-                        onPrevAyah: _prevAyah,
-                        isRepeat: _isRepeat,
-                        onToggleRepeat: () {
-                          setState(() => _isRepeat = !_isRepeat);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(_isRepeat ? 'تم تفعيل تكرار التلاوة' : 'تم إلغاء تكرار التلاوة', style: const TextStyle(fontFamily: 'Cairo')),
-                              backgroundColor: const Color(0xFF1F293D),
-                              duration: const Duration(seconds: 1),
-                            ),
-                          );
-                        },
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: IslamicBackground(
+        child: Directionality(
+          textDirection: TextDirection.rtl,
+          child: SafeArea(
+            bottom: false,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 900),
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    // 1. Top Header Bar matching screenshot
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        child: _buildHeader(context, isLight),
                       ),
                     ),
-                  ),
 
-                  // 3. Ornate Mushaf Reading Container
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      child: _isLoading
-                          ? const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(40),
-                                child: CircularProgressIndicator(color: Color(0xFFFFD56B)),
+                    // 2. Audio Player Hero Card
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        child: IqraAudioHero(
+                          currentSurah: _currentSurah,
+                          activeAyahNumber: _activeAyahNumber,
+                          activeAyahText: _getActiveAyahText(),
+                          onReciterChangeTap: () => _showReciterSelector(context),
+                          onSurahChangeTap: () => _showSurahSelector(context),
+                          onNextAyah: _nextAyah,
+                          onPrevAyah: _prevAyah,
+                          isRepeat: _isRepeat,
+                          onToggleRepeat: () {
+                            setState(() => _isRepeat = !_isRepeat);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(_isRepeat ? 'تم تفعيل تكرار التلاوة' : 'تم إلغاء تكرار التلاوة', style: const TextStyle(fontFamily: 'Cairo')),
+                                backgroundColor: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF1F293D),
+                                duration: const Duration(seconds: 1),
                               ),
-                            )
-                          : IqraMushafView(
-                              ayahs: _ayahs,
-                              activeAyahNumber: _activeAyahNumber,
-                              fontSize: _fontSize,
-                              theme: _readingTheme,
-                              surahName: _currentSurah.nameArabic,
-                              surahNumber: _currentSurah.number,
-                              juzNumber: _currentSurah.juzNumber,
-                              onAyahTap: (ayahNum, text) => _showAyahActionSheet(ayahNum, text),
-                            ),
+                            );
+                          },
+                        ),
+                      ),
                     ),
-                  ),
 
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: 120),
-                  ),
-                ],
+                    // 3. Ornate Mushaf Reading Container
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        child: _isLoading
+                            ? Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(40),
+                                  child: CircularProgressIndicator(color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B)),
+                                ),
+                              )
+                            : IqraMushafView(
+                                ayahs: _ayahs,
+                                activeAyahNumber: _activeAyahNumber,
+                                fontSize: _fontSize,
+                                theme: _readingTheme,
+                                surahName: _currentSurah.nameArabic,
+                                surahNumber: _currentSurah.number,
+                                juzNumber: _currentSurah.juzNumber,
+                                onAyahTap: (ayahNum, text) => _showAyahActionSheet(ayahNum, text),
+                              ),
+                      ),
+                    ),
+
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 120),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -241,7 +247,7 @@ class _IqraScreenState extends State<IqraScreen> {
   }
 
   /// Top Screen Header matching the screenshot
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, bool isLight) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -249,22 +255,22 @@ class _IqraScreenState extends State<IqraScreen> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
-          children: const [
+          children: [
             Text(
               'اقرأ',
               style: TextStyle(
                 fontFamily: 'Amiri',
-                color: Color(0xFFF6F8FA),
+                color: isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA),
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 2),
+            const SizedBox(height: 2),
             Text(
               'اقرأ واستمع، ورتّل القرآن ترتيلًا',
               style: TextStyle(
                 fontFamily: 'Cairo',
-                color: Color(0xFFE8D29A),
+                color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE8D29A),
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
               ),
@@ -279,18 +285,20 @@ class _IqraScreenState extends State<IqraScreen> {
             _buildHeaderCircleButton(
               icon: Icons.tune_rounded,
               tooltip: 'إعدادات القراءة والمظهر',
+              isLight: isLight,
               onTap: () => _showSettingsModal(context),
             ),
             const SizedBox(width: 8),
             _buildHeaderCircleButton(
               icon: Icons.notifications_none_rounded,
               tooltip: 'تنبيهات الأذان والأوراد',
+              isLight: isLight,
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('تنبيهات ورد القرآن وأوقات الصلاة مفعلة', style: TextStyle(fontFamily: 'Cairo')),
-                    backgroundColor: Color(0xFF1F293D),
-                    duration: Duration(seconds: 2),
+                  SnackBar(
+                    content: const Text('تنبيهات ورد القرآن وأوقات الصلاة مفعلة', style: TextStyle(fontFamily: 'Cairo')),
+                    backgroundColor: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF1F293D),
+                    duration: const Duration(seconds: 2),
                   ),
                 );
               },
@@ -305,6 +313,7 @@ class _IqraScreenState extends State<IqraScreen> {
     required IconData icon,
     required String tooltip,
     required VoidCallback onTap,
+    required bool isLight,
   }) {
     return InkWell(
       onTap: onTap,
@@ -313,21 +322,33 @@ class _IqraScreenState extends State<IqraScreen> {
         width: 42,
         height: 42,
         decoration: BoxDecoration(
-          color: const Color(0xFF101722),
+          color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF101722),
           shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.35)),
+          border: Border.all(
+            color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.35),
+          ),
+          boxShadow: [
+            if (isLight)
+              BoxShadow(
+                color: const Color(0xFFC89B3C).withValues(alpha: 0.08),
+                blurRadius: 6,
+              ),
+          ],
         ),
-        child: Icon(icon, color: const Color(0xFFE8D29A), size: 20),
+        child: Icon(icon, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE8D29A), size: 20),
       ),
     );
   }
 
   void _showAyahActionSheet(int ayahNumber, String text) {
     setState(() => _activeAyahNumber = ayahNumber);
+    final isLight = DesignSystem.isLightMode;
+    final sheetBg = isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1621);
+    final goldAccent = isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B);
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF0F1621),
+      backgroundColor: sheetBg,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -341,9 +362,9 @@ class _IqraScreenState extends State<IqraScreen> {
               children: [
                 Text(
                   'الآية رقم $ayahNumber من سورة ${_currentSurah.nameArabic}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Amiri',
-                    color: Color(0xFFFFD56B),
+                    color: goldAccent,
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                   ),
@@ -355,6 +376,7 @@ class _IqraScreenState extends State<IqraScreen> {
                     _buildAyahActionBtn(
                       icon: Icons.play_arrow_rounded,
                       label: 'استماع للآية',
+                      isLight: isLight,
                       onTap: () {
                         Navigator.pop(context);
                         _seekToAyah(ayahNumber);
@@ -363,6 +385,7 @@ class _IqraScreenState extends State<IqraScreen> {
                     _buildAyahActionBtn(
                       icon: Icons.menu_book_rounded,
                       label: 'التفسير والمفردات',
+                      isLight: isLight,
                       onTap: () {
                         Navigator.pop(context);
                         showModalBottomSheet(
@@ -381,6 +404,7 @@ class _IqraScreenState extends State<IqraScreen> {
                     _buildAyahActionBtn(
                       icon: Icons.bookmark_add_rounded,
                       label: 'علامة مرجعية',
+                      isLight: isLight,
                       onTap: () {
                         _storage.addBookmark(
                           surahNumber: _currentSurah.number,
@@ -390,9 +414,9 @@ class _IqraScreenState extends State<IqraScreen> {
                         );
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('تمت إضافة العلامة المرجعية بنجاح', style: TextStyle(fontFamily: 'Cairo')),
-                            backgroundColor: Color(0xFF1F293D),
+                          SnackBar(
+                            content: const Text('تمت إضافة العلامة المرجعية بنجاح', style: TextStyle(fontFamily: 'Cairo')),
+                            backgroundColor: isLight ? const Color(0xFF854D0E) : const Color(0xFF1F293D),
                           ),
                         );
                       },
@@ -407,7 +431,12 @@ class _IqraScreenState extends State<IqraScreen> {
     );
   }
 
-  Widget _buildAyahActionBtn({required IconData icon, required String label, required VoidCallback onTap}) {
+  Widget _buildAyahActionBtn({required IconData icon, required String label, required VoidCallback onTap, required bool isLight}) {
+    final circleBg = isLight ? const Color(0xFFFBF4E4) : const Color(0xFF161F2E);
+    final border = isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.4);
+    final iconColor = isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B);
+    final textColor = isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
@@ -419,13 +448,13 @@ class _IqraScreenState extends State<IqraScreen> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF161F2E),
-                border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.4)),
+                color: circleBg,
+                border: Border.all(color: border),
               ),
-              child: Icon(icon, color: const Color(0xFFFFD56B), size: 22),
+              child: Icon(icon, color: iconColor, size: 22),
             ),
             const SizedBox(height: 8),
-            Text(label, style: const TextStyle(fontFamily: 'Cairo', color: Color(0xFFF6F8FA), fontSize: 11, fontWeight: FontWeight.w600)),
+            Text(label, style: TextStyle(fontFamily: 'Cairo', color: textColor, fontSize: 11, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -433,10 +462,17 @@ class _IqraScreenState extends State<IqraScreen> {
   }
 
   void _showSurahSelector(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+    final sheetBg = isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1621);
+    final goldAccent = isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B);
+    final textTitle = isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA);
+    final textSub = isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8);
+    final circleBg = isLight ? const Color(0xFFFBF4E4) : const Color(0xFF161F2E);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF0F1621),
+      backgroundColor: sheetBg,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -449,11 +485,11 @@ class _IqraScreenState extends State<IqraScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'اختر سورة للقراءة والاستماع',
                   style: TextStyle(
                     fontFamily: 'Amiri',
-                    color: Color(0xFFFFD56B),
+                    color: goldAccent,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -469,10 +505,10 @@ class _IqraScreenState extends State<IqraScreen> {
 
                       return ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: const Color(0xFF161F2E),
+                          backgroundColor: circleBg,
                           child: Text(
                             '${surah.number}',
-                            style: const TextStyle(color: Color(0xFFFFD56B), fontFamily: 'Cairo', fontSize: 12, fontWeight: FontWeight.bold),
+                            style: TextStyle(color: goldAccent, fontFamily: 'Cairo', fontSize: 12, fontWeight: FontWeight.bold),
                           ),
                         ),
                         title: Text(
@@ -480,15 +516,15 @@ class _IqraScreenState extends State<IqraScreen> {
                           style: TextStyle(
                             fontFamily: 'Amiri',
                             fontSize: 16,
-                            color: isCurrent ? const Color(0xFFFFD56B) : const Color(0xFFF6F8FA),
+                            color: isCurrent ? goldAccent : textTitle,
                             fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
                           ),
                         ),
                         subtitle: Text(
                           'الجزء ${surah.juzNumber} • ${surah.ayahCount} آية • ${surah.isMeccan ? "مكية" : "مدنية"}',
-                          style: const TextStyle(fontFamily: 'Cairo', color: Color(0xFF94A3B8), fontSize: 10),
+                          style: TextStyle(fontFamily: 'Cairo', color: textSub, fontSize: 10),
                         ),
-                        trailing: isCurrent ? const Icon(Icons.check_circle_rounded, color: Color(0xFFFFD56B)) : null,
+                        trailing: isCurrent ? Icon(Icons.check_circle_rounded, color: goldAccent) : null,
                         onTap: () {
                           _audio.selectSurah(surah);
                           _loadSurah(surah);
@@ -507,9 +543,16 @@ class _IqraScreenState extends State<IqraScreen> {
   }
 
   void _showReciterSelector(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+    final sheetBg = isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1621);
+    final goldAccent = isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B);
+    final textTitle = isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA);
+    final textSub = isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8);
+    final circleBg = isLight ? const Color(0xFFFBF4E4) : const Color(0xFF1B2433);
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF0F1621),
+      backgroundColor: sheetBg,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -522,11 +565,11 @@ class _IqraScreenState extends State<IqraScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'اختر القارئ المفضل',
                   style: TextStyle(
                     fontFamily: 'Amiri',
-                    color: Color(0xFFFFD56B),
+                    color: goldAccent,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -543,19 +586,19 @@ class _IqraScreenState extends State<IqraScreen> {
                       final isCurrent = _audio.currentReciter.id == reciter.id;
                       return ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: const Color(0xFF1B2433),
-                          child: Icon(Icons.person, color: isCurrent ? const Color(0xFFFFD56B) : const Color(0xFF94A3B8)),
+                          backgroundColor: circleBg,
+                          child: Icon(Icons.person, color: isCurrent ? goldAccent : textSub),
                         ),
                         title: Text(
                           reciter.nameArabic,
                           style: TextStyle(
                             fontFamily: 'Cairo',
-                            color: isCurrent ? const Color(0xFFFFD56B) : const Color(0xFFF6F8FA),
+                            color: isCurrent ? goldAccent : textTitle,
                             fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
                           ),
                         ),
-                        subtitle: Text(reciter.style, style: const TextStyle(fontFamily: 'Cairo', color: Color(0xFF94A3B8), fontSize: 11)),
-                        trailing: isCurrent ? const Icon(Icons.check_circle_rounded, color: Color(0xFFFFD56B)) : null,
+                        subtitle: Text(reciter.style, style: TextStyle(fontFamily: 'Cairo', color: textSub, fontSize: 11)),
+                        trailing: isCurrent ? Icon(Icons.check_circle_rounded, color: goldAccent) : null,
                         onTap: () {
                           _audio.selectReciter(reciter, autoPlay: true);
                           Navigator.pop(context);

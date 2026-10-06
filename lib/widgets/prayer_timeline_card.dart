@@ -18,6 +18,8 @@ class PrayerTimelineCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -25,31 +27,52 @@ class PrayerTimelineCard extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: isCurrent
-              ? [
-                  DesignSystem.gold.withValues(alpha: 0.22),
-                  DesignSystem.bgCard.withValues(alpha: 0.95),
-                ]
-              : [
-                  DesignSystem.bgCard.withValues(alpha: 0.8),
-                  DesignSystem.bgDarkest.withValues(alpha: 0.8),
-                ],
+          colors: isLight
+              ? (isCurrent
+                  ? [
+                      const Color(0xFFFFF4D6),
+                      const Color(0xFFFFFDF8),
+                    ]
+                  : [
+                      const Color(0xFFFFFDF8),
+                      const Color(0xFFFAF5EB),
+                    ])
+              : (isCurrent
+                  ? [
+                      DesignSystem.gold.withValues(alpha: 0.22),
+                      DesignSystem.bgCard.withValues(alpha: 0.95),
+                    ]
+                  : [
+                      DesignSystem.bgCard.withValues(alpha: 0.8),
+                      DesignSystem.bgDarkest.withValues(alpha: 0.8),
+                    ]),
         ),
         border: Border.all(
-          color: isCurrent
-              ? DesignSystem.gold
-              : (isNext ? DesignSystem.cyanAccent.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.08)),
+          color: isLight
+              ? (isCurrent
+                  ? const Color(0xFFC89B3C)
+                  : (isNext ? const Color(0xFFE5A83B) : const Color(0xFFE5D4B3)))
+              : (isCurrent
+                  ? DesignSystem.gold
+                  : (isNext ? DesignSystem.cyanAccent.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.08))),
           width: isCurrent ? 1.6 : 1.0,
         ),
-        boxShadow: isCurrent
-            ? [
-                BoxShadow(
-                  color: DesignSystem.gold.withValues(alpha: 0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
+        boxShadow: [
+          if (isLight)
+            BoxShadow(
+              color: isCurrent
+                  ? const Color(0xFFC89B3C).withValues(alpha: 0.15)
+                  : const Color(0xFFC89B3C).withValues(alpha: 0.04),
+              blurRadius: isCurrent ? 16 : 8,
+              offset: const Offset(0, 3),
+            )
+          else if (isCurrent)
+            BoxShadow(
+              color: DesignSystem.gold.withValues(alpha: 0.2),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -61,16 +84,37 @@ class PrayerTimelineCard extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: isCurrent ? DesignSystem.goldGradient : null,
-                color: isCurrent ? null : Colors.white.withValues(alpha: 0.05),
+                gradient: isCurrent
+                    ? (isLight
+                        ? const LinearGradient(
+                            colors: [Color(0xFFFFDF7D), Color(0xFFE5A83B)],
+                          )
+                        : DesignSystem.goldGradient)
+                    : null,
+                color: isCurrent
+                    ? null
+                    : (isLight ? const Color(0xFFFBF4E4) : Colors.white.withValues(alpha: 0.05)),
                 border: Border.all(
-                  color: isCurrent ? DesignSystem.gold : Colors.white.withValues(alpha: 0.1),
+                  color: isLight
+                      ? (isCurrent ? const Color(0xFF854D0E) : const Color(0xFFE5D4B3))
+                      : (isCurrent ? DesignSystem.gold : Colors.white.withValues(alpha: 0.1)),
                 ),
-                boxShadow: isCurrent ? DesignSystem.goldGlow : null,
+                boxShadow: isCurrent
+                    ? (isLight
+                        ? [
+                            BoxShadow(
+                              color: const Color(0xFFC89B3C).withValues(alpha: 0.3),
+                              blurRadius: 8,
+                            ),
+                          ]
+                        : DesignSystem.goldGlow)
+                    : null,
               ),
               child: Icon(
                 timing.icon,
-                color: isCurrent ? DesignSystem.bgDarkest : DesignSystem.goldLight,
+                color: isCurrent
+                    ? (isLight ? const Color(0xFF1C1917) : DesignSystem.bgDarkest)
+                    : (isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight),
                 size: 22,
               ),
             ),
@@ -90,8 +134,8 @@ class PrayerTimelineCard extends StatelessWidget {
                           child: Text(
                             timing.nameArabic,
                             softWrap: false,
-                            style: const TextStyle(
-                              color: DesignSystem.textWhite,
+                            style: TextStyle(
+                              color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -103,14 +147,14 @@ class PrayerTimelineCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: DesignSystem.gold.withValues(alpha: 0.2),
+                            color: isLight ? const Color(0xFFFBF4E4) : DesignSystem.gold.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                            border: Border.all(color: DesignSystem.gold),
+                            border: Border.all(color: isLight ? const Color(0xFFC89B3C) : DesignSystem.gold),
                           ),
-                          child: const Text(
+                          child: Text(
                             'الصلاة الحالية',
                             style: TextStyle(
-                              color: DesignSystem.goldLight,
+                              color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -120,14 +164,18 @@ class PrayerTimelineCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: DesignSystem.cyanAccent.withValues(alpha: 0.2),
+                            color: isLight
+                                ? const Color(0xFFE0F2FE)
+                                : DesignSystem.cyanAccent.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                            border: Border.all(color: DesignSystem.cyanAccent),
+                            border: Border.all(
+                              color: isLight ? const Color(0xFF0284C7) : DesignSystem.cyanAccent,
+                            ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'القادمة',
                             style: TextStyle(
-                              color: DesignSystem.cyanAccent,
+                              color: isLight ? const Color(0xFF0284C7) : DesignSystem.cyanAccent,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -137,8 +185,8 @@ class PrayerTimelineCard extends StatelessWidget {
                   ),
                   Text(
                     timing.nameEnglish,
-                    style: const TextStyle(
-                      color: DesignSystem.textMuted,
+                    style: TextStyle(
+                      color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
                       fontSize: 11,
                     ),
                   ),
@@ -158,7 +206,9 @@ class PrayerTimelineCard extends StatelessWidget {
                     timing.formattedTimeArabic,
                     softWrap: false,
                     style: TextStyle(
-                      color: isCurrent ? DesignSystem.goldLight : DesignSystem.textWhite,
+                      color: isLight
+                          ? (isCurrent ? const Color(0xFF854D0E) : const Color(0xFF1C1917))
+                          : (isCurrent ? DesignSystem.goldLight : DesignSystem.textWhite),
                       fontSize: 15.5,
                       fontWeight: FontWeight.bold,
                     ),
@@ -172,7 +222,10 @@ class PrayerTimelineCard extends StatelessWidget {
                     padding: const EdgeInsets.all(7),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.04),
+                      color: isLight ? const Color(0xFFFBF4E4) : Colors.white.withValues(alpha: 0.04),
+                      border: Border.all(
+                        color: isLight ? const Color(0xFFE5D4B3) : Colors.transparent,
+                      ),
                     ),
                     child: Icon(
                       timing.notificationMode == NotificationMode.athan
@@ -182,8 +235,8 @@ class PrayerTimelineCard extends StatelessWidget {
                               : Icons.notifications_off_rounded),
                       size: 18,
                       color: timing.notificationMode == NotificationMode.silent
-                          ? DesignSystem.textMuted
-                          : DesignSystem.goldLight,
+                          ? (isLight ? const Color(0xFF78716C) : DesignSystem.textMuted)
+                          : (isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight),
                     ),
                   ),
                 ),

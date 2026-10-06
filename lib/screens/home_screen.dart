@@ -392,14 +392,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
-                      color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF131D2A),
+                      color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF131D2A),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFFFD56B).withValues(alpha: 0.3),
+                        color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.3),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
+                          color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.2),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -410,7 +410,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Icon(
                           Icons.notifications_outlined,
-                          color: isLight ? const Color(0xFF102A43) : Colors.white,
+                          color: isLight ? const Color(0xFF1C1917) : Colors.white,
                           size: 19,
                         ),
                         Positioned(
@@ -443,14 +443,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF131D2A),
+                      color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF131D2A),
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(
-                        color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFFFD56B).withValues(alpha: 0.3),
+                        color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.3),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.15),
+                          color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.15),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -467,10 +467,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(width: 5),
                         Text(
                           ThemeService.instance.isAutoMode
-                              ? (DesignSystem.isLightMode ? 'نهاري (تلقائي)' : 'ليلي (تلقائي)')
+                              ? (DesignSystem.isLightMode ? 'نهاري ☀️' : 'ليلي 🌙')
                               : (DesignSystem.isLightMode ? 'نهاري' : 'ليلي'),
                           style: TextStyle(
-                            color: isLight ? const Color(0xFF172033) : Colors.white,
+                            color: isLight ? const Color(0xFF1C1917) : Colors.white,
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             fontFamily: 'Cairo',
@@ -486,39 +486,39 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF131D2A),
+                    color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF131D2A),
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(
-                      color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFFFD56B).withValues(alpha: 0.3),
+                      color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.3),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.15),
+                        color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.15),
                         blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.location_on_rounded,
                         color: Color(0xFFFFD56B),
                         size: 14,
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
                         'مكة المكرمة',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: isLight ? const Color(0xFF1C1917) : Colors.white,
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           fontFamily: 'Cairo',
                         ),
                       ),
-                      SizedBox(width: 2),
-                      Icon(
+                      const SizedBox(width: 2),
+                      const Icon(
                         Icons.keyboard_arrow_down_rounded,
                         color: Color(0xFFFFD56B),
                         size: 14,
@@ -535,11 +535,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Text(
+                    Text(
                       'Rafeeq',
                       style: TextStyle(
                         fontFamily: 'Cairo',
-                        color: Color(0xFFCBD5E1),
+                        color: isLight ? const Color(0xFF78716C) : const Color(0xFFCBD5E1),
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.5,
@@ -559,7 +559,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       'وجهتك في رحلتك الإيمانية',
                       style: TextStyle(
                         fontFamily: 'Cairo',
-                        color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                        color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
                         fontSize: 9.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -609,7 +609,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         const SizedBox(height: 12),
 
-        // Glass Floating Search Bar
+        // Glass Floating Search Bar (Sunlit Alabaster in Light Mode)
         GestureDetector(
           onTap: () {
             Navigator.push(
@@ -620,14 +620,14 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF101924).withValues(alpha: 0.8),
+              color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF101924).withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFFFD56B).withValues(alpha: 0.25),
+                color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.25),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
+                  color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.15),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
@@ -645,7 +645,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   'ابحث في القرآن الكريم ..',
                   style: TextStyle(
                     fontFamily: 'Cairo',
-                    color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                    color: isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE),
                     fontSize: 12.5,
                   ),
                 ),
@@ -684,38 +684,36 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.45 : 0.4),
-          width: 1.5,
+          color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.45 : 0.3),
+          width: 1.2,
         ),
         boxShadow: [
-          // 3D Deep Ambient Shadow
+          // 3D Ambient Shadow
           BoxShadow(
             color: isLight
-                ? const Color(0xFF102A43).withValues(alpha: 0.1)
-                : const Color(0xFF000000).withValues(alpha: 0.75),
-            blurRadius: 30,
-            spreadRadius: 2,
-            offset: const Offset(0, 10),
+                ? const Color(0xFF8C7355).withValues(alpha: 0.15)
+                : const Color(0xFF000000).withValues(alpha: 0.6),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
           ),
-          // 3D Golden Specular Top Glow
           if (!isLight)
             BoxShadow(
-              color: const Color(0xFFFFD56B).withValues(alpha: 0.15),
-              blurRadius: 22,
-              offset: const Offset(0, -2),
+              color: const Color(0xFFFFD56B).withValues(alpha: 0.1),
+              blurRadius: 16,
+              offset: const Offset(0, -1),
             ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(21),
         child: Stack(
           children: [
-            // Layer 1: Cinematic Mosque Courtyard Scenery Background
+            // Layer 1: Cinematic Mosque Courtyard Scenery (Daylight in Light Mode / Sunset Night in Dark Mode)
             Positioned.fill(
               child: Image.asset(
-                'assets/home_hero_mosque.jpg',
+                isLight ? 'assets/daylight_mosque_bg.jpg' : 'assets/home_hero_mosque.jpg',
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
                   decoration: const BoxDecoration(
@@ -727,21 +725,21 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // Layer 2: Atmospheric Dark Gradient & Radial Lighting Scrim
+            // Layer 2: Atmospheric Gradient & Frosted Marble Scrim
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: isLight
                         ? [
-                            const Color(0xFFFFFFFF).withValues(alpha: 0.92),
-                            const Color(0xFFF6F8FC).withValues(alpha: 0.88),
-                            const Color(0xFFE9F0F8).withValues(alpha: 0.94),
+                            const Color(0xFFFFFDF8).withValues(alpha: 0.90),
+                            const Color(0xFFFAF5EC).withValues(alpha: 0.85),
+                            const Color(0xFFF2EADC).withValues(alpha: 0.92),
                           ]
                         : [
-                            const Color(0xFF080F18).withValues(alpha: 0.88),
-                            const Color(0xFF0E1A29).withValues(alpha: 0.82),
-                            const Color(0xFF060B12).withValues(alpha: 0.92),
+                            const Color(0xFF080E17).withValues(alpha: 0.90),
+                            const Color(0xFF0E1A29).withValues(alpha: 0.85),
+                            const Color(0xFF060B12).withValues(alpha: 0.94),
                           ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -754,87 +752,55 @@ class _HomeScreenState extends State<HomeScreen> {
             const Positioned.fill(
               child: IgnorePointer(
                 child: FloatingParticles(
-                  numberOfParticles: 14,
+                  numberOfParticles: 10,
                   particleColor: Color(0xFFFFD56B),
                 ),
               ),
             ),
 
-            // Layer 4: 3D Golden Flare / Specular Light Top-Right
-            Positioned(
-              top: -30,
-              right: -30,
-              child: Container(
-                width: 140,
-                height: 140,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.15 : 0.25),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
             Padding(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // 3D Header Row with Metallic Badge
+                  // Header Row with Metallic Badge
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // 3D Embossed Companion Badge
+                      // Companion Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
                         decoration: BoxDecoration(
                           gradient: isLight
                               ? const LinearGradient(
                                   colors: [Color(0xFFFFF9EC), Color(0xFFFFECC8)],
                                 )
                               : const LinearGradient(
-                                  colors: [Color(0xFF2E2210), Color(0xFF1B1408)],
+                                  colors: [Color(0xFF281E0E), Color(0xFF161007)],
                                 ),
-                          borderRadius: BorderRadius.circular(22),
+                          borderRadius: BorderRadius.circular(18),
                           border: Border.all(
-                            color: const Color(0xFFFFD56B).withValues(alpha: 0.7),
-                            width: 1.2,
+                            color: const Color(0xFFFFD56B).withValues(alpha: 0.6),
+                            width: 1.0,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFC89B3C).withValues(alpha: 0.25),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             PulsingHalo(
                               haloColor: const Color(0xFFFFD56B),
-                              borderRadius: 12,
-                              child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFFFFD56B), size: 15),
+                              borderRadius: 10,
+                              child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFFFFD56B), size: 13),
                             ),
-                            const SizedBox(width: 7),
+                            const SizedBox(width: 6),
                             const Text(
                               '« رفيق يفهم وقتك »',
                               style: TextStyle(
                                 color: Color(0xFFFFD56B),
-                                fontSize: 13,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w800,
                                 fontFamily: 'Cairo',
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black45,
-                                    blurRadius: 4,
-                                    offset: Offset(0, 1),
-                                  ),
-                                ],
                               ),
                             ),
                           ],
@@ -850,10 +816,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             });
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                             decoration: BoxDecoration(
                               color: isLight ? const Color(0xFFE2E8F0) : Colors.white.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: isLight ? const Color(0xFFCBD5E1) : Colors.white.withValues(alpha: 0.2),
                               ),
@@ -861,13 +827,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.refresh_rounded, color: isLight ? const Color(0xFF475569) : const Color(0xFF94A3B8), size: 13),
+                                Icon(Icons.refresh_rounded, color: isLight ? const Color(0xFF475569) : const Color(0xFF94A3B8), size: 12),
                                 const SizedBox(width: 4),
                                 Text(
                                   'استعادة التلقائي',
                                   style: TextStyle(
                                     color: isLight ? const Color(0xFF475569) : const Color(0xFF94A3B8),
-                                    fontSize: 11,
+                                    fontSize: 10.5,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -877,33 +843,22 @@ class _HomeScreenState extends State<HomeScreen> {
                         )
                       else
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0xFF10B981).withValues(alpha: 0.2),
-                                const Color(0xFF059669).withValues(alpha: 0.1),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: const Color(0xFF34D399).withValues(alpha: 0.45)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                                blurRadius: 8,
-                              ),
-                            ],
+                            color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF34D399).withValues(alpha: 0.4)),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.access_time_filled_rounded, color: Color(0xFF34D399), size: 13),
-                              SizedBox(width: 5),
+                              Icon(Icons.access_time_filled_rounded, color: Color(0xFF34D399), size: 12),
+                              SizedBox(width: 4),
                               Text(
                                 'مباشر حسب الوقت',
                                 style: TextStyle(
                                   color: Color(0xFF34D399),
-                                  fontSize: 11,
+                                  fontSize: 10.5,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -913,9 +868,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 10),
 
-                  // 3D Tactile Segmented Time Selector Tabs
+                  // Segmented Compact Time Selector Tabs
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     physics: const BouncingScrollPhysics(),
@@ -926,19 +881,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           label: '🌅 الصباح',
                           isSelected: activeContext == SpiritualTimeContext.morning,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         _buildTimeTab(
                           type: SpiritualTimeContext.prayerFocus,
                           label: '☀️ وقت الصلاة',
                           isSelected: activeContext == SpiritualTimeContext.prayerFocus,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         _buildTimeTab(
                           type: SpiritualTimeContext.evening,
                           label: '🌙 المساء',
                           isSelected: activeContext == SpiritualTimeContext.evening,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         _buildTimeTab(
                           type: SpiritualTimeContext.sleep,
                           label: '🌌 قبل النوم',
@@ -948,17 +903,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 11),
 
-                  // Dynamic 3D Context Body
+                  // Dynamic Context Body
                   AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 250),
                     transitionBuilder: (child, animation) {
                       return FadeTransition(
                         opacity: animation,
                         child: SlideTransition(
                           position: Tween<Offset>(
-                            begin: const Offset(0.0, 0.05),
+                            begin: const Offset(0.0, 0.04),
                             end: Offset.zero,
                           ).animate(animation),
                           child: child,
@@ -996,43 +951,43 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
+        duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
         decoration: BoxDecoration(
           gradient: isSelected
-              ? const LinearGradient(
+              ? LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFFFFE58F),
-                    Color(0xFFE5B54F),
-                    Color(0xFFB8860B),
-                  ],
+                  colors: isLight
+                      ? const [
+                          Color(0xFFFFDF7D),
+                          Color(0xFFE5A83B),
+                          Color(0xFFB8860B),
+                        ]
+                      : const [
+                          Color(0xFFFFE58F),
+                          Color(0xFFE5B54F),
+                          Color(0xFFB8860B),
+                        ],
                 )
               : null,
           color: isSelected
               ? null
-              : (isLight ? const Color(0xFFEDF2F7) : Colors.white.withValues(alpha: 0.07)),
-          borderRadius: BorderRadius.circular(18),
+              : (isLight ? const Color(0xFFFFFDF8) : Colors.white.withValues(alpha: 0.06)),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected
                 ? const Color(0xFFFFF2B2)
-                : (isLight ? const Color(0xFFCBD5E1) : Colors.white.withValues(alpha: 0.12)),
-            width: isSelected ? 1.4 : 1.0,
+                : (isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.1)),
+            width: isSelected ? 1.3 : 0.9,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFFC89B3C).withValues(alpha: 0.5),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                    spreadRadius: 1,
-                  ),
-                  const BoxShadow(
-                    color: Color(0xFFFFFFFF),
-                    blurRadius: 3,
-                    offset: Offset(0, -1),
+                    color: const Color(0xFFC89B3C).withValues(alpha: isLight ? 0.35 : 0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
                 ]
               : null,
@@ -1041,10 +996,10 @@ class _HomeScreenState extends State<HomeScreen> {
           label,
           style: TextStyle(
             color: isSelected
-                ? const Color(0xFF0B141E)
-                : (isLight ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                ? const Color(0xFF1A1002)
+                : (isLight ? const Color(0xFF1C1917) : const Color(0xFFCBD5E1)),
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
             fontFamily: 'Cairo',
           ),
         ),
@@ -1071,26 +1026,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          'صباح مبارك ياصديقي 🌅',
-          style: TextStyle(
-            color: isLight ? const Color(0xFF102A43) : Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Cairo',
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'صباح مبارك ياصديقي 🌅',
+              style: TextStyle(
+                color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                fontSize: 14.5,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Cairo',
+              ),
+            ),
+            Text(
+              'ابدأ يومك بنور الذكر والقرآن',
+              style: TextStyle(
+                color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
+                fontSize: 11,
+                fontFamily: 'Cairo',
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 3),
-        Text(
-          'ابدأ يومك بنور الذكر والتحصين وقراءة وردك القرآني اليومي',
-          style: TextStyle(
-            color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-            fontSize: 12,
-            fontFamily: 'Cairo',
-          ),
-        ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         Row(
           children: [
             Expanded(
@@ -1112,7 +1072,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             Expanded(
               child: _buildActionPillCard(
                 icon: Icons.menu_book_rounded,
@@ -1120,7 +1080,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 bgColor: const Color(0xFF112538),
                 borderColor: const Color(0xFF38BDF8).withValues(alpha: 0.45),
                 title: stopMark != null ? 'ورد: سورة ${stopMark.surahName}' : 'وردك القرآني',
-                subtitle: stopMark != null ? 'موضع التوقف: الآية ${stopMark.ayahNumber}' : 'أتمم وردك اليوم',
+                subtitle: stopMark != null ? 'الآية: ${stopMark.ayahNumber}' : 'أتمم وردك اليوم',
                 btnText: 'متابعة الورد ←',
                 imageAsset: 'assets/images/3d/quran_sphere_3d.jpg',
                 onTap: () {
@@ -1143,159 +1103,140 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isLight
-                  ? [const Color(0xFFFFFBEB), const Color(0xFFFEF3C7)]
-                  : [const Color(0xFF261D0C), const Color(0xFF171105)],
-            ),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.wb_twilight_rounded, color: Color(0xFFF59E0B), size: 18),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  '🕊️ صلاة الضحى: صلاة الأوابين • ركعتان تجزئان عن صدقة 360 مفصل في جسدك',
-                  style: TextStyle(
-                    color: isLight ? const Color(0xFF78350F) : const Color(0xFFFFE082),
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Cairo',
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }
 
   Widget _buildPrayerFocusCompanion(BuildContext context) {
     final isLight = DesignSystem.isLightMode;
+    final nextPrayerTitle = _nextPrayer?.nameArabic ?? 'الصلاة';
+    final nextPrayerTime = _nextPrayer?.formattedTimeArabic ?? '12:00 م';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          'حيّ على الصلاة والفلاح ☀️',
-          style: TextStyle(
-            color: isLight ? const Color(0xFF102A43) : Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Cairo',
-          ),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          'الصلاة عماد الدين وأحب الأعمال إلى الله في وقتها',
-          style: TextStyle(
-            color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-            fontSize: 12,
-            fontFamily: 'Cairo',
-          ),
-        ),
-        const SizedBox(height: 14),
+        // Luxury 3D Prayer Focus Main Card
         InteractiveMotionCard(
-          borderRadius: 20,
-          borderColor: const Color(0xFF34D399).withValues(alpha: 0.6),
-          glowColor: const Color(0xFF10B981).withValues(alpha: 0.35),
+          borderRadius: 16,
+          borderColor: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.4),
+          glowColor: const Color(0xFFD4AF57).withValues(alpha: 0.25),
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (_) => const PrayerTimesScreen()));
           },
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF0E382A), Color(0xFF062017), Color(0xFF03120D)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+              gradient: isLight
+                  ? const LinearGradient(
+                      colors: [Color(0xFFFFFDF8), Color(0xFFF7F1E6)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : const LinearGradient(
+                      colors: [Color(0xFF152233), Color(0xFF0D1724), Color(0xFF09101A)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.45),
+                width: 1.1,
               ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF34D399).withValues(alpha: 0.55), width: 1.3),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 6),
+                  color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: Row(
               children: [
-                PulsingHalo(
-                  haloColor: const Color(0xFF34D399),
-                  borderRadius: 24,
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      gradient: const RadialGradient(
-                        colors: [Color(0xFF10B981), Color(0xFF064E3B)],
-                      ),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFF6EE7B7),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.5),
-                          blurRadius: 10,
-                        ),
-                      ],
+                // 3D Luxury Prayer Clock 3D Render
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B).withValues(alpha: 0.6),
+                      width: 1.2,
                     ),
-                    child: const Icon(Icons.access_time_rounded, color: Colors.white, size: 24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFD4AF57).withValues(alpha: isLight ? 0.25 : 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(13),
+                    child: Image.asset(
+                      'assets/images/3d/prayer_focus_3d.jpg',
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.access_time_rounded,
+                        color: Color(0xFFFFD56B),
+                        size: 24,
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 11),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'الصلاة القادمة: ${_nextPrayer?.nameArabic ?? "الصلاة"}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                          fontFamily: 'Cairo',
-                        ),
-                      ),
-                      const SizedBox(height: 3),
                       Row(
                         children: [
-                          const Text(
-                            'متبقي ',
-                            style: TextStyle(color: Color(0xFFA7F3D0), fontSize: 12, fontFamily: 'Cairo'),
+                          Text(
+                            'الصلاة القادمة: ',
+                            style: TextStyle(
+                              color: isLight ? const Color(0xFF78716C) : const Color(0xFFA5B4C7),
+                              fontSize: 11,
+                              fontFamily: 'Cairo',
+                            ),
+                          ),
+                          Text(
+                            nextPrayerTitle,
+                            style: TextStyle(
+                              color: isLight ? const Color(0xFF1C1917) : const Color(0xFFFFE58F),
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w800,
+                              fontFamily: 'Cairo',
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            '($nextPrayerTime)',
+                            style: TextStyle(
+                              color: isLight ? const Color(0xFF78716C) : Colors.white70,
+                              fontSize: 10.5,
+                              fontFamily: 'Cairo',
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Text(
+                            'متبقي على الأذان: ',
+                            style: TextStyle(
+                              color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
+                              fontSize: 10.5,
+                              fontFamily: 'Cairo',
+                            ),
                           ),
                           Text(
                             _countdown,
-                            style: const TextStyle(
-                              color: Color(0xFF34D399),
-                              fontSize: 14.5,
+                            style: TextStyle(
+                              color: isLight ? const Color(0xFFB45309) : const Color(0xFFFFD56B),
+                              fontSize: 13,
                               fontWeight: FontWeight.w900,
-                              letterSpacing: 1.2,
-                              shadows: [
-                                Shadow(
-                                  color: Color(0xFF059669),
-                                  blurRadius: 8,
-                                ),
-                              ],
+                              letterSpacing: 0.8,
                             ),
                           ),
                         ],
@@ -1304,44 +1245,49 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5.5),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF34D399), Color(0xFF059669)],
+                    gradient: LinearGradient(
+                      colors: isLight
+                          ? const [Color(0xFFFFDF7D), Color(0xFFE5A83B)]
+                          : const [Color(0xFFFFE58F), Color(0xFFD4AF57)],
                     ),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.4),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Text(
                     'المواقيت ←',
-                    style: TextStyle(color: Color(0xFF022C22), fontSize: 11.5, fontWeight: FontWeight.w900, fontFamily: 'Cairo'),
+                    style: TextStyle(
+                      color: Color(0xFF1A1002),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w900,
+                      fontFamily: 'Cairo',
+                    ),
                   ),
                 ),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 12),
+
+        const SizedBox(height: 8),
+
+        // 3 Compact Quick Tools
         Row(
           children: [
             Expanded(
               child: _buildMiniToolTile(
                 icon: Icons.explore_rounded,
                 title: 'اتجاه القبلة',
+                imageAsset: 'assets/images/3d/kaaba_qibla_3d.jpg',
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QiblaScreen())),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Expanded(
               child: _buildMiniToolTile(
                 icon: Icons.mosque_rounded,
                 title: 'أذكار الصلاة',
+                imageAsset: 'assets/images/3d/hisn_muslim_3d.jpg',
                 onTap: () {
                   final cat = AllAzkarData.categories.firstWhere(
                     (c) => c.type == AzkarCategoryType.afterPrayer,
@@ -1351,7 +1297,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Expanded(
               child: _buildMiniToolTile(
                 icon: Icons.notifications_active_rounded,
@@ -1371,29 +1317,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          'مساء مبارك ياصديقي 🌙',
-          style: TextStyle(
-            color: isLight ? const Color(0xFF102A43) : Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Cairo',
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'مساء مبارك ياصديقي 🌙',
+              style: TextStyle(
+                color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                fontSize: 14.5,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Cairo',
+              ),
+            ),
+            Text(
+              'حصّن نفسك بذكر الله',
+              style: TextStyle(
+                color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
+                fontSize: 11,
+                fontFamily: 'Cairo',
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 3),
-        Text(
-          'حصّن نفسك بذكر الله وراحة قلبك في ختام اليوم',
-          style: TextStyle(
-            color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-            fontSize: 12,
-            fontFamily: 'Cairo',
-          ),
-        ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         Row(
           children: [
-            // Right Card (in RTL): أذكار المساء with 3D Tasbih
             Expanded(
               child: _buildActionPillCard(
                 icon: Icons.nightlight_round,
@@ -1403,7 +1353,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: 'أذكار المساء',
                 subtitle: '24 ذكراً لطمأنينة النفس',
                 btnText: 'قراءة الأذكار ←',
-                imageAsset: 'assets/images/3d/tasbih_3d.jpg',
+                imageAsset: 'assets/images/3d/sleep_azkar_3d.jpg',
                 onTap: () {
                   final cat = AllAzkarData.categories.firstWhere(
                     (c) => c.type == AzkarCategoryType.evening,
@@ -1413,8 +1363,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            const SizedBox(width: 10),
-            // Left Card (in RTL): وردك القرآني with 3D Quran & Sphere
+            const SizedBox(width: 8),
             Expanded(
               child: _buildActionPillCard(
                 icon: Icons.menu_book_rounded,
@@ -1422,7 +1371,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 bgColor: const Color(0xFF0F2236),
                 borderColor: const Color(0xFF38BDF8).withValues(alpha: 0.45),
                 title: stopMark != null ? 'ورد: سورة ${stopMark.surahName}' : 'وردك القرآني',
-                subtitle: stopMark != null ? 'موضع التوقف: الآية ${stopMark.ayahNumber}' : 'أتمم وردك اليوم',
+                subtitle: stopMark != null ? 'الآية: ${stopMark.ayahNumber}' : 'أتمم وردك اليوم',
                 btnText: 'متابعة الورد ←',
                 imageAsset: 'assets/images/3d/quran_sphere_3d.jpg',
                 onTap: () {
@@ -1445,61 +1394,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        // Mosque panoramic banner at bottom
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isLight
-                  ? [const Color(0xFFEFF6FF), const Color(0xFFDBEAFE)]
-                  : [const Color(0xFF0E1A29), const Color(0xFF09121D)],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFFFFD56B).withValues(alpha: 0.3),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: const Row(
-            children: [
-              Icon(Icons.arrow_back_ios_rounded, color: Color(0xFFFFD56B), size: 14),
-              SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'سنن المساء: صلاة المغرب والعشاء في جماعة وأداء سنة الوتر',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'Cairo',
-                      ),
-                    ),
-                    Text(
-                      'الوتر ونيل بركة الليل',
-                      style: TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 10,
-                        fontFamily: 'Cairo',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(width: 8),
-              Icon(Icons.star_rounded, color: Color(0xFFFFD56B), size: 18),
-            ],
-          ),
-        ),
       ],
     );
   }
@@ -1509,155 +1403,84 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          'طابت ليلتك بذكر الله 🌌',
-          style: TextStyle(
-            color: isLight ? const Color(0xFF102A43) : Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Cairo',
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'طابت ليلتك بذكر الله 🌌',
+              style: TextStyle(
+                color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                fontSize: 14.5,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Cairo',
+              ),
+            ),
+            Text(
+              'السكينة والنور قبل المنام',
+              style: TextStyle(
+                color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
+                fontSize: 11,
+                fontFamily: 'Cairo',
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 3),
-        Text(
-          'حصّن نفسك بأذكار النوم ونوّر ليلتك وقبرك بسورة الملك المنجية',
-          style: TextStyle(
-            color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-            fontSize: 12,
-            fontFamily: 'Cairo',
-          ),
-        ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
 
-        // 3D Grand Royal Card for Surah Al-Mulk
-        InteractiveMotionCard(
-          borderRadius: 20,
-          borderColor: const Color(0xFFFFD56B).withValues(alpha: 0.7),
-          glowColor: const Color(0xFFC89B3C).withValues(alpha: 0.4),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const SurahViewerScreen(
-                  surahNumber: 67,
-                  surahName: 'الملك',
-                  initialAyah: 1,
-                ),
-              ),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF332009), Color(0xFF1F1305), Color(0xFF120B02)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFFFD56B), width: 1.5),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFC89B3C).withValues(alpha: 0.35),
-                  blurRadius: 18,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    gradient: const RadialGradient(
-                      colors: [Color(0xFFFFD56B), Color(0xFFC89B3C), Color(0xFF784F0E)],
+        // Dual Compact Luxury Cards with 3D Imagery: Surah Al-Mulk + Sleep Azkar
+        Row(
+          children: [
+            // Right: Surah Al-Mulk (المانعة من عذاب القبر) with 3D Quran image
+            Expanded(
+              child: _buildActionPillCard(
+                icon: Icons.menu_book_rounded,
+                iconColor: const Color(0xFFFFD56B),
+                bgColor: const Color(0xFF1C192E),
+                borderColor: const Color(0xFFFFD56B).withValues(alpha: 0.55),
+                title: 'سورة الملك',
+                subtitle: '٣٠ آية مانعة من العذاب',
+                btnText: 'قراءة الملك ←',
+                imageAsset: 'assets/images/3d/surah_mulk_3d.jpg',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const SurahViewerScreen(
+                        surahNumber: 67,
+                        surahName: 'الملك',
+                        initialAyah: 1,
+                      ),
                     ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFFD56B).withValues(alpha: 0.5),
-                        blurRadius: 12,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF1E1303), size: 24),
-                ),
-                const SizedBox(width: 14),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'سورة الملك (المانعة من عذاب القبر)',
-                        style: TextStyle(
-                          color: Color(0xFFFFE58F),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      SizedBox(height: 3),
-                      Text(
-                        '٣٠ آية تشفع لصاحبها • اضغط للقراءة الفورية',
-                        style: TextStyle(
-                          color: Color(0xFFF1F5F9),
-                          fontSize: 11.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFFFE58F), Color(0xFFE5B54F), Color(0xFFB8860B)],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFC89B3C).withValues(alpha: 0.45),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'اقرأ الآن',
-                        style: TextStyle(
-                          color: Color(0xFF1E1303),
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      SizedBox(width: 4),
-                      Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF1E1303), size: 10),
-                    ],
-                  ),
-                ),
-              ],
+                  );
+                },
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        _buildActionPillCard(
-          icon: Icons.bedtime_rounded,
-          iconColor: const Color(0xFFA78BFA),
-          bgColor: const Color(0xFFA78BFA).withValues(alpha: 0.14),
-          borderColor: const Color(0xFFA78BFA).withValues(alpha: 0.45),
-          title: 'أذكار النوم والتحصين',
-          subtitle: 'سنة الحبيب المصطفى ﷺ قبل إغماض عينيك لطمأنينة وراحة المنام',
-          btnText: 'قراءة أذكار النوم ←',
-          onTap: () {
-            final cat = AllAzkarData.categories.firstWhere(
-              (c) => c.type == AzkarCategoryType.sleep,
-              orElse: () => AllAzkarData.categories.first,
-            );
-            Navigator.push(context, MaterialPageRoute(builder: (_) => DhikrReaderScreen(category: cat)));
-          },
+
+            const SizedBox(width: 8),
+
+            // Left: أذكار النوم والتحصين with 3D Misbaha & Lantern image
+            Expanded(
+              child: _buildActionPillCard(
+                icon: Icons.bedtime_rounded,
+                iconColor: const Color(0xFF818CF8),
+                bgColor: const Color(0xFF12162E),
+                borderColor: const Color(0xFF818CF8).withValues(alpha: 0.45),
+                title: 'أذكار النوم',
+                subtitle: 'لطمأنينة وراحة المنام',
+                btnText: 'قراءة الأذكار ←',
+                imageAsset: 'assets/images/3d/sleep_azkar_3d.jpg',
+                onTap: () {
+                  final cat = AllAzkarData.categories.firstWhere(
+                    (c) => c.type == AzkarCategoryType.sleep,
+                    orElse: () => AllAzkarData.categories.first,
+                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => DhikrReaderScreen(category: cat)));
+                },
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -1677,33 +1500,38 @@ class _HomeScreenState extends State<HomeScreen> {
     final isLight = DesignSystem.isLightMode;
 
     return InteractiveMotionCard(
-      borderRadius: 20,
-      borderColor: borderColor,
-      glowColor: iconColor.withValues(alpha: 0.3),
+      borderRadius: 16,
+      borderColor: isLight ? const Color(0xFFE5D4B3) : borderColor,
+      glowColor: iconColor.withValues(alpha: 0.25),
       onTap: onTap,
       child: Container(
-        height: 160,
+        height: 122,
         decoration: BoxDecoration(
-          color: isLight ? const Color(0xFFFFFFFF) : bgColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: borderColor, width: 1.2),
+          color: isLight ? const Color(0xFFFFFDF8) : bgColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isLight ? const Color(0xFFE5D4B3) : borderColor,
+            width: 1.2,
+          ),
           boxShadow: [
             BoxShadow(
-              color: iconColor.withValues(alpha: isLight ? 0.08 : 0.2),
-              blurRadius: 14,
-              offset: const Offset(0, 4),
+              color: isLight
+                  ? const Color(0xFF8C7355).withValues(alpha: 0.12)
+                  : iconColor.withValues(alpha: 0.15),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(19),
+          borderRadius: BorderRadius.circular(15),
           child: Stack(
             children: [
               // Background 3D Model Artwork if provided
               if (imageAsset != null)
                 Positioned.fill(
                   child: Opacity(
-                    opacity: 0.38,
+                    opacity: isLight ? 0.35 : 0.25,
                     child: Image.asset(
                       imageAsset,
                       fit: BoxFit.cover,
@@ -1717,11 +1545,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        bgColor.withValues(alpha: 0.95),
-                        bgColor.withValues(alpha: 0.65),
-                        bgColor.withValues(alpha: 0.95),
-                      ],
+                      colors: isLight
+                          ? [
+                              const Color(0xFFFFFDF8).withValues(alpha: 0.95),
+                              const Color(0xFFFAF5EB).withValues(alpha: 0.85),
+                              const Color(0xFFF3EADB).withValues(alpha: 0.95),
+                            ]
+                          : [
+                              bgColor.withValues(alpha: 0.92),
+                              bgColor.withValues(alpha: 0.60),
+                              bgColor.withValues(alpha: 0.92),
+                            ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -1731,7 +1565,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               // Card Content
               Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1745,21 +1579,31 @@ class _HomeScreenState extends State<HomeScreen> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: isLight ? const Color(0xFF172033) : Colors.white,
-                              fontSize: 13.5,
+                              color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                              fontSize: 12.5,
                               fontWeight: FontWeight.w800,
                               fontFamily: 'Cairo',
                             ),
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.all(6),
+                          padding: const EdgeInsets.all(4.5),
                           decoration: BoxDecoration(
-                            color: iconColor.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: iconColor.withValues(alpha: 0.4)),
+                            color: isLight
+                                ? const Color(0xFFFFD56B).withValues(alpha: 0.25)
+                                : iconColor.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isLight
+                                  ? const Color(0xFFC89B3C).withValues(alpha: 0.6)
+                                  : iconColor.withValues(alpha: 0.4),
+                            ),
                           ),
-                          child: Icon(icon, color: iconColor, size: 16),
+                          child: Icon(
+                            icon,
+                            color: isLight ? const Color(0xFF854D0E) : iconColor,
+                            size: 13,
+                          ),
                         ),
                       ],
                     ),
@@ -1768,31 +1612,29 @@ class _HomeScreenState extends State<HomeScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-                        fontSize: 10.5,
+                        color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
                         fontFamily: 'Cairo',
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: iconColor.withValues(alpha: 0.4)),
+                        color: isLight ? const Color(0xFF854D0E) : Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isLight ? const Color(0xFFB45309) : iconColor.withValues(alpha: 0.4),
+                        ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            btnText,
-                            style: TextStyle(
-                              color: isLight ? iconColor : Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              fontFamily: 'Cairo',
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        btnText,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          fontFamily: 'Cairo',
+                        ),
                       ),
                     ),
                   ],
@@ -1808,42 +1650,62 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildMiniToolTile({
     required IconData icon,
     required String title,
+    String? imageAsset,
     required VoidCallback onTap,
   }) {
     final isLight = DesignSystem.isLightMode;
 
     return InteractiveMotionCard(
-      borderRadius: 14,
-      borderColor: isLight ? const Color(0xFFCBD5E1) : Colors.white.withValues(alpha: 0.15),
+      borderRadius: 12,
+      borderColor: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.15),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
         decoration: BoxDecoration(
-          color: isLight ? const Color(0xFFFFFFFF) : Colors.white.withValues(alpha: 0.07),
-          borderRadius: BorderRadius.circular(14),
+          color: isLight ? const Color(0xFFFFFDF8) : Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isLight ? const Color(0xFFE2E8F0) : Colors.white.withValues(alpha: 0.12),
+            color: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.1),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: isLight ? 0.03 : 0.2),
-              blurRadius: 6,
+              color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.2),
+              blurRadius: 5,
               offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Column(
           children: [
-            Icon(icon, color: const Color(0xFFFFD56B), size: 20),
-            const SizedBox(height: 5),
+            if (imageAsset != null)
+              Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFFFFD56B).withValues(alpha: 0.5), width: 0.8),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Image.asset(
+                    imageAsset,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Icon(icon, color: const Color(0xFFFFD56B), size: 18),
+                  ),
+                ),
+              )
+            else
+              Icon(icon, color: isLight ? const Color(0xFFB45309) : const Color(0xFFFFD56B), size: 18),
+            const SizedBox(height: 3),
             Text(
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: isLight ? const Color(0xFF172033) : Colors.white,
-                fontSize: 11,
+                color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                fontSize: 10,
                 fontWeight: FontWeight.w700,
+                fontFamily: 'Cairo',
               ),
             ),
           ],
@@ -1868,8 +1730,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFFDCEAF4), // Soft sky blue
-                    Color(0xFFF3F8FB), // Very pale blue-white
+                    Color(0xFFFFFDF8),
+                    Color(0xFFFAF5EB),
+                    Color(0xFFF3EADB),
                   ],
                 )
               : const LinearGradient(
@@ -1882,13 +1745,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
           border: Border.all(
-            color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFFC89B3C).withValues(alpha: 0.45),
+            color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.45),
             width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
               color: isLight
-                  ? const Color(0xFF102A43).withValues(alpha: 0.06)
+                  ? const Color(0xFF8C7355).withValues(alpha: 0.12)
                   : Colors.black.withValues(alpha: 0.5),
               blurRadius: 24,
               offset: const Offset(0, 8),
@@ -1905,10 +1768,10 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(24),
           child: Stack(
             children: [
-              // Background Mosque Sunset Artwork
+              // Background Mosque Artwork (Daylight in Light Mode / Sunset in Dark Mode)
               Positioned.fill(
                 child: Image.asset(
-                  'assets/home_hero_mosque.jpg',
+                  isLight ? 'assets/daylight_mosque_bg.jpg' : 'assets/home_hero_mosque.jpg',
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => const SizedBox(),
                 ),
@@ -1923,9 +1786,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       end: Alignment.centerLeft,
                       colors: isLight
                           ? [
-                              const Color(0xFFFFFFFF).withValues(alpha: 0.95),
-                              const Color(0xFFFFFFFF).withValues(alpha: 0.82),
-                              const Color(0xFFFFFFFF).withValues(alpha: 0.20),
+                              const Color(0xFFFFFDF8).withValues(alpha: 0.96),
+                              const Color(0xFFFAF5EB).withValues(alpha: 0.85),
+                              const Color(0xFFFAF5EB).withValues(alpha: 0.25),
                             ]
                           : [
                               const Color(0xFF07090E).withValues(alpha: 0.96),
@@ -1964,10 +1827,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF131A26),
+                        color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF131A26),
                         borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
                         border: Border.all(
-                          color: const Color(0xFFFFD56B),
+                          color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B),
                           width: 1.2,
                         ),
                         boxShadow: [
@@ -2001,7 +1864,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       textAlign: TextAlign.right,
                       style: TextStyle(
                         fontFamily: 'Amiri',
-                        color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
+                        color: isLight ? const Color(0xFF1C1917) : const Color(0xFFFFD56B),
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.3,
@@ -2028,7 +1891,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       textAlign: TextAlign.right,
                       style: TextStyle(
                         fontFamily: 'Cairo',
-                        color: isLight ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                        color: isLight ? const Color(0xFF78716C) : const Color(0xFFCBD5E1),
                         fontSize: 12.5,
                         height: 1.5,
                         fontWeight: FontWeight.w500,
@@ -2075,10 +1938,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF1B2332),
+                      color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF1B2332),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: const Color(0xFFFFD56B).withValues(alpha: 0.5),
+                        color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.5),
                         width: 1,
                       ),
                       boxShadow: [
@@ -2091,10 +1954,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.menu_book_rounded,
                           size: 14,
-                          color: Color(0xFFFFD56B),
+                          color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -2103,7 +1966,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontFamily: 'Cairo',
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: isLight ? const Color(0xFF0F172A) : const Color(0xFFFFD56B),
+                            color: isLight ? const Color(0xFF1C1917) : const Color(0xFFFFD56B),
                           ),
                         ),
                       ],
@@ -2114,13 +1977,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       Icon(
                         Icons.bookmark_border_rounded,
                         size: 20,
-                        color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                        color: isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE),
                       ),
                       const SizedBox(width: 8),
                       Icon(
                         Icons.share_outlined,
                         size: 18,
-                        color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                        color: isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE),
                       ),
                     ],
                   ),
@@ -2138,7 +2001,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontSize: 21,
                   fontWeight: FontWeight.bold,
                   height: 1.6,
-                  color: isLight ? const Color(0xFF0F172A) : const Color(0xFFFFD56B),
+                  color: isLight ? const Color(0xFF1C1917) : const Color(0xFFFFD56B),
                   shadows: [
                     Shadow(
                       color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.2 : 0.4),
@@ -2160,7 +2023,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontFamily: 'Cairo',
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: isLight ? const Color(0xFF0F6B78) : const Color(0xFF38BDF8),
+                      color: isLight ? const Color(0xFF854D0E) : const Color(0xFF38BDF8),
                     ),
                   ),
                   Row(
@@ -2171,14 +2034,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           fontFamily: 'Cairo',
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                          color: isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE),
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(
+                      Icon(
                         Icons.arrow_forward_ios_rounded,
                         size: 11,
-                        color: Color(0xFFFFD56B),
+                        color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                       ),
                     ],
                   ),
@@ -2205,7 +2068,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return InteractiveMotionCard(
       borderRadius: 26,
-      borderColor: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.6 : 0.45),
+      borderColor: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.45),
       glowColor: const Color(0xFFFFD56B).withValues(alpha: 0.25),
       onTap: () {
         Navigator.push(
@@ -2221,9 +2084,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFFFFFFFF),
-                    Color(0xFFF6FAFD),
-                    Color(0xFFEAF2F8),
+                    Color(0xFFFFFDF8),
+                    Color(0xFFFAF5EB),
+                    Color(0xFFF3EADB),
                   ],
                 )
               : const LinearGradient(
@@ -2237,14 +2100,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
           border: Border.all(
             color: isLight
-                ? const Color(0xFFC89B3C).withValues(alpha: 0.45)
+                ? const Color(0xFFE5D4B3)
                 : const Color(0xFFFFD56B).withValues(alpha: 0.4),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
               color: isLight
-                  ? const Color(0xFF102A43).withValues(alpha: 0.08)
+                  ? const Color(0xFF8C7355).withValues(alpha: 0.12)
                   : Colors.black.withValues(alpha: 0.6),
               blurRadius: 28,
               offset: const Offset(0, 10),
@@ -2313,12 +2176,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: isLight
-                                      ? [const Color(0xFF102A43), const Color(0xFF0D1B2A)]
+                                      ? [const Color(0xFF854D0E), const Color(0xFF713F12)]
                                       : [const Color(0xFF1C2C45), const Color(0xFF0F1A2A)],
                                 ),
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
-                                  color: const Color(0xFFFFD56B).withValues(alpha: 0.6),
+                                  color: isLight
+                                      ? const Color(0xFFD97706)
+                                      : const Color(0xFFFFD56B).withValues(alpha: 0.6),
                                   width: 1.2,
                                 ),
                                 boxShadow: [
@@ -2364,16 +2229,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 5),
                             Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.hourglass_top_rounded,
-                                  color: Color(0xFFC89B3C),
+                                  color: isLight ? const Color(0xFF854D0E) : const Color(0xFFC89B3C),
                                   size: 12,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   'متبقي على الأذان',
                                   style: TextStyle(
-                                    color: isLight ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+                                    color: isLight ? const Color(0xFF78716C) : const Color(0xFFCBD5E1),
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -2392,21 +2257,29 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFFFD56B).withValues(alpha: 0.15),
+                                    color: isLight
+                                        ? const Color(0xFF854D0E).withValues(alpha: 0.12)
+                                        : const Color(0xFFFFD56B).withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
-                                      color: const Color(0xFFFFD56B).withValues(alpha: 0.35),
+                                      color: isLight
+                                          ? const Color(0xFFC89B3C).withValues(alpha: 0.5)
+                                          : const Color(0xFFFFD56B).withValues(alpha: 0.35),
                                     ),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(Icons.stars_rounded, color: Color(0xFFFFD56B), size: 12),
+                                      Icon(
+                                        Icons.stars_rounded,
+                                        color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
+                                        size: 12,
+                                      ),
                                       const SizedBox(width: 4),
                                       Text(
                                         'الصلاة القادمة',
                                         style: TextStyle(
-                                          color: isLight ? const Color(0xFF0F2B48) : const Color(0xFFFFD56B),
+                                          color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                                           fontSize: 11,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -2416,13 +2289,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 ShaderMask(
-                                  shaderCallback: (bounds) => const LinearGradient(
-                                    colors: [
-                                      Color(0xFFFFF7D6),
-                                      Color(0xFFFFD56B),
-                                      Color(0xFFE5B54F),
-                                      Color(0xFFC89B3C),
-                                    ],
+                                  shaderCallback: (bounds) => LinearGradient(
+                                    colors: isLight
+                                        ? const [
+                                            Color(0xFF854D0E),
+                                            Color(0xFFB45309),
+                                            Color(0xFFD97706),
+                                            Color(0xFF92400E),
+                                          ]
+                                        : const [
+                                            Color(0xFFFFF7D6),
+                                            Color(0xFFFFD56B),
+                                            Color(0xFFE5B54F),
+                                            Color(0xFFC89B3C),
+                                          ],
                                     begin: Alignment.topRight,
                                     end: Alignment.bottomLeft,
                                   ).createShader(bounds),
@@ -2432,10 +2312,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       fontFamily: 'Amiri',
                                       fontSize: 26,
                                       fontWeight: FontWeight.w900,
-                                      color: Colors.white,
+                                      color: isLight ? const Color(0xFF854D0E) : Colors.white,
                                       shadows: [
                                         Shadow(
-                                          color: const Color(0xFFFFD56B).withValues(alpha: 0.5),
+                                          color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.3 : 0.5),
                                           blurRadius: 16,
                                           offset: const Offset(0, 2),
                                         ),
@@ -2446,7 +2326,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Text(
                                   'عند $nextPrayerTime',
                                   style: TextStyle(
-                                    color: isLight ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                                    color: isLight ? const Color(0xFF78716C) : const Color(0xFFE2E8F0),
                                     fontSize: 11.5,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -2539,16 +2419,22 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                       decoration: BoxDecoration(
                         color: isLight
-                            ? const Color(0xFFC89B3C).withValues(alpha: 0.08)
+                            ? const Color(0xFFFFFDF8)
                             : Colors.white.withValues(alpha: 0.04),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFFFFD56B).withValues(alpha: 0.2),
+                          color: isLight
+                              ? const Color(0xFFE5D4B3)
+                              : const Color(0xFFFFD56B).withValues(alpha: 0.2),
                         ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.menu_book_rounded, color: Color(0xFFFFD56B), size: 14),
+                          Icon(
+                            Icons.menu_book_rounded,
+                            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
+                            size: 14,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: FittedBox(
@@ -2558,7 +2444,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 '﴿إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَوْقُوتًا﴾',
                                 style: TextStyle(
                                   fontFamily: 'Amiri',
-                                  color: isLight ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                                  color: isLight ? const Color(0xFF1C1917) : const Color(0xFFE2E8F0),
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -2572,7 +2458,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Text(
                                 'عرض الجدول',
                                 style: TextStyle(
-                                  color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
+                                  color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -2580,7 +2466,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(width: 2),
                               Icon(
                                 Icons.arrow_forward_ios_rounded,
-                                color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
+                                color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                                 size: 10,
                               ),
                             ],
@@ -2610,23 +2496,31 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF283D5E),
-                Color(0xFF16243A),
-                Color(0xFF0D1726),
-              ],
+              colors: isLight
+                  ? const [
+                      Color(0xFFFFDF7D),
+                      Color(0xFFE5A83B),
+                      Color(0xFFB8860B),
+                    ]
+                  : const [
+                      Color(0xFF283D5E),
+                      Color(0xFF16243A),
+                      Color(0xFF0D1726),
+                    ],
             ),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: const Color(0xFFFFD56B),
+              color: isLight ? const Color(0xFFFFF2B2) : const Color(0xFFFFD56B),
               width: 1.6,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFFD56B).withValues(alpha: 0.45),
+                color: isLight
+                    ? const Color(0xFFC89B3C).withValues(alpha: 0.4)
+                    : const Color(0xFFFFD56B).withValues(alpha: 0.45),
                 blurRadius: 14,
                 spreadRadius: 1,
                 offset: const Offset(0, 3),
@@ -2644,10 +2538,16 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFD56B).withValues(alpha: 0.22),
+                  color: isLight
+                      ? const Color(0xFF1A1002).withValues(alpha: 0.12)
+                      : const Color(0xFFFFD56B).withValues(alpha: 0.22),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: const Color(0xFFFFD56B), size: 15),
+                child: Icon(
+                  icon,
+                  color: isLight ? const Color(0xFF1A1002) : const Color(0xFFFFD56B),
+                  size: 15,
+                ),
               ),
               const SizedBox(height: 4),
               FittedBox(
@@ -2656,8 +2556,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Text(
                   name,
                   softWrap: false,
-                  style: const TextStyle(
-                    color: Color(0xFFFFD56B),
+                  style: TextStyle(
+                    color: isLight ? const Color(0xFF1A1002) : const Color(0xFFFFD56B),
                     fontSize: 11.5,
                     fontWeight: FontWeight.w900,
                   ),
@@ -2670,8 +2570,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Text(
                   time,
                   softWrap: false,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: isLight ? const Color(0xFF2E1C03) : Colors.white,
                     fontSize: 9.5,
                     fontWeight: FontWeight.w800,
                   ),
@@ -2688,19 +2588,19 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
       decoration: BoxDecoration(
         color: isLight
-            ? const Color(0xFFFFFFFF)
+            ? const Color(0xFFFFFDF8)
             : Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isLight
-              ? const Color(0xFFDCE3EC)
+              ? const Color(0xFFE5D4B3)
               : Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isLight
-                ? const Color(0xFF102A43).withValues(alpha: 0.04)
+                ? const Color(0xFF8C7355).withValues(alpha: 0.08)
                 : Colors.black.withValues(alpha: 0.2),
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -2712,7 +2612,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Icon(
             icon,
-            color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+            color: isLight ? const Color(0xFF854D0E) : const Color(0xFF94A3B8),
             size: 14,
           ),
           const SizedBox(height: 4),
@@ -2723,7 +2623,7 @@ class _HomeScreenState extends State<HomeScreen> {
               name,
               softWrap: false,
               style: TextStyle(
-                color: isLight ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                color: isLight ? const Color(0xFF1C1917) : const Color(0xFFF1F5F9),
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),
@@ -2737,7 +2637,7 @@ class _HomeScreenState extends State<HomeScreen> {
               time,
               softWrap: false,
               style: TextStyle(
-                color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
                 fontSize: 9.5,
                 fontWeight: FontWeight.w500,
               ),
@@ -2817,20 +2717,20 @@ class _HomeScreenState extends State<HomeScreen> {
     final isLight = DesignSystem.isLightMode;
 
     return InteractiveMotionCard(
-      borderRadius: 20,
-      borderColor: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.4 : 0.35),
+      borderRadius: 24,
+      borderColor: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.45 : 0.35),
       glowColor: const Color(0xFFFFD56B).withValues(alpha: 0.25),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        padding: const EdgeInsets.fromLTRB(4, 10, 4, 10),
         decoration: BoxDecoration(
           gradient: isLight
               ? const LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0xFFFFFFFF),
-                    Color(0xFFF8FAFC),
+                    Color(0xFFFFFDF8),
+                    Color(0xFFF7F1E6),
                   ],
                 )
               : const LinearGradient(
@@ -2841,16 +2741,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     Color(0xFF0F1824),
                   ],
                 ),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(28),
+            topRight: Radius.circular(28),
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          ),
           border: Border.all(
             color: isLight
-                ? const Color(0xFFDCE3EC)
+                ? const Color(0xFFE5D4B3)
                 : const Color(0xFFFFD56B).withValues(alpha: 0.28),
             width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: isLight ? 0.08 : 0.45),
+              color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.45),
               blurRadius: 14,
               offset: const Offset(0, 6),
             ),
@@ -2880,7 +2785,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.5),
+                          color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.25) : Colors.black.withValues(alpha: 0.5),
                           blurRadius: 8,
                           spreadRadius: 2,
                         ),
@@ -2890,25 +2795,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 // 3D Model Artifact with Double Specular Ring
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 54,
+                  height: 54,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: const Color(0xFFFFD56B).withValues(alpha: 0.6),
+                      color: const Color(0xFFFFD56B).withValues(alpha: 0.7),
                       width: 1.3,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFFD56B).withValues(alpha: 0.22),
-                        blurRadius: 12,
+                        color: const Color(0xFFFFD56B).withValues(alpha: 0.25),
+                        blurRadius: 10,
                         spreadRadius: 1,
-                        offset: const Offset(0, 3),
-                      ),
-                      const BoxShadow(
-                        color: Color(0xFF000000),
-                        blurRadius: 6,
-                        offset: Offset(0, 2),
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
@@ -2927,7 +2827,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 9),
+            const SizedBox(height: 8),
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.center,
@@ -2936,7 +2836,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 textAlign: TextAlign.center,
                 softWrap: false,
                 style: TextStyle(
-                  color: isLight ? const Color(0xFF172033) : Colors.white,
+                  color: isLight ? const Color(0xFF1C1917) : Colors.white,
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
                   fontFamily: 'Cairo',
@@ -2952,11 +2852,30 @@ class _HomeScreenState extends State<HomeScreen> {
                 textAlign: TextAlign.center,
                 softWrap: false,
                 style: TextStyle(
-                  color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-                  fontSize: 10,
+                  color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
+                  fontSize: 9.5,
                   fontWeight: FontWeight.w600,
                   fontFamily: 'Cairo',
                 ),
+              ),
+            ),
+            const SizedBox(height: 7),
+            // Bottom Action Arrow Circle Button (Amber in Light mode / Gold in Dark mode)
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B).withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isLight ? const Color(0xFFB45309) : const Color(0xFFFFD56B).withValues(alpha: 0.5),
+                  width: 0.8,
+                ),
+              ),
+              child: const Icon(
+                Icons.arrow_forward_rounded,
+                size: 13,
+                color: Colors.white,
               ),
             ),
           ],
@@ -2996,21 +2915,21 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isLight ? const Color(0xFFFFF7E6) : const Color(0xFF1E2738),
+              color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF1E2738),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.35 : 0.5),
+                color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.5),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFFD56B).withValues(alpha: 0.15),
+                  color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.1) : const Color(0xFFFFD56B).withValues(alpha: 0.15),
                   blurRadius: 8,
                 ),
               ],
             ),
-            child: const Icon(
+            child: Icon(
               Icons.bookmark_rounded,
-              color: Color(0xFFFFD56B),
+              color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
               size: 24,
             ),
           ),
@@ -3027,15 +2946,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       'سورة $surahName',
                       style: TextStyle(
-                        color: isLight ? const Color(0xFF172033) : Colors.white,
+                        color: isLight ? const Color(0xFF1C1917) : Colors.white,
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
                       '$percent%',
-                      style: const TextStyle(
-                        color: Color(0xFFFFD56B),
+                      style: TextStyle(
+                        color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
@@ -3048,7 +2967,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? 'موضع التوقف: الآية $ayahNum • الجزء ${progress.juz}'
                       : 'الآية $ayahNum • الجزء ${progress.juz}',
                   style: TextStyle(
-                    color: isLight ? const Color(0xFF667085) : const Color(0xFF94A3B8),
+                    color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
                     fontSize: 11,
                   ),
                 ),
@@ -3060,8 +2979,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: LinearProgressIndicator(
                     value: progress.progress.clamp(0.01, 1.0),
                     minHeight: 4,
-                    backgroundColor: isLight ? const Color(0xFFDCE3EC) : const Color(0xFF1E293B),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFD56B)),
+                    backgroundColor: isLight ? const Color(0xFFE5D4B3) : const Color(0xFF1E293B),
+                    valueColor: AlwaysStoppedAnimation<Color>(isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)),
                   ),
                 ),
               ],
@@ -3117,25 +3036,25 @@ class _HomeScreenState extends State<HomeScreen> {
     return InteractiveMotionCard(
       borderRadius: 18,
       borderColor: isCurrent
-          ? const Color(0xFFFFD56B)
-          : const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.35 : 0.2),
+          ? (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B))
+          : (isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.2)),
       glowColor: const Color(0xFFFFD56B).withValues(alpha: 0.25),
       onTap: onTap,
       child: Container(
         width: 110,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
         decoration: BoxDecoration(
-          color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF111A26),
+          color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF111A26),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isCurrent
-                ? const Color(0xFFFFD56B)
-                : (isLight ? const Color(0xFFDCE3EC) : const Color(0xFFFFD56B).withValues(alpha: 0.2)),
+                ? (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B))
+                : (isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.2)),
             width: isCurrent ? 1.5 : 1.1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: isLight ? 0.05 : 0.4),
+              color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.4),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -3153,7 +3072,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isCurrent ? const Color(0xFFFFD56B) : const Color(0xFFFFD56B).withValues(alpha: 0.6),
+                      color: isCurrent
+                          ? (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B))
+                          : (isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B).withValues(alpha: 0.6)),
                       width: isCurrent ? 2.5 : 1.5,
                     ),
                     boxShadow: [
@@ -3172,18 +3093,18 @@ class _HomeScreenState extends State<HomeScreen> {
                         ? Image.asset(
                             reciter.photoUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(
+                            errorBuilder: (_, __, ___) => Icon(
                               Icons.person,
-                              color: Color(0xFFFFD56B),
+                              color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                               size: 26,
                             ),
                           )
                         : Image.network(
                             reciter.photoUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(
+                            errorBuilder: (_, __, ___) => Icon(
                               Icons.person,
-                              color: Color(0xFFFFD56B),
+                              color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                               size: 26,
                             ),
                           ),
@@ -3195,23 +3116,28 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: isCurrent ? const Color(0xFFFFD56B) : const Color(0xFF101924),
+                      color: isCurrent
+                          ? (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B))
+                          : (isLight ? const Color(0xFFFFFDF8) : const Color(0xFF101924)),
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFFFD56B), width: 1.2),
+                      border: Border.all(
+                        color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
+                        width: 1.2,
+                      ),
                     ),
                     child: isCurrent
-                        ? const SoundWaveVisualizer(
+                        ? SoundWaveVisualizer(
                             isPlaying: true,
                             barCount: 3,
                             maxHeight: 8,
                             minHeight: 2,
                             barWidth: 1.5,
                             spacing: 1.5,
-                            activeColor: Color(0xFF07090E),
+                            activeColor: isLight ? Colors.white : const Color(0xFF07090E),
                           )
-                        : const Icon(
+                        : Icon(
                             Icons.play_arrow_rounded,
-                            color: Color(0xFFFFD56B),
+                            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                             size: 12,
                           ),
                   ),
@@ -3225,7 +3151,7 @@ class _HomeScreenState extends State<HomeScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: isLight ? const Color(0xFF172033) : Colors.white,
+                color: isLight ? const Color(0xFF1C1917) : Colors.white,
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'Cairo',
@@ -3238,7 +3164,7 @@ class _HomeScreenState extends State<HomeScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: isLight ? const Color(0xFF667085) : const Color(0xFF94A3B8),
+                color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
                 fontSize: 9.5,
                 fontFamily: 'Cairo',
               ),

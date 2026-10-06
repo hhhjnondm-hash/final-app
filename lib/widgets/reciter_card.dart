@@ -22,6 +22,8 @@ class ReciterCard extends StatelessWidget {
     final isPlaying = isCurrent && service.isPlaying;
     final isFavorite = service.isFavorite(reciter.id);
 
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: InteractiveMotionCard(
@@ -33,29 +35,51 @@ class ReciterCard extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: isCurrent
-                  ? [
-                      DesignSystem.gold.withValues(alpha: 0.18),
-                      DesignSystem.bgCard.withValues(alpha: 0.95),
-                    ]
-                  : [
-                      DesignSystem.bgCard.withValues(alpha: 0.8),
-                      DesignSystem.bgDarkest.withValues(alpha: 0.9),
-                    ],
+              colors: isLight
+                  ? (isCurrent
+                      ? [
+                          const Color(0xFFFFF7E6),
+                          const Color(0xFFFFFDF8),
+                        ]
+                      : [
+                          const Color(0xFFFFFFFF),
+                          const Color(0xFFFAF5EB),
+                        ])
+                  : (isCurrent
+                      ? [
+                          DesignSystem.gold.withValues(alpha: 0.18),
+                          DesignSystem.bgCard.withValues(alpha: 0.95),
+                        ]
+                      : [
+                          DesignSystem.bgCard.withValues(alpha: 0.8),
+                          DesignSystem.bgDarkest.withValues(alpha: 0.9),
+                        ]),
             ),
             border: Border.all(
-              color: isCurrent ? DesignSystem.gold : Colors.white.withValues(alpha: 0.08),
+              color: isLight
+                  ? (isCurrent ? const Color(0xFFC89B3C) : const Color(0xFFE5D4B3))
+                  : (isCurrent ? DesignSystem.gold : Colors.white.withValues(alpha: 0.08)),
               width: isCurrent ? 1.4 : 1.0,
             ),
             boxShadow: isCurrent
                 ? [
                     BoxShadow(
-                      color: DesignSystem.gold.withValues(alpha: 0.15),
+                      color: isLight
+                          ? const Color(0xFFE5A83B).withValues(alpha: 0.2)
+                          : DesignSystem.gold.withValues(alpha: 0.15),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
                   ]
-                : null,
+                : (isLight
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFF854D0E).withValues(alpha: 0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -68,10 +92,21 @@ class ReciterCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isCurrent ? DesignSystem.gold : Colors.white.withValues(alpha: 0.15),
+                      color: isLight
+                          ? (isCurrent ? const Color(0xFFC89B3C) : const Color(0xFFE5D4B3))
+                          : (isCurrent ? DesignSystem.gold : Colors.white.withValues(alpha: 0.15)),
                       width: 2,
                     ),
-                    boxShadow: isCurrent ? DesignSystem.goldGlow : null,
+                    boxShadow: isCurrent
+                        ? (isLight
+                            ? [
+                                BoxShadow(
+                                  color: const Color(0xFFE5A83B).withValues(alpha: 0.3),
+                                  blurRadius: 10,
+                                )
+                              ]
+                            : DesignSystem.goldGlow)
+                        : null,
                   ),
                   child: ClipOval(
                     child: reciter.photoUrl.startsWith('assets/')
@@ -79,16 +114,24 @@ class ReciterCard extends StatelessWidget {
                             reciter.photoUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => Container(
-                              color: DesignSystem.bgDarkest,
-                              child: const Icon(Icons.person_rounded, color: DesignSystem.goldLight, size: 26),
+                              color: isLight ? const Color(0xFFF1EAD8) : DesignSystem.bgDarkest,
+                              child: Icon(
+                                Icons.person_rounded,
+                                color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                                size: 26,
+                              ),
                             ),
                           )
                         : Image.network(
                             reciter.photoUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => Container(
-                              color: DesignSystem.bgDarkest,
-                              child: const Icon(Icons.person_rounded, color: DesignSystem.goldLight, size: 26),
+                              color: isLight ? const Color(0xFFF1EAD8) : DesignSystem.bgDarkest,
+                              child: Icon(
+                                Icons.person_rounded,
+                                color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                                size: 26,
+                              ),
                             ),
                           ),
                   ),
@@ -107,7 +150,9 @@ class ReciterCard extends StatelessWidget {
                             child: Text(
                               reciter.nameArabic,
                               style: TextStyle(
-                                color: isCurrent ? DesignSystem.goldLight : DesignSystem.textWhite,
+                                color: isLight
+                                    ? (isCurrent ? const Color(0xFF854D0E) : const Color(0xFF1C1917))
+                                    : (isCurrent ? DesignSystem.goldLight : DesignSystem.textWhite),
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -120,13 +165,21 @@ class ReciterCard extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: DesignSystem.gold.withValues(alpha: 0.2),
+                                color: isLight
+                                    ? const Color(0xFFFBF4E4)
+                                    : DesignSystem.gold.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                                border: Border.all(color: DesignSystem.gold),
+                                border: Border.all(
+                                  color: isLight ? const Color(0xFFC89B3C) : DesignSystem.gold,
+                                ),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'المحدد',
-                                style: TextStyle(color: DesignSystem.goldLight, fontSize: 9, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ],
@@ -137,8 +190,8 @@ class ReciterCard extends StatelessWidget {
                         children: [
                           Text(
                             '${reciter.country} • ${reciter.style}',
-                            style: const TextStyle(
-                              color: DesignSystem.textMuted,
+                            style: TextStyle(
+                              color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
                               fontSize: 11,
                             ),
                           ),
@@ -164,27 +217,31 @@ class ReciterCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
+                          color: isLight
+                              ? const Color(0xFFFBF4E4)
+                              : Colors.white.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
                           border: Border.all(
-                            color: DesignSystem.gold.withValues(alpha: 0.3),
+                            color: isLight
+                                ? const Color(0xFFE5D4B3)
+                                : DesignSystem.gold.withValues(alpha: 0.3),
                             width: 0.8,
                           ),
                         ),
-                        child: const Column(
+                        child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.download_rounded,
-                              color: DesignSystem.goldLight,
+                              color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                               size: 18,
                             ),
-                            SizedBox(height: 1),
+                            const SizedBox(height: 1),
                             Text(
                               'تنزيل',
                               style: TextStyle(
                                 fontFamily: 'Cairo',
-                                color: DesignSystem.goldLight,
+                                color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                                 fontSize: 9,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -198,7 +255,9 @@ class ReciterCard extends StatelessWidget {
                     IconButton(
                       icon: Icon(
                         isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                        color: isFavorite ? const Color(0xFFE11D48) : DesignSystem.textMuted,
+                        color: isFavorite
+                            ? const Color(0xFFE11D48)
+                            : (isLight ? const Color(0xFF78716C) : DesignSystem.textMuted),
                         size: 20,
                       ),
                       onPressed: () {
@@ -212,15 +271,31 @@ class ReciterCard extends StatelessWidget {
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: isCurrent ? DesignSystem.goldGradient : null,
-                          color: isCurrent ? null : Colors.white.withValues(alpha: 0.05),
+                          gradient: isCurrent
+                              ? (isLight
+                                  ? const LinearGradient(
+                                      colors: [Color(0xFFFFDF7D), Color(0xFFE5A83B)],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    )
+                                  : DesignSystem.goldGradient)
+                              : null,
+                          color: isCurrent
+                              ? null
+                              : (isLight
+                                  ? const Color(0xFFF1EAD8)
+                                  : Colors.white.withValues(alpha: 0.05)),
                           border: Border.all(
-                            color: isCurrent ? DesignSystem.gold : Colors.white.withValues(alpha: 0.15),
+                            color: isLight
+                                ? (isCurrent ? const Color(0xFFC89B3C) : const Color(0xFFE5D4B3))
+                                : (isCurrent ? DesignSystem.gold : Colors.white.withValues(alpha: 0.15)),
                           ),
                         ),
                         child: Icon(
                           isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                          color: isCurrent ? DesignSystem.bgDarkest : DesignSystem.goldLight,
+                          color: isCurrent
+                              ? (isLight ? const Color(0xFF1C1917) : DesignSystem.bgDarkest)
+                              : (isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight),
                           size: 20,
                         ),
                       ),

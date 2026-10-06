@@ -3,19 +3,28 @@ import '../services/prayer_service.dart';
 import '../utils/design_system.dart';
 
 class QiblaCompassSheet extends StatelessWidget {
-  QiblaCompassSheet({super.key});
+  const QiblaCompassSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
     final service = PrayerService();
     final location = service.currentLocation;
+
+    final sheetBg = isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1621);
+    final cardBorder = isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.3);
+    final textTitle = isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite;
+    final goldAccent = isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight;
+    final textSub = isLight ? const Color(0xFF78716C) : DesignSystem.textSecondary;
+    final dialBg1 = isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1E38);
+    final dialBg2 = isLight ? const Color(0xFFFBF4E4) : DesignSystem.bgDarkest;
 
     return Container(
       padding: const EdgeInsets.all(DesignSystem.spacingL),
       decoration: BoxDecoration(
-        color: DesignSystem.bgDarkest,
+        color: sheetBg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(DesignSystem.radiusLarge)),
-        border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.3)),
+        border: Border.all(color: cardBorder),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -26,17 +35,17 @@ class QiblaCompassSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: DesignSystem.textMuted.withValues(alpha: 0.4),
+                color: isLight ? const Color(0xFFD6C7A1) : DesignSystem.textMuted.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
           const SizedBox(height: 16),
 
-          const Text(
+          Text(
             'اتجاه القبلة الشريفة',
             style: TextStyle(
-              color: DesignSystem.goldLight,
+              color: goldAccent,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -44,7 +53,7 @@ class QiblaCompassSheet extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '${location.cityName}، ${location.countryName} • زاوية ${location.qiblaAngle.toInt()}° من الشمال',
-            style: const TextStyle(color: DesignSystem.textSecondary, fontSize: 12),
+            style: TextStyle(color: textSub, fontSize: 12),
           ),
 
           const SizedBox(height: 30),
@@ -56,18 +65,15 @@ class QiblaCompassSheet extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(
-                colors: [
-                  const Color(0xFF0F1E38),
-                  DesignSystem.bgDarkest,
-                ],
+                colors: [dialBg1, dialBg2],
               ),
               border: Border.all(
-                color: DesignSystem.gold.withValues(alpha: 0.5),
+                color: isLight ? const Color(0xFFC89B3C) : DesignSystem.gold.withValues(alpha: 0.5),
                 width: 2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: DesignSystem.gold.withValues(alpha: 0.2),
+                  color: (isLight ? const Color(0xFF854D0E) : DesignSystem.gold).withValues(alpha: 0.18),
                   blurRadius: 30,
                   offset: const Offset(0, 4),
                 ),
@@ -77,21 +83,21 @@ class QiblaCompassSheet extends StatelessWidget {
               alignment: Alignment.center,
               children: [
                 // Cardinal Directions
-                const Positioned(
+                Positioned(
                   top: 10,
-                  child: Text('N', style: TextStyle(color: DesignSystem.goldLight, fontWeight: FontWeight.bold)),
+                  child: Text('N', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold)),
                 ),
-                const Positioned(
+                Positioned(
                   bottom: 10,
-                  child: Text('S', style: TextStyle(color: DesignSystem.textMuted)),
+                  child: Text('S', style: TextStyle(color: textSub)),
                 ),
-                const Positioned(
+                Positioned(
                   right: 10,
-                  child: Text('E', style: TextStyle(color: DesignSystem.textMuted)),
+                  child: Text('E', style: TextStyle(color: textSub)),
                 ),
-                const Positioned(
+                Positioned(
                   left: 10,
-                  child: Text('W', style: TextStyle(color: DesignSystem.textMuted)),
+                  child: Text('W', style: TextStyle(color: textSub)),
                 ),
 
                 // Center Kaaba & Gold Needle
@@ -102,37 +108,42 @@ class QiblaCompassSheet extends StatelessWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: DesignSystem.gold,
+                          color: isLight ? const Color(0xFF854D0E) : DesignSystem.gold,
                         ),
                         child: const Icon(
                           Icons.navigation_rounded,
-                          color: DesignSystem.bgDarkest,
+                          color: Colors.white,
                           size: 28,
                         ),
                       ),
                       Container(
                         width: 3,
                         height: 60,
-                        decoration: const BoxDecoration(
-                          gradient: DesignSystem.goldGradient,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: isLight
+                                ? [const Color(0xFF854D0E), const Color(0xFFC89B3C)]
+                                : [const Color(0xFFD4AF37), const Color(0xFFFFD56B)],
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                // Center Hub Icon
+                // Center Pivot
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 14,
+                  height: 14,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: DesignSystem.bgDarkest,
-                    border: Border.all(color: DesignSystem.gold, width: 2),
+                    color: goldAccent,
+                    border: Border.all(color: sheetBg, width: 2),
                   ),
-                  child: const Icon(Icons.mosque_rounded, color: DesignSystem.goldLight, size: 18),
                 ),
               ],
             ),
@@ -140,22 +151,22 @@ class QiblaCompassSheet extends StatelessWidget {
 
           const SizedBox(height: 24),
 
+          // Kaaba Direction Guidance Text
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.04),
+              color: isLight ? const Color(0xFFFBF4E4) : DesignSystem.gold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+              border: Border.all(color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.3)),
             ),
-            child: const Row(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.info_outline_rounded, color: DesignSystem.cyanAccent, size: 18),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'قم بتدوير الهاتف حتى يتطابق المؤشر الذهبي مع اتجاه الكعبة المشرفة في مكة المكرمة.',
-                    style: TextStyle(color: DesignSystem.textSecondary, fontSize: 11),
-                  ),
+                Icon(Icons.check_circle_rounded, color: isLight ? const Color(0xFF16A34A) : const Color(0xFF38B982), size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'وجّه هاتفك نحو السهم الذهبي للتوجه للكعبة المشرفة',
+                  style: TextStyle(color: textTitle, fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ],
             ),

@@ -20,143 +20,155 @@ class HadithCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final service = HadithService();
     final isFav = service.isFavorite(hadith.id);
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return InteractiveMotionCard(
       margin: const EdgeInsets.only(bottom: 14),
       borderRadius: 20,
-      backgroundColor: DesignSystem.bgCard.withValues(alpha: 0.85),
-      borderColor: const Color(0xFFFFD56B).withValues(alpha: 0.22),
-      glowColor: const Color(0xFFFFD56B),
+      backgroundColor: isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgCard.withValues(alpha: 0.85),
+      borderColor: isLight
+          ? const Color(0xFFE5D4B3)
+          : const Color(0xFFFFD56B).withValues(alpha: 0.22),
+      glowColor: isLight ? const Color(0xFFE5A83B) : const Color(0xFFFFD56B),
       onTap: onTap,
       padding: const EdgeInsets.all(DesignSystem.spacingM),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-                // Top Header: Number ornament & Book Badge
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // Top Header: Number ornament & Book Badge
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Row(
                   children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 28,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: DesignSystem.gold),
-                              color: DesignSystem.gold.withValues(alpha: 0.1),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '${hadith.number}',
-                                style: const TextStyle(
-                                  color: DesignSystem.goldLight,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isLight ? const Color(0xFF854D0E) : DesignSystem.gold,
+                        ),
+                        color: isLight ? const Color(0xFFFBF4E4) : DesignSystem.gold.withValues(alpha: 0.1),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${hadith.number}',
+                          style: TextStyle(
+                            color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerRight,
-                              child: Text(
-                                hadith.book,
-                                style: const TextStyle(
-                                  color: DesignSystem.goldLight,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                      ),
+                    Flexible(
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
                         child: Text(
-                          hadith.topic,
-                          style: const TextStyle(color: DesignSystem.textMuted, fontSize: 10),
+                          hadith.book,
+                          style: TextStyle(
+                            color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 12),
-
-                // Hadith Content Preview
-                Text(
-                  '«${hadith.text}»',
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: DesignSystem.textWhite,
-                    fontSize: 14,
-                    height: 1.7,
-                    fontWeight: FontWeight.w600,
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isLight ? const Color(0xFFFBF4E4) : Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
+                  border: Border.all(
+                    color: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.1),
                   ),
                 ),
-
-                const SizedBox(height: 10),
-
-                // Footer: Narrator & Action Icons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        hadith.narrator,
-                        style: const TextStyle(
-                          color: DesignSystem.textMuted,
-                          fontSize: 11,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    hadith.topic,
+                    style: TextStyle(
+                      color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                      fontSize: 10,
                     ),
-
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                            color: isFav ? const Color(0xFFE11D48) : DesignSystem.textMuted,
-                            size: 18,
-                          ),
-                          onPressed: () => service.toggleFavorite(hadith.id),
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.share_rounded,
-                            color: DesignSystem.textMuted,
-                            size: 18,
-                          ),
-                          onPressed: onShareTap,
-                        ),
-                        const Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          color: DesignSystem.goldLight,
-                          size: 14,
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
-              ],
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Hadith Content Preview
+          Text(
+            '«${hadith.text}»',
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
+              fontSize: 14,
+              height: 1.7,
+              fontWeight: FontWeight.w600,
             ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // Footer: Narrator & Action Icons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  hadith.narrator,
+                  style: TextStyle(
+                    color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                    fontSize: 11,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+
+              Row(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                      color: isFav
+                          ? const Color(0xFFE11D48)
+                          : (isLight ? const Color(0xFF78716C) : DesignSystem.textMuted),
+                      size: 18,
+                    ),
+                    onPressed: () => service.toggleFavorite(hadith.id),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.share_rounded,
+                      color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                      size: 18,
+                    ),
+                    onPressed: onShareTap,
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                    size: 14,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

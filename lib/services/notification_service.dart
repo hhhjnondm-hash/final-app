@@ -37,11 +37,11 @@ class NotificationService extends ChangeNotifier {
   final StreamController<String> _actionController = StreamController<String>.broadcast();
   Stream<String> get onActionStream => _actionController.stream;
 
-  // Channels (v5 ensures fresh registration on Android with high priority and audioAttributes)
-  static const String athanChannelId = 'athan_channel_v5';
-  static const String athanFajrChannelId = 'athan_fajr_channel_v5';
-  static const String missedPrayerChannelId = 'missed_prayer_channel_v5';
-  static const String remindersChannelId = 'islamic_reminders_v5';
+  // Channels (v7 ensures fresh registration on Android with high priority and alarm audioAttributes)
+  static const String athanChannelId = 'athan_channel_v7';
+  static const String athanFajrChannelId = 'athan_fajr_channel_v7';
+  static const String missedPrayerChannelId = 'missed_prayer_channel_v7';
+  static const String remindersChannelId = 'islamic_reminders_v7';
 
   // Anti-duplicate notification deduplication cache (prevents duplicate spamming)
   final Map<String, DateTime> _recentlyDispatchedReminders = {};
@@ -151,18 +151,16 @@ class NotificationService extends ChangeNotifier {
       final exactGranted = await androidImplementation.requestExactAlarmsPermission();
       _exactAlarmsPermissionGranted = exactGranted ?? false;
 
-      // Channel 1: General Athan (with raw athan_sound resource)
-      // Note: audioAttributesUsage: AudioAttributesUsage.notification ensures the OS
-      // silences the sound when the user's phone is set to Silent or Vibrate mode!
+      // Channel 1: General Athan (with raw athan_sound resource on USAGE_ALARM stream)
       const AndroidNotificationChannel athanChannel = AndroidNotificationChannel(
         athanChannelId,
-        'أذان الصلوات المفروضة (إجباري)',
-        description: 'تشغيل صوت الأذان والتنبيه عند دخول وقت الصلاة',
+        'أذان الصلوات المفروضة (إجباري بصوت واضح)',
+        description: 'تشغيل صوت الأذان والتنبيه الفوري عند دخول وقت الصلاة',
         importance: Importance.max,
         sound: RawResourceAndroidNotificationSound('athan_sound'),
         playSound: true,
         enableVibration: true,
-        audioAttributesUsage: AudioAttributesUsage.notification,
+        audioAttributesUsage: AudioAttributesUsage.alarm,
       );
 
       // Channel 2: Fajr Athan (with special Fajr athan sound)
@@ -174,7 +172,7 @@ class NotificationService extends ChangeNotifier {
         sound: RawResourceAndroidNotificationSound('athan_fajr'),
         playSound: true,
         enableVibration: true,
-        audioAttributesUsage: AudioAttributesUsage.notification,
+        audioAttributesUsage: AudioAttributesUsage.alarm,
       );
 
       // Channel 3: Missed Prayer Reminder Channel

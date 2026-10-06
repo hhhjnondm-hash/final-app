@@ -84,6 +84,8 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
       icon: Icons.nightlight_round,
     );
 
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Container(
       constraints: const BoxConstraints(minHeight: 270),
       width: double.infinity,
@@ -92,24 +94,34 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF0D1B36),
-            const Color(0xFF091426),
-            DesignSystem.bgDarkest,
-          ],
+          colors: isLight
+              ? [
+                  const Color(0xFFFFFDF8),
+                  const Color(0xFFFAF5EB),
+                  const Color(0xFFF5EBD7),
+                ]
+              : [
+                  const Color(0xFF0D1B36),
+                  const Color(0xFF091426),
+                  DesignSystem.bgDarkest,
+                ],
         ),
         border: Border.all(
-          color: DesignSystem.gold.withValues(alpha: 0.4),
+          color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.4),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: DesignSystem.gold.withValues(alpha: 0.18),
+            color: isLight
+                ? const Color(0xFFC89B3C).withValues(alpha: 0.1)
+                : DesignSystem.gold.withValues(alpha: 0.18),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.6),
+            color: isLight
+                ? Colors.black.withValues(alpha: 0.05)
+                : Colors.black.withValues(alpha: 0.6),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -122,7 +134,7 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
               child: Image.asset(
-                'assets/prayer_hero.png',
+                isLight ? 'assets/daylight_mosque_bg.jpg' : 'assets/prayer_hero.png',
                 fit: BoxFit.cover,
                 alignment: Alignment.topCenter,
                 errorBuilder: (_, __, ___) => const SizedBox.shrink(),
@@ -130,7 +142,7 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
             ),
           ),
 
-          // Deep Dark Smooth Gradient Overlays
+          // Deep Dark or Daylight Smooth Gradient Overlays
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -138,11 +150,17 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    DesignSystem.bgDarkest.withValues(alpha: 0.75),
-                    DesignSystem.bgDarkest.withValues(alpha: 0.98),
-                  ],
+                  colors: isLight
+                      ? [
+                          const Color(0xFFFFFDF8).withValues(alpha: 0.2),
+                          const Color(0xFFFFFDF8).withValues(alpha: 0.82),
+                          const Color(0xFFFFFDF8).withValues(alpha: 0.98),
+                        ]
+                      : [
+                          Colors.transparent,
+                          DesignSystem.bgDarkest.withValues(alpha: 0.75),
+                          DesignSystem.bgDarkest.withValues(alpha: 0.98),
+                        ],
                   stops: const [0.0, 0.5, 1.0],
                 ),
               ),
@@ -162,21 +180,23 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: DesignSystem.bgDarkest.withValues(alpha: 0.75),
+                        color: isLight
+                            ? const Color(0xFFFBF4E4).withValues(alpha: 0.9)
+                            : DesignSystem.bgDarkest.withValues(alpha: 0.75),
                         borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
                         border: Border.all(
-                          color: DesignSystem.gold.withValues(alpha: 0.4),
+                          color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.4),
                         ),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.auto_awesome, color: DesignSystem.goldLight, size: 13),
-                          SizedBox(width: 6),
+                          Icon(Icons.auto_awesome, color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight, size: 13),
+                          const SizedBox(width: 6),
                           Text(
                             'إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَوْقُوتًا',
                             style: TextStyle(
-                              color: DesignSystem.goldLight,
+                              color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
@@ -193,12 +213,14 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: DesignSystem.gold.withValues(alpha: 0.2),
-                            border: Border.all(color: DesignSystem.gold),
+                            color: isLight
+                                ? const Color(0xFFFBF4E4)
+                                : DesignSystem.gold.withValues(alpha: 0.2),
+                            border: Border.all(color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.volume_up_rounded,
-                            color: DesignSystem.goldLight,
+                            color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                             size: 18,
                           ),
                         ),
@@ -220,25 +242,25 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
                           child: CircularProgressIndicator(
                             value: _progress,
                             strokeWidth: 6,
-                            backgroundColor: Colors.white.withValues(alpha: 0.08),
-                            valueColor: const AlwaysStoppedAnimation<Color>(DesignSystem.gold),
+                            backgroundColor: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.08),
+                            valueColor: AlwaysStoppedAnimation<Color>(isLight ? const Color(0xFF854D0E) : DesignSystem.gold),
                           ),
                         ),
                         Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text(
+                            Text(
                               'متبقي',
                               style: TextStyle(
-                                color: DesignSystem.textMuted,
+                                color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
                                 fontSize: 10,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               _countdown,
-                              style: const TextStyle(
-                                color: DesignSystem.textWhite,
+                              style: TextStyle(
+                                color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 1.0,
@@ -261,16 +283,16 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
                               Container(
                                 width: 8,
                                 height: 8,
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: DesignSystem.gold,
+                                  color: isLight ? const Color(0xFF854D0E) : DesignSystem.gold,
                                 ),
                               ),
                               const SizedBox(width: 6),
-                              const Text(
+                              Text(
                                 'الصلاة القادمة',
                                 style: TextStyle(
-                                  color: DesignSystem.goldLight,
+                                  color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -284,8 +306,8 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
                             child: Text(
                               'صلاة ${nextPrayer.nameArabic}',
                               softWrap: false,
-                              style: const TextStyle(
-                                color: DesignSystem.textWhite,
+                              style: TextStyle(
+                                color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -298,8 +320,8 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
                             child: Text(
                               nextPrayer.formattedTimeArabic,
                               softWrap: false,
-                              style: const TextStyle(
-                                color: DesignSystem.cyanAccent,
+                              style: TextStyle(
+                                color: isLight ? const Color(0xFF854D0E) : DesignSystem.cyanAccent,
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -317,9 +339,9 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
+                    color: isLight ? const Color(0xFFFBF4E4) : Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                    border: Border.all(color: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.08)),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -327,7 +349,7 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
                       Expanded(
                         child: Row(
                           children: [
-                            Icon(currentPrayer.icon, color: DesignSystem.goldLight, size: 16),
+                            Icon(currentPrayer.icon, color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight, size: 16),
                             const SizedBox(width: 8),
                             Expanded(
                               child: FittedBox(
@@ -336,8 +358,8 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
                                 child: Text(
                                   'الصلاة الحالية: صلاة ${currentPrayer.nameArabic}',
                                   softWrap: false,
-                                  style: const TextStyle(
-                                    color: DesignSystem.textSecondary,
+                                  style: TextStyle(
+                                    color: isLight ? const Color(0xFF78716C) : DesignSystem.textSecondary,
                                     fontSize: 12,
                                   ),
                                 ),
@@ -349,8 +371,8 @@ class _PrayerHeroCardState extends State<PrayerHeroCard> {
                       const SizedBox(width: 8),
                       Text(
                         currentPrayer.formattedTimeArabic,
-                        style: const TextStyle(
-                          color: DesignSystem.textWhite,
+                        style: TextStyle(
+                          color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),

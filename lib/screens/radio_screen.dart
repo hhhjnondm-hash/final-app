@@ -6,6 +6,7 @@ import '../services/radio_service.dart';
 import '../adapters/radio_adapter.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/islamic_background.dart';
 import '../widgets/audio_diagnostic_dialog.dart';
 import '../widgets/developer_credits_badge.dart';
 import '../widgets/visual_effects/floating_particles.dart';
@@ -64,26 +65,53 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
   }
 
   void _showSleepTimerSheet(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         padding: const EdgeInsets.all(DesignSystem.spacingL),
         decoration: BoxDecoration(
-          color: DesignSystem.bgDarkest,
+          color: isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgDarkest,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.3)),
+          border: Border.all(
+            color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.3),
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isLight ? const Color(0xFFE5D4B3) : Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
             const SizedBox(height: 20),
-            const Icon(Icons.bedtime_rounded, color: DesignSystem.goldLight, size: 36),
+            Icon(
+              Icons.bedtime_rounded,
+              color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+              size: 36,
+            ),
             const SizedBox(height: 12),
-            const Text('مؤقت النوم', style: TextStyle(color: DesignSystem.textWhite, fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              'مؤقت النوم',
+              style: TextStyle(
+                color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 6),
-            const Text('سيتم إيقاف الإذاعة تلقائيًا بعد انتهاء المدة المحددة', style: TextStyle(color: DesignSystem.textMuted, fontSize: 12)),
+            Text(
+              'سيتم إيقاف الإذاعة تلقائيًا بعد انتهاء المدة المحددة',
+              style: TextStyle(
+                color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                fontSize: 12,
+              ),
+            ),
             const SizedBox(height: 20),
             Wrap(
               spacing: 10,
@@ -92,8 +120,11 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
               children: [15, 30, 45, 60, 90].map((mins) {
                 return OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: DesignSystem.goldLight,
-                    side: BorderSide(color: DesignSystem.gold.withValues(alpha: 0.4)),
+                    foregroundColor: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                    backgroundColor: isLight ? const Color(0xFFFBF4E4) : null,
+                    side: BorderSide(
+                      color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.4),
+                    ),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusPill)),
                   ),
                   onPressed: () {
@@ -119,6 +150,7 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
   }
 
   void _showSettingsSheet(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -126,21 +158,46 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
         builder: (context, setSheetState) => Container(
           padding: const EdgeInsets.all(DesignSystem.spacingL),
           decoration: BoxDecoration(
-            color: DesignSystem.bgDarkest,
+            color: isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgDarkest,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.3)),
+            border: Border.all(
+              color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.3),
+            ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)))),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isLight ? const Color(0xFFE5D4B3) : Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
-              const Center(
-                child: Text('إعدادات الصوت والبث', style: TextStyle(color: DesignSystem.textWhite, fontSize: 18, fontWeight: FontWeight.bold)),
+              Center(
+                child: Text(
+                  'إعدادات الصوت والبث',
+                  style: TextStyle(
+                    color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
-              const Text('جودة الصوت للبث المباشر', style: TextStyle(color: DesignSystem.goldLight, fontSize: 13, fontWeight: FontWeight.bold)),
+              Text(
+                'جودة الصوت للبث المباشر',
+                style: TextStyle(
+                  color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
               Row(
                 children: ['جودة عالية (128 kbps)', 'جودة متوسطة (64 kbps)'].map((q) {
@@ -157,14 +214,26 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
                           decoration: BoxDecoration(
-                            color: isSelected ? DesignSystem.gold.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
+                            color: isSelected
+                                ? (isLight ? const Color(0xFFFBF4E4) : DesignSystem.gold.withValues(alpha: 0.2))
+                                : (isLight ? const Color(0xFFF1EAD8) : Colors.white.withValues(alpha: 0.05)),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: isSelected ? DesignSystem.gold : Colors.white12),
+                            border: Border.all(
+                              color: isSelected
+                                  ? (isLight ? const Color(0xFFC89B3C) : DesignSystem.gold)
+                                  : (isLight ? const Color(0xFFE5D4B3) : Colors.white12),
+                            ),
                           ),
                           child: Text(
                             q,
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: isSelected ? DesignSystem.goldLight : DesignSystem.textMuted, fontSize: 11, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              color: isSelected
+                                  ? (isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight)
+                                  : (isLight ? const Color(0xFF78716C) : DesignSystem.textMuted),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
@@ -176,14 +245,27 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('مستوى الصوت', style: TextStyle(color: DesignSystem.goldLight, fontSize: 13, fontWeight: FontWeight.bold)),
-                  Text('${(_radioService.volume * 100).toInt()}%', style: const TextStyle(color: DesignSystem.textWhite, fontSize: 12)),
+                  Text(
+                    'مستوى الصوت',
+                    style: TextStyle(
+                      color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '${(_radioService.volume * 100).toInt()}%',
+                    style: TextStyle(
+                      color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
               Slider(
                 value: _radioService.volume,
-                activeColor: DesignSystem.gold,
-                inactiveColor: Colors.white12,
+                activeColor: isLight ? const Color(0xFFD97706) : DesignSystem.gold,
+                inactiveColor: isLight ? const Color(0xFFE5D4B3) : Colors.white12,
                 onChanged: (val) {
                   _radioService.setVolume(val);
                   setSheetState(() {});
@@ -199,6 +281,7 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final filteredStations = RadioData.stations.where((s) {
       final matchesCategory = _selectedCategory == RadioCategory.all || s.category == _selectedCategory;
       final matchesSearch = _searchQuery.isEmpty || s.name.contains(_searchQuery) || s.description.contains(_searchQuery);
@@ -206,24 +289,13 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
     }).toList();
 
     return Scaffold(
-      backgroundColor: DesignSystem.bgDarkest,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Background subtle floating particles (GPU-isolated)
-            const Positioned.fill(
-              child: RepaintBoundary(
-                child: FloatingParticles(
-                  numberOfParticles: 14,
-                  particleColor: DesignSystem.goldLight,
-                ),
-              ),
-            ),
-
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 850),
-                child: CustomScrollView(
+      backgroundColor: Colors.transparent,
+      body: IslamicBackground(
+        child: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 850),
+              child: CustomScrollView(
                   physics: const BouncingScrollPhysics(),
                   slivers: [
                     // 1. Header
@@ -246,19 +318,35 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                           padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL, vertical: 8),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: DesignSystem.bgCard,
+                              color: isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgCard,
                               borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                              border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.4)),
+                              border: Border.all(
+                                color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.4),
+                              ),
                             ),
                             child: TextField(
                               autofocus: true,
-                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              style: TextStyle(
+                                color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                                fontSize: 13,
+                              ),
                               decoration: InputDecoration(
                                 hintText: 'ابحث عن اسم الإذاعة أو التلاوة...',
-                                hintStyle: const TextStyle(color: DesignSystem.textMuted, fontSize: 12),
-                                prefixIcon: const Icon(Icons.search_rounded, color: DesignSystem.goldLight, size: 20),
+                                hintStyle: TextStyle(
+                                  color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                                  fontSize: 12,
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.search_rounded,
+                                  color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                                  size: 20,
+                                ),
                                 suffixIcon: IconButton(
-                                  icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 18),
+                                  icon: Icon(
+                                    Icons.close_rounded,
+                                    color: isLight ? const Color(0xFF78716C) : Colors.white54,
+                                    size: 18,
+                                  ),
                                   onPressed: () => setState(() {
                                     _isSearching = false;
                                     _searchQuery = '';
@@ -290,17 +378,20 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                     ),
 
                     // 4. Live Stations Section Header
-                    const SliverToBoxAdapter(
+                    SliverToBoxAdapter(
                       child: Padding(
-                        padding: EdgeInsets.fromLTRB(DesignSystem.spacingL, 16, DesignSystem.spacingL, 8),
+                        padding: const EdgeInsets.fromLTRB(DesignSystem.spacingL, 16, DesignSystem.spacingL, 8),
                         child: Row(
                           children: [
-                            StarGlint(color: DesignSystem.goldLight, size: 18),
-                            SizedBox(width: 8),
+                            StarGlint(
+                              color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
                             Text(
                               'المحطات المباشرة',
                               style: TextStyle(
-                                color: DesignSystem.textWhite,
+                                color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -325,13 +416,41 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                               child: InteractiveMotionCard(
                                 onTap: () => _radioService.selectStation(station),
                                 borderRadius: DesignSystem.radiusLarge,
-                                child: GlassCard(
+                                child: Container(
                                   padding: const EdgeInsets.all(14),
-                                  borderRadius: DesignSystem.radiusLarge,
-                                  isSelected: isCurrent,
-                                  hasGlow: isPlayingThis,
-                                  glowColor: DesignSystem.gold,
-                                  onTap: () => _radioService.selectStation(station),
+                                  decoration: BoxDecoration(
+                                    color: isLight
+                                        ? (isCurrent ? const Color(0xFFFFF7E6) : const Color(0xFFFFFDF8))
+                                        : (isCurrent
+                                            ? DesignSystem.gold.withValues(alpha: 0.15)
+                                            : DesignSystem.bgCard.withValues(alpha: 0.8)),
+                                    borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
+                                    border: Border.all(
+                                      color: isLight
+                                          ? (isCurrent ? const Color(0xFFC89B3C) : const Color(0xFFE5D4B3))
+                                          : (isCurrent ? DesignSystem.gold : Colors.white.withValues(alpha: 0.08)),
+                                      width: isCurrent ? 1.4 : 1.0,
+                                    ),
+                                    boxShadow: isCurrent
+                                        ? [
+                                            BoxShadow(
+                                              color: isLight
+                                                  ? const Color(0xFFE5A83B).withValues(alpha: 0.2)
+                                                  : DesignSystem.gold.withValues(alpha: 0.15),
+                                              blurRadius: 16,
+                                              offset: const Offset(0, 4),
+                                            ),
+                                          ]
+                                        : (isLight
+                                            ? [
+                                                BoxShadow(
+                                                  color: const Color(0xFF854D0E).withValues(alpha: 0.04),
+                                                  blurRadius: 10,
+                                                  offset: const Offset(0, 2),
+                                                ),
+                                              ]
+                                            : null),
+                                  ),
                                   child: Row(
                                     children: [
                                       // Station Artwork Disc
@@ -339,20 +458,39 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                                         width: 52,
                                         height: 52,
                                         decoration: BoxDecoration(
-                                          gradient: DesignSystem.goldGradient,
+                                          gradient: isLight
+                                              ? const LinearGradient(
+                                                  colors: [Color(0xFFFFDF7D), Color(0xFFE5A83B)],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                )
+                                              : DesignSystem.goldGradient,
                                           shape: BoxShape.circle,
-                                          boxShadow: isPlayingThis ? DesignSystem.goldGlow : null,
+                                          boxShadow: isPlayingThis
+                                              ? (isLight
+                                                  ? [
+                                                      BoxShadow(
+                                                        color: const Color(0xFFE5A83B).withValues(alpha: 0.35),
+                                                        blurRadius: 12,
+                                                      )
+                                                    ]
+                                                  : DesignSystem.goldGlow)
+                                              : null,
                                         ),
                                         child: ClipOval(
                                           child: station.photoUrl != null
                                               ? Image.asset(
                                                   station.photoUrl!,
                                                   fit: BoxFit.cover,
-                                                  errorBuilder: (_, __, ___) => const Icon(Icons.radio_rounded, color: DesignSystem.bgDarkest, size: 26),
+                                                  errorBuilder: (_, __, ___) => Icon(
+                                                    Icons.radio_rounded,
+                                                    color: isLight ? const Color(0xFF1C1917) : DesignSystem.bgDarkest,
+                                                    size: 26,
+                                                  ),
                                                 )
                                               : Icon(
                                                   isPlayingThis ? Icons.radio_rounded : Icons.cell_tower_rounded,
-                                                  color: DesignSystem.bgDarkest,
+                                                  color: isLight ? const Color(0xFF1C1917) : DesignSystem.bgDarkest,
                                                   size: 26,
                                                 ),
                                         ),
@@ -368,7 +506,9 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                                                   child: Text(
                                                     station.name,
                                                     style: TextStyle(
-                                                      color: isCurrent ? DesignSystem.goldLight : DesignSystem.textWhite,
+                                                      color: isLight
+                                                          ? (isCurrent ? const Color(0xFF854D0E) : const Color(0xFF1C1917))
+                                                          : (isCurrent ? DesignSystem.goldLight : DesignSystem.textWhite),
                                                       fontSize: 14,
                                                       fontWeight: FontWeight.bold,
                                                     ),
@@ -382,19 +522,32 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                                                     color: const Color(0xFF38B982).withValues(alpha: 0.15),
                                                     borderRadius: BorderRadius.circular(6),
                                                   ),
-                                                  child: const Text('مباشر', style: TextStyle(color: Color(0xFF38B982), fontSize: 9, fontWeight: FontWeight.bold)),
+                                                  child: const Text(
+                                                    'مباشر',
+                                                    style: TextStyle(
+                                                      color: Color(0xFF38B982),
+                                                      fontSize: 9,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
                                                 ),
                                               ],
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
                                               station.origin,
-                                              style: const TextStyle(color: DesignSystem.textMuted, fontSize: 11),
+                                              style: TextStyle(
+                                                color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                                                fontSize: 11,
+                                              ),
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
                                               station.currentProgram,
-                                              style: const TextStyle(color: DesignSystem.goldLight, fontSize: 10),
+                                              style: TextStyle(
+                                                color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                                                fontSize: 10,
+                                              ),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
@@ -405,7 +558,9 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                                       IconButton(
                                         icon: Icon(
                                           _radioService.isFavorite(station.id) ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                                          color: _radioService.isFavorite(station.id) ? const Color(0xFFE11D48) : Colors.white30,
+                                          color: _radioService.isFavorite(station.id)
+                                              ? const Color(0xFFE11D48)
+                                              : (isLight ? const Color(0xFF78716C) : Colors.white30),
                                           size: 20,
                                         ),
                                         onPressed: () => _radioService.toggleFavorite(station.id),
@@ -434,35 +589,39 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                 ),
               ),
             ),
-          ],
+          ),
         ),
-      ),
     );
   }
 
   Widget _buildHeader(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: DesignSystem.goldLight, size: 20),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        const Column(
+        Column(
           children: [
             Text(
               'الإذاعة',
               style: TextStyle(
-                color: DesignSystem.textWhite,
+                color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 2),
+            const SizedBox(height: 2),
             Text(
               'استمع إلى أجمل الإذاعات الإسلامية',
               style: TextStyle(
-                color: DesignSystem.goldLight,
+                color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
@@ -474,7 +633,7 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
             IconButton(
               icon: Icon(
                 _useRealApi ? Icons.cloud_done : Icons.cloud_off,
-                color: _useRealApi ? Colors.green : DesignSystem.goldLight,
+                color: _useRealApi ? Colors.green : (isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight),
                 size: 22,
               ),
               onPressed: () {
@@ -491,15 +650,27 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
               },
             ),
             IconButton(
-              icon: const Icon(Icons.search_rounded, color: DesignSystem.goldLight, size: 22),
+              icon: Icon(
+                Icons.search_rounded,
+                color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                size: 22,
+              ),
               onPressed: () => setState(() => _isSearching = !_isSearching),
             ),
             IconButton(
-              icon: const Icon(Icons.tune_rounded, color: DesignSystem.goldLight, size: 22),
+              icon: Icon(
+                Icons.tune_rounded,
+                color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                size: 22,
+              ),
               onPressed: () => _showSettingsSheet(context),
             ),
             IconButton(
-              icon: const Icon(Icons.graphic_eq_rounded, color: DesignSystem.goldLight, size: 22),
+              icon: Icon(
+                Icons.graphic_eq_rounded,
+                color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                size: 22,
+              ),
               onPressed: () {
                 showDialog(
                   context: context,
@@ -514,6 +685,7 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
   }
 
   Widget _buildHeroRadioPlayer(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final station = _radioService.currentStation;
     final isPlaying = _radioService.isPlaying;
     final isBuffering = _radioService.isBuffering;
@@ -521,12 +693,17 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: DesignSystem.bgCard.withValues(alpha: 0.9),
+        color: isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgCard.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.35), width: 1.2),
+        border: Border.all(
+          color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.35),
+          width: 1.2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: DesignSystem.gold.withValues(alpha: 0.1),
+            color: isLight
+                ? const Color(0xFFC89B3C).withValues(alpha: 0.12)
+                : DesignSystem.gold.withValues(alpha: 0.1),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -551,7 +728,8 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                           boxShadow: isPlaying
                               ? [
                                   BoxShadow(
-                                    color: DesignSystem.gold.withValues(alpha: 0.2 + 0.15 * _waveController.value),
+                                    color: (isLight ? const Color(0xFFE5A83B) : DesignSystem.gold)
+                                        .withValues(alpha: 0.2 + 0.15 * _waveController.value),
                                     blurRadius: 20 + 10 * _waveController.value,
                                     spreadRadius: 2,
                                   ),
@@ -566,19 +744,34 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                     height: 82,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const RadialGradient(
-                        colors: [Color(0xFF1E3A8A), Color(0xFF020814)],
+                      gradient: isLight
+                          ? const RadialGradient(
+                              colors: [Color(0xFFFFFDF8), Color(0xFFFAF5EB)],
+                            )
+                          : const RadialGradient(
+                              colors: [Color(0xFF1E3A8A), Color(0xFF020814)],
+                            ),
+                      border: Border.all(
+                        color: isLight ? const Color(0xFFC89B3C) : DesignSystem.gold,
+                        width: 2,
                       ),
-                      border: Border.all(color: DesignSystem.gold, width: 2),
                     ),
                     child: ClipOval(
                       child: station.photoUrl != null
                           ? Image.asset(
                               station.photoUrl!,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(Icons.mosque_rounded, color: DesignSystem.goldLight, size: 38),
+                              errorBuilder: (_, __, ___) => Icon(
+                                Icons.mosque_rounded,
+                                color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                                size: 38,
+                              ),
                             )
-                          : const Icon(Icons.mosque_rounded, color: DesignSystem.goldLight, size: 38),
+                          : Icon(
+                              Icons.mosque_rounded,
+                              color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                              size: 38,
+                            ),
                     ),
                   ),
                 ],
@@ -602,7 +795,10 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                             children: [
                               Icon(Icons.circle, color: Color(0xFF38B982), size: 6),
                               SizedBox(width: 4),
-                              Text('يذاع الآن', style: TextStyle(color: Color(0xFF38B982), fontSize: 10, fontWeight: FontWeight.bold)),
+                              Text(
+                                'يذاع الآن',
+                                style: TextStyle(color: Color(0xFF38B982), fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
                             ],
                           ),
                         ),
@@ -610,7 +806,10 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                         if (_radioService.sleepTimerRemaining != null)
                           Text(
                             '🌙 ${_radioService.sleepTimerRemaining!.inMinutes} د',
-                            style: const TextStyle(color: DesignSystem.goldLight, fontSize: 11),
+                            style: TextStyle(
+                              color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                              fontSize: 11,
+                            ),
                           ),
                       ],
                     ),
@@ -620,14 +819,21 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                       alignment: Alignment.centerRight,
                       child: Text(
                         station.name,
-                        style: const TextStyle(color: DesignSystem.textWhite, fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                         maxLines: 1,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       station.origin,
-                      style: const TextStyle(color: DesignSystem.goldLight, fontSize: 11),
+                      style: TextStyle(
+                        color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                        fontSize: 11,
+                      ),
                     ),
                   ],
                 ),
@@ -651,7 +857,7 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                       width: 3,
                       height: height,
                       decoration: BoxDecoration(
-                        color: DesignSystem.gold.withValues(alpha: 0.75),
+                        color: (isLight ? const Color(0xFFD97706) : DesignSystem.gold).withValues(alpha: 0.75),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     );
@@ -671,13 +877,19 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
               IconButton(
                 icon: Icon(
                   _radioService.isFavorite(station.id) ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                  color: _radioService.isFavorite(station.id) ? const Color(0xFFE11D48) : DesignSystem.goldLight,
+                  color: _radioService.isFavorite(station.id)
+                      ? const Color(0xFFE11D48)
+                      : (isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight),
                   size: 22,
                 ),
                 onPressed: () => _radioService.toggleFavorite(station.id),
               ),
               IconButton(
-                icon: const Icon(Icons.skip_previous_rounded, color: DesignSystem.goldLight, size: 28),
+                icon: Icon(
+                  Icons.skip_previous_rounded,
+                  color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                  size: 28,
+                ),
                 onPressed: () => _radioService.previousStation(),
               ),
               // Giant Play/Pause Circle
@@ -688,26 +900,55 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                   height: 64,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: DesignSystem.goldGradient,
-                    boxShadow: DesignSystem.goldGlow,
+                    gradient: isLight
+                        ? const LinearGradient(
+                            colors: [Color(0xFFFFDF7D), Color(0xFFE5A83B)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                        : DesignSystem.goldGradient,
+                    boxShadow: isLight
+                        ? [
+                            BoxShadow(
+                              color: const Color(0xFFE5A83B).withValues(alpha: 0.35),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : DesignSystem.goldGlow,
                   ),
                   child: Center(
                     child: isBuffering
-                        ? const SizedBox(width: 26, height: 26, child: CircularProgressIndicator(color: DesignSystem.bgDarkest, strokeWidth: 2.5))
+                        ? SizedBox(
+                            width: 26,
+                            height: 26,
+                            child: CircularProgressIndicator(
+                              color: isLight ? const Color(0xFF1C1917) : DesignSystem.bgDarkest,
+                              strokeWidth: 2.5,
+                            ),
+                          )
                         : Icon(
                             isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                            color: DesignSystem.bgDarkest,
+                            color: isLight ? const Color(0xFF1C1917) : DesignSystem.bgDarkest,
                             size: 36,
                           ),
                   ),
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.skip_next_rounded, color: DesignSystem.goldLight, size: 28),
+                icon: Icon(
+                  Icons.skip_next_rounded,
+                  color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                  size: 28,
+                ),
                 onPressed: () => _radioService.nextStation(),
               ),
               IconButton(
-                icon: const Icon(Icons.bedtime_outlined, color: DesignSystem.goldLight, size: 22),
+                icon: Icon(
+                  Icons.bedtime_outlined,
+                  color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                  size: 22,
+                ),
                 onPressed: () => _showSleepTimerSheet(context),
               ),
             ],
@@ -718,6 +959,7 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
   }
 
   Widget _buildCategoryPills() {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final categories = [
       {'cat': RadioCategory.all, 'label': '📻 الكل'},
       {'cat': RadioCategory.quran, 'label': '📖 القرآن الكريم'},
@@ -746,18 +988,34 @@ class _RadioScreenState extends State<RadioScreen> with SingleTickerProviderStat
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? DesignSystem.gold.withValues(alpha: 0.22) : DesignSystem.bgCard.withValues(alpha: 0.7),
+                  color: isLight
+                      ? (isSelected ? const Color(0xFFFBF4E4) : const Color(0xFFFFFDF8))
+                      : (isSelected ? DesignSystem.gold.withValues(alpha: 0.22) : DesignSystem.bgCard.withValues(alpha: 0.7)),
                   borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
                   border: Border.all(
-                    color: isSelected ? DesignSystem.gold : Colors.white12,
+                    color: isLight
+                        ? (isSelected ? const Color(0xFFC89B3C) : const Color(0xFFE5D4B3))
+                        : (isSelected ? DesignSystem.gold : Colors.white12),
                     width: isSelected ? 1.5 : 1.0,
                   ),
-                  boxShadow: isSelected ? DesignSystem.goldGlow : null,
+                  boxShadow: isSelected
+                      ? (isLight
+                          ? [
+                              BoxShadow(
+                                color: const Color(0xFFE5A83B).withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              )
+                            ]
+                          : DesignSystem.goldGlow)
+                      : null,
                 ),
                 child: Text(
                   label,
                   style: TextStyle(
-                    color: isSelected ? DesignSystem.goldLight : DesignSystem.textMuted,
+                    color: isLight
+                        ? (isSelected ? const Color(0xFF854D0E) : const Color(0xFF78716C))
+                        : (isSelected ? DesignSystem.goldLight : DesignSystem.textMuted),
                     fontSize: 12,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   ),

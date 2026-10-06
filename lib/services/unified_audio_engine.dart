@@ -161,6 +161,7 @@ class UnifiedAudioEngine {
 
       if (kIsWeb) {
         await _webPlayer!.stop();
+        await _webPlayer!.setVolume(1.0);
         if (source.startsWith('http://') || source.startsWith('https://')) {
           await _webPlayer!.play(ap.UrlSource(source));
         } else if (source.startsWith('assets/')) {
@@ -171,12 +172,13 @@ class UnifiedAudioEngine {
         }
       } else {
         await _nativePlayer!.stop();
+        await _nativePlayer!.setVolume(1.0);
         if (source.startsWith('http://') || source.startsWith('https://')) {
           await _nativePlayer!.setUrl(source);
           await _nativePlayer!.play();
         } else if (source.startsWith('assets/')) {
-          final path = source.substring('assets/'.length);
-          await _nativePlayer!.setAsset(path);
+          // just_audio expects the exact asset path from pubspec.yaml (e.g. assets/audio/athan/athan_custom.mp3)
+          await _nativePlayer!.setAsset(source);
           await _nativePlayer!.play();
         } else {
           await _nativePlayer!.setFilePath(source);

@@ -45,8 +45,16 @@ class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
     final daysInMonth = DateUtils.getDaysInMonth(_currentMonth.year, _currentMonth.month);
     final now = DateTime.now();
+
+    final sheetBg = isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1621);
+    final cardBorder = isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.3);
+    final textTitle = isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite;
+    final goldAccent = isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight;
+    final textSub = isLight ? const Color(0xFF78716C) : DesignSystem.textSecondary;
+    final headerBg = isLight ? const Color(0xFFFBF4E4) : Colors.white.withValues(alpha: 0.04);
 
     const monthNamesAr = [
       'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
@@ -57,9 +65,9 @@ class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
       height: MediaQuery.of(context).size.height * 0.85,
       padding: const EdgeInsets.all(DesignSystem.spacingL),
       decoration: BoxDecoration(
-        color: DesignSystem.bgDarkest,
+        color: sheetBg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(DesignSystem.radiusLarge)),
-        border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.3)),
+        border: Border.all(color: cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,7 +78,7 @@ class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: DesignSystem.textMuted.withValues(alpha: 0.4),
+                color: isLight ? const Color(0xFFD6C7A1) : DesignSystem.textMuted.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -84,24 +92,24 @@ class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'جدول مواقيت الشهر',
                     style: TextStyle(
-                      color: DesignSystem.goldLight,
+                      color: goldAccent,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
                     '${monthNamesAr[_currentMonth.month - 1]} ${_currentMonth.year}',
-                    style: const TextStyle(color: DesignSystem.textSecondary, fontSize: 13),
+                    style: TextStyle(color: textSub, fontSize: 13),
                   ),
                 ],
               ),
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.chevron_left_rounded, color: DesignSystem.goldLight),
+                    icon: Icon(Icons.chevron_left_rounded, color: goldAccent),
                     onPressed: () {
                       setState(() {
                         _currentMonth = DateTime(_currentMonth.year, _currentMonth.month - 1, 1);
@@ -110,7 +118,7 @@ class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
                     },
                   ),
                   IconButton(
-                    icon: const Icon(Icons.chevron_right_rounded, color: DesignSystem.goldLight),
+                    icon: Icon(Icons.chevron_right_rounded, color: goldAccent),
                     onPressed: () {
                       setState(() {
                         _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 1);
@@ -129,18 +137,19 @@ class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.04),
+              color: headerBg,
               borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
+              border: isLight ? Border.all(color: cardBorder) : null,
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Expanded(flex: 1, child: Text('اليوم', textAlign: TextAlign.center, style: TextStyle(color: DesignSystem.goldLight, fontSize: 11, fontWeight: FontWeight.bold))),
-                Expanded(flex: 1, child: Text('الفجر', textAlign: TextAlign.center, style: TextStyle(color: DesignSystem.textSecondary, fontSize: 11))),
-                Expanded(flex: 1, child: Text('الشروق', textAlign: TextAlign.center, style: TextStyle(color: DesignSystem.textSecondary, fontSize: 11))),
-                Expanded(flex: 1, child: Text('الظهر', textAlign: TextAlign.center, style: TextStyle(color: DesignSystem.textSecondary, fontSize: 11))),
-                Expanded(flex: 1, child: Text('العصر', textAlign: TextAlign.center, style: TextStyle(color: DesignSystem.textSecondary, fontSize: 11))),
-                Expanded(flex: 1, child: Text('المغرب', textAlign: TextAlign.center, style: TextStyle(color: DesignSystem.textSecondary, fontSize: 11))),
-                Expanded(flex: 1, child: Text('العشاء', textAlign: TextAlign.center, style: TextStyle(color: DesignSystem.textSecondary, fontSize: 11))),
+                Expanded(flex: 1, child: Text('اليوم', textAlign: TextAlign.center, style: TextStyle(color: goldAccent, fontSize: 11, fontWeight: FontWeight.bold))),
+                Expanded(flex: 1, child: Text('الفجر', textAlign: TextAlign.center, style: TextStyle(color: textSub, fontSize: 11))),
+                Expanded(flex: 1, child: Text('الشروق', textAlign: TextAlign.center, style: TextStyle(color: textSub, fontSize: 11))),
+                Expanded(flex: 1, child: Text('الظهر', textAlign: TextAlign.center, style: TextStyle(color: textSub, fontSize: 11))),
+                Expanded(flex: 1, child: Text('العصر', textAlign: TextAlign.center, style: TextStyle(color: textSub, fontSize: 11))),
+                Expanded(flex: 1, child: Text('المغرب', textAlign: TextAlign.center, style: TextStyle(color: textSub, fontSize: 11))),
+                Expanded(flex: 1, child: Text('العشاء', textAlign: TextAlign.center, style: TextStyle(color: textSub, fontSize: 11))),
               ],
             ),
           ),
@@ -150,8 +159,8 @@ class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
           // Days List
           Expanded(
             child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: DesignSystem.goldLight),
+                ? Center(
+                    child: CircularProgressIndicator(color: goldAccent),
                   )
                 : ListView.builder(
                     physics: const BouncingScrollPhysics(),
@@ -165,6 +174,18 @@ class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
                           _service.selectedDate.day == date.day;
                       final timings = _monthTimings[dayNum] ?? [];
 
+                      final rowBg = isSelected
+                          ? (isLight ? const Color(0xFFFDE68A) : DesignSystem.gold.withValues(alpha: 0.25))
+                          : isToday
+                              ? (isLight ? const Color(0xFFFBF4E4) : DesignSystem.gold.withValues(alpha: 0.12))
+                              : (isLight ? Colors.white : Colors.white.withValues(alpha: 0.02));
+
+                      final rowBorder = isSelected
+                          ? Border.all(color: goldAccent, width: 1.5)
+                          : isToday
+                              ? Border.all(color: goldAccent.withValues(alpha: 0.5))
+                              : (isLight ? Border.all(color: cardBorder.withValues(alpha: 0.5)) : null);
+
                       return InkWell(
                         onTap: () {
                           _service.setSelectedDate(date);
@@ -175,17 +196,9 @@ class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
                           margin: const EdgeInsets.only(bottom: 6),
                           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
                           decoration: BoxDecoration(
-                            color: isSelected
-                                ? DesignSystem.gold.withValues(alpha: 0.25)
-                                : isToday
-                                    ? DesignSystem.gold.withValues(alpha: 0.12)
-                                    : Colors.white.withValues(alpha: 0.02),
+                            color: rowBg,
                             borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-                            border: isSelected
-                                ? Border.all(color: DesignSystem.goldLight, width: 1.5)
-                                : isToday
-                                    ? Border.all(color: DesignSystem.gold.withValues(alpha: 0.5))
-                                    : null,
+                            border: rowBorder,
                           ),
                           child: Row(
                             children: [
@@ -195,20 +208,20 @@ class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
                                   '$dayNum',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: (isToday || isSelected) ? DesignSystem.goldLight : DesignSystem.textWhite,
+                                    color: (isToday || isSelected) ? goldAccent : textTitle,
                                     fontWeight: (isToday || isSelected) ? FontWeight.bold : FontWeight.normal,
                                     fontSize: 12,
                                   ),
                                 ),
                               ),
                               if (timings.isEmpty)
-                                const Expanded(
+                                Expanded(
                                   flex: 6,
                                   child: Center(
                                     child: SizedBox(
                                       width: 12,
                                       height: 12,
-                                      child: CircularProgressIndicator(strokeWidth: 1.5, color: DesignSystem.goldLight),
+                                      child: CircularProgressIndicator(strokeWidth: 1.5, color: goldAccent),
                                     ),
                                   ),
                                 )
@@ -219,7 +232,7 @@ class _MonthlyPrayerSheetState extends State<MonthlyPrayerSheet> {
                                     t.time.format(context),
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      color: (isToday || isSelected) ? DesignSystem.goldLight : DesignSystem.textSecondary,
+                                      color: (isToday || isSelected) ? goldAccent : textSub,
                                       fontSize: 10,
                                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                     ),

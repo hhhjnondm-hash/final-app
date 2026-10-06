@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/prayer_models.dart';
 import '../services/prayer_service.dart';
 import '../services/athan_service.dart';
+import '../services/notification_service.dart';
 import '../utils/design_system.dart';
 
 class PrayerSettingsSheet extends StatefulWidget {
@@ -32,16 +33,25 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
     final service = PrayerService();
     final settings = service.settings;
     final athanSettings = _athanService.settings;
 
+    final sheetBg = isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1621);
+    final cardBg = isLight ? const Color(0xFFFBF4E4) : DesignSystem.gold.withValues(alpha: 0.06);
+    final cardBorder = isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.25);
+    final textTitle = isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite;
+    final textSub = isLight ? const Color(0xFF78716C) : DesignSystem.textMuted;
+    final goldAccent = isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight;
+    final dropdownBg = isLight ? const Color(0xFFFFFFFF) : DesignSystem.bgCard;
+
     return Container(
       padding: const EdgeInsets.all(DesignSystem.spacingL),
       decoration: BoxDecoration(
-        color: DesignSystem.bgDarkest,
+        color: sheetBg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(DesignSystem.radiusLarge)),
-        border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.3)),
+        border: Border.all(color: cardBorder),
       ),
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -55,32 +65,32 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: DesignSystem.textMuted.withValues(alpha: 0.4),
+                  color: isLight ? const Color(0xFFD6C7A1) : DesignSystem.textMuted.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
             const SizedBox(height: 16),
 
-            const Center(
+            Center(
               child: Text(
-                'إعدادات الأذان والمواقيت الفلكية',
+                'إعدادات الأذان والتنبيهات والمواقيت',
                 style: TextStyle(
-                  color: DesignSystem.goldLight,
+                  color: goldAccent,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             // 1. نظام الأذان المتطور (صوت الأذان والتنبيهات)
             Container(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: DesignSystem.gold.withValues(alpha: 0.06),
+                color: cardBg,
                 borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-                border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.25)),
+                border: Border.all(color: cardBorder),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,14 +98,14 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.volume_up_rounded, color: DesignSystem.goldLight, size: 20),
-                          SizedBox(width: 8),
+                          Icon(Icons.volume_up_rounded, color: goldAccent, size: 20),
+                          const SizedBox(width: 8),
                           Text(
-                            'تفعيل تنبيهات الأذان',
+                            'تفعيل تنبيهات الأذان التلقائية',
                             style: TextStyle(
-                              color: DesignSystem.goldLight,
+                              color: textTitle,
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
@@ -104,35 +114,36 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                       ),
                       Switch(
                         value: athanSettings.enabled,
-                        activeThumbColor: DesignSystem.gold,
+                        activeThumbColor: goldAccent,
+                        activeTrackColor: goldAccent.withValues(alpha: 0.4),
                         onChanged: (val) {
                           _athanService.updateSettings(athanSettings.copyWith(enabled: val));
                         },
                       ),
                     ],
                   ),
-                  const Divider(color: Color(0xFF1E293B), height: 20),
+                  Divider(color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFF1E293B), height: 20),
 
                   // Sound Selection
-                  const Text(
+                  Text(
                     'صوت الأذان المفضل',
-                    style: TextStyle(color: DesignSystem.textWhite, fontWeight: FontWeight.bold, fontSize: 13),
+                    style: TextStyle(color: textTitle, fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                     decoration: BoxDecoration(
-                      color: DesignSystem.bgCard,
+                      color: dropdownBg,
                       borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      border: Border.all(color: cardBorder),
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<AthanSound>(
                         value: athanSettings.sound,
                         isExpanded: true,
-                        dropdownColor: DesignSystem.bgCard,
-                        icon: const Icon(Icons.arrow_drop_down, color: DesignSystem.goldLight),
-                        style: const TextStyle(color: DesignSystem.textWhite, fontSize: 13),
+                        dropdownColor: dropdownBg,
+                        icon: Icon(Icons.arrow_drop_down, color: goldAccent),
+                        style: TextStyle(color: textTitle, fontSize: 13, fontWeight: FontWeight.w500),
                         onChanged: (val) {
                           if (val != null) {
                             _athanService.updateSettings(athanSettings.copyWith(sound: val));
@@ -141,7 +152,10 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                         items: AthanSound.values.map((s) {
                           return DropdownMenuItem(
                             value: s,
-                            child: Text(_athanService.getSoundDisplayName(s)),
+                            child: Text(
+                              _athanService.getSoundDisplayName(s),
+                              style: TextStyle(color: textTitle),
+                            ),
                           );
                         }).toList(),
                       ),
@@ -154,9 +168,9 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: DesignSystem.bgDarkest.withValues(alpha: 0.6),
+                      color: isLight ? Colors.white : const Color(0xFF070B11).withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-                      border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.2)),
+                      border: Border.all(color: cardBorder),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,16 +178,16 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Expanded(
+                            Expanded(
                               child: Row(
                                 children: [
-                                  Icon(Icons.volume_down_rounded, color: DesignSystem.goldLight, size: 20),
-                                  SizedBox(width: 8),
+                                  Icon(Icons.volume_down_rounded, color: goldAccent, size: 20),
+                                  const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      'أذان مختصر في الوضع الصامت (التكبير والشهادتان)',
+                                      'أذان مختصر في الوضع الصامت',
                                       style: TextStyle(
-                                        color: DesignSystem.textWhite,
+                                        color: textTitle,
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -184,7 +198,8 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                             ),
                             Switch(
                               value: athanSettings.shortAthanOnSilent,
-                              activeThumbColor: DesignSystem.gold,
+                              activeThumbColor: goldAccent,
+                              activeTrackColor: goldAccent.withValues(alpha: 0.4),
                               onChanged: (val) {
                                 _athanService.updateSettings(athanSettings.copyWith(shortAthanOnSilent: val));
                               },
@@ -192,24 +207,26 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        const Text(
-                          'عندما يكون الهاتف على الوضع الصامت، ينطق الأذان بالتكبيرتين والشهادتين فقط ثم ينتهي بلطف دون رفع الأذان كاملًا.',
-                          style: TextStyle(color: DesignSystem.textMuted, fontSize: 11, height: 1.4),
+                        Text(
+                          'عندما يكون الهاتف على الوضع الصامت، ينطق الأذان بالتكبيرتين والشهادتين فقط ثم ينتهي بلطف.',
+                          style: TextStyle(color: textSub, fontSize: 11, height: 1.4),
                         ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
 
                   // Test Buttons Row: Full Athan & Short Athan
                   Row(
                     children: [
                       Expanded(
-                        child: OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: DesignSystem.goldLight,
-                            side: const BorderSide(color: DesignSystem.goldLight),
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isLight ? const Color(0xFF854D0E) : DesignSystem.gold,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
                           onPressed: () {
@@ -221,8 +238,8 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                           },
                           icon: Icon(_athanService.isPlayingAthan ? Icons.stop_rounded : Icons.play_arrow_rounded, size: 18),
                           label: Text(
-                            _athanService.isPlayingAthan ? 'إيقاف' : 'تجربة الأذان كاملًا',
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                            _athanService.isPlayingAthan ? 'إيقاف الأذان' : 'تجربة صوت الأذان 🔊',
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -230,8 +247,9 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                       Expanded(
                         child: OutlinedButton.icon(
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF38B982),
-                            side: const BorderSide(color: Color(0xFF38B982)),
+                            foregroundColor: const Color(0xFF16A34A),
+                            side: const BorderSide(color: Color(0xFF16A34A), width: 1.2),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
                           onPressed: () {
@@ -241,10 +259,10 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                               _athanService.testShortAthan(context: context);
                             }
                           },
-                          icon: const Icon(Icons.flash_on_rounded, color: Color(0xFF38B982), size: 18),
+                          icon: const Icon(Icons.flash_on_rounded, size: 18, color: Color(0xFF16A34A)),
                           label: const Text(
-                            'تجربة الأذان المختصر',
-                            style: TextStyle(color: Color(0xFF38B982), fontSize: 11, fontWeight: FontWeight.bold),
+                            'الأذان المختصر ⚡',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -253,60 +271,70 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
 
                   const SizedBox(height: 8),
 
-                  // Test Background Athan (Foreground Service & Lock Screen)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: DesignSystem.textWhite,
-                            side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                          onPressed: () async {
-                            await _athanService.testNativeBackgroundAthan();
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('تم إطلاق خدمة الأذان بالخلفية والشاشة مغلقة بنجاح 🔔'),
-                                  backgroundColor: DesignSystem.bgCard,
-                                  duration: Duration(seconds: 3),
-                                ),
-                              );
-                            }
-                          },
-                          icon: const Icon(Icons.notifications_active_rounded, size: 18, color: DesignSystem.goldLight),
-                          label: const Text('تجربة أذان الخلفية وقفل الشاشة (إجباري)', style: TextStyle(fontSize: 12)),
-                        ),
+                  // Test Notification Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: textTitle,
+                        side: BorderSide(color: cardBorder),
+                        padding: const EdgeInsets.symmetric(vertical: 11),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                    ],
+                      onPressed: () async {
+                        final notif = NotificationService();
+                        await notif.requestPermissionsManually();
+                        await notif.showPrayerAthanNotification(
+                          id: 999,
+                          prayerName: 'Dhuhr',
+                          arabicName: 'الظهر',
+                        );
+                        await notif.showIslamicContentNotification(
+                          id: 998,
+                          title: '🕌 إشعار تجريبي: حان موعد الصلاة',
+                          body: 'قال رسول الله ﷺ: «أحبّ الأعمال إلى الله الصلاة على وقتها»',
+                          category: 'تجربة الإشعارات',
+                        );
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('تم إرسال إشعار تجريبي وتحديث الإشعارات بنجاح 🔔'),
+                              backgroundColor: isLight ? const Color(0xFF854D0E) : DesignSystem.bgCard,
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        }
+                      },
+                      icon: Icon(Icons.notifications_active_rounded, size: 18, color: goldAccent),
+                      label: const Text('اختبار إرسال الإشعارات وقفل الشاشة 🔔', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             // 2. Calculation Method
-            const Text(
+            Text(
               'طريقة الحساب المعتمدة',
-              style: TextStyle(color: DesignSystem.textWhite, fontWeight: FontWeight.bold, fontSize: 14),
+              style: TextStyle(color: textTitle, fontWeight: FontWeight.bold, fontSize: 14),
             ),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.04),
+                color: dropdownBg,
                 borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                border: Border.all(color: cardBorder),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: settings.method,
                   isExpanded: true,
-                  dropdownColor: DesignSystem.bgCard,
-                  icon: const Icon(Icons.arrow_drop_down, color: DesignSystem.goldLight),
-                  style: const TextStyle(color: DesignSystem.textWhite, fontSize: 13),
+                  dropdownColor: dropdownBg,
+                  icon: Icon(Icons.arrow_drop_down, color: goldAccent),
+                  style: TextStyle(color: textTitle, fontSize: 13, fontWeight: FontWeight.w500),
                   onChanged: (val) {
                     if (val != null) {
                       service.updateSettings(PrayerCalculationSettings(
@@ -324,7 +352,7 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                     'رابطة العالم الإسلامي',
                     'جامعة العلوم الإسلامية بكراتشي',
                     'الاتحاد الإسلامي بأمريكا الشمالية (ISNA)',
-                  ].map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
+                  ].map((m) => DropdownMenuItem(value: m, child: Text(m, style: TextStyle(color: textTitle)))).toList(),
                 ),
               ),
             ),
@@ -332,14 +360,14 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
             const SizedBox(height: 20),
 
             // Juristic Method (Shafii vs Hanafi)
-            const Text(
+            Text(
               'المذهب الفقهي (لحساب صلاة العصر)',
-              style: TextStyle(color: DesignSystem.textWhite, fontWeight: FontWeight.bold, fontSize: 14),
+              style: TextStyle(color: textTitle, fontWeight: FontWeight.bold, fontSize: 14),
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                _buildRadioSchool('شافعي، مالكي، حنبلي', settings.juristicMethod == 'شافعي، مالكي، حنبلي', () {
+                _buildRadioSchool('جمهور الفقهاء (شافعي، مالكي، حنبلي)', settings.juristicMethod == 'شافعي، مالكي، حنبلي', () {
                   service.updateSettings(PrayerCalculationSettings(
                     method: settings.method,
                     juristicMethod: 'شافعي، مالكي، حنبلي',
@@ -347,7 +375,7 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                     ishaAngle: settings.ishaAngle,
                   ));
                   setState(() {});
-                }),
+                }, isLight),
                 const SizedBox(width: 10),
                 _buildRadioSchool('حنفي', settings.juristicMethod == 'حنفي', () {
                   service.updateSettings(PrayerCalculationSettings(
@@ -357,7 +385,7 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                     ishaAngle: settings.ishaAngle,
                   ));
                   setState(() {});
-                }),
+                }, isLight),
               ],
             ),
 
@@ -370,16 +398,16 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.04),
+                      color: cardBg,
                       borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                      border: Border.all(color: cardBorder),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('زاوية الفجر', style: TextStyle(color: DesignSystem.textMuted, fontSize: 11)),
+                        Text('زاوية الفجر', style: TextStyle(color: textSub, fontSize: 11)),
                         const SizedBox(height: 4),
-                        Text('${settings.fajrAngle}°', style: const TextStyle(color: DesignSystem.goldLight, fontWeight: FontWeight.bold, fontSize: 15)),
+                        Text('${settings.fajrAngle}°', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 15)),
                       ],
                     ),
                   ),
@@ -389,16 +417,16 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.04),
+                      color: cardBg,
                       borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                      border: Border.all(color: cardBorder),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('زاوية العشاء', style: TextStyle(color: DesignSystem.textMuted, fontSize: 11)),
+                        Text('زاوية العشاء', style: TextStyle(color: textSub, fontSize: 11)),
                         const SizedBox(height: 4),
-                        Text('${settings.ishaAngle}°', style: const TextStyle(color: DesignSystem.goldLight, fontWeight: FontWeight.bold, fontSize: 15)),
+                        Text('${settings.ishaAngle}°', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 15)),
                       ],
                     ),
                   ),
@@ -413,7 +441,16 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
     );
   }
 
-  Widget _buildRadioSchool(String title, bool isSelected, VoidCallback onTap) {
+  Widget _buildRadioSchool(String title, bool isSelected, VoidCallback onTap, bool isLight) {
+    final activeBg = isLight ? const Color(0xFFFBF4E4) : DesignSystem.gold.withValues(alpha: 0.15);
+    final inactiveBg = isLight ? const Color(0xFFF5F0E6) : Colors.white.withValues(alpha: 0.03);
+    final border = isSelected
+        ? (isLight ? const Color(0xFF854D0E) : DesignSystem.gold)
+        : (isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.1));
+    final textColor = isSelected
+        ? (isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight)
+        : (isLight ? const Color(0xFF78716C) : DesignSystem.textSecondary);
+
     return Expanded(
       child: InkWell(
         onTap: onTap,
@@ -421,17 +458,16 @@ class _PrayerSettingsSheetState extends State<PrayerSettingsSheet> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
           decoration: BoxDecoration(
-            color: isSelected ? DesignSystem.gold.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.03),
+            color: isSelected ? activeBg : inactiveBg,
             borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-            border: Border.all(
-              color: isSelected ? DesignSystem.gold : Colors.white.withValues(alpha: 0.1),
-            ),
+            border: Border.all(color: border),
           ),
           child: Center(
             child: Text(
               title,
+              textAlign: TextAlign.center,
               style: TextStyle(
-                color: isSelected ? DesignSystem.goldLight : DesignSystem.textSecondary,
+                color: textColor,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 fontSize: 12,
               ),

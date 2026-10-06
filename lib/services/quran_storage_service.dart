@@ -269,4 +269,10 @@ class QuranStorageService extends ChangeNotifier {
       debugPrint('⚠️ Error saving reading stop mark: $e');
     }
   }
+
+  Future<void> setReadingStopMark({
+    required int surahNumber,
+    required String surahName,
+    required int ayahNumber,
+  }) => saveReadingStopMark(surahNumber, surahName, ayahNumber);
 }

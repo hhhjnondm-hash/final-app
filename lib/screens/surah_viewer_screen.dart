@@ -8,6 +8,7 @@ import '../services/audio_quran_service.dart';
 import '../services/global_audio_manager.dart';
 import '../services/quran_service.dart';
 import '../services/quran_storage_service.dart';
+import '../utils/design_system.dart';
 import '../widgets/iqra_tafsir_sheet.dart';
 
 class SurahViewerScreen extends StatefulWidget {
@@ -38,7 +39,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
   bool _isLoading = true;
 
   // Active / Selected Ayah
-  int _activeAyahNumber = 2;
+  int _activeAyahNumber = 1;
 
   // Search filter inside surah
   bool _isSearching = false;
@@ -52,7 +53,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
   double _fontSize = 22.0;
   double _lineHeight = 2.1;
   final String _selectedFont = 'Amiri';
-  String _currentTheme = 'داكن'; // 'داكن', 'كحلي', 'ورقي', 'أخضر', 'أبيض'
+  late String _currentTheme; // 'داكن', 'كحلي', 'ورقي', 'أخضر', 'أبيض'
 
   // Theme definitions
   Color get _backgroundColor {
@@ -86,12 +87,13 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
     }
   }
 
-  Color get _goldColor => const Color(0xFFE5B54F);
-  Color get _goldDimColor => const Color(0xFFC89B3C);
+  Color get _goldColor => DesignSystem.isLightMode ? const Color(0xFF854D0E) : const Color(0xFFE5B54F);
+  Color get _goldDimColor => DesignSystem.isLightMode ? const Color(0xFFB8860B) : const Color(0xFFC89B3C);
 
   @override
   void initState() {
     super.initState();
+    _currentTheme = DesignSystem.isLightMode ? 'ورقي' : 'داكن';
     _currentSurahNumber = widget.surahNumber;
     _currentSurahName = widget.surahName;
     if (widget.initialAyah != null && widget.initialAyah! > 0) {
@@ -205,13 +207,15 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
     _storage.toggleFavorite(_currentSurahNumber);
     setState(() {});
 
+    final isLight = _currentTheme == 'ورقي' || _currentTheme == 'أبيض';
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           isFav ? 'تمت إزالة السورة من المحفوظات' : 'تم حفظ سورة $_currentSurahName في العلامات المرجعية',
           style: const TextStyle(fontFamily: 'Cairo'),
         ),
-        backgroundColor: const Color(0xFF141C2B),
+        backgroundColor: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF141C2B),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -241,6 +245,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
     final meta = QuranMetadataProvider.getSurah(_currentSurahNumber);
     final isFavorite = _storage.isFavorite(_currentSurahNumber);
     final isAudioPlaying = _audioService.isPlaying && _audioService.currentSurah.number == _currentSurahNumber;
+    final isLight = _currentTheme == 'ورقي' || _currentTheme == 'أبيض';
 
     final displayedAyahs = _ayahSearchQuery.trim().isEmpty
         ? _ayahs
@@ -256,11 +261,11 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
               // 1. Top App Bar
               if (!_isFullscreen) ...[
                 const SizedBox(height: 6),
-                _buildTopAppBar(meta, isFavorite),
+                _buildTopAppBar(meta, isFavorite, isLight),
                 const SizedBox(height: 10),
 
                 // 2. Action Toolbar Pills Row with Dedicated Audio Button
-                _buildActionToolbarPills(),
+                _buildActionToolbarPills(isLight),
                 const SizedBox(height: 10),
               ],
 
@@ -272,22 +277,39 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                     height: 42,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF121927),
+                      color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF121927),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: _goldColor.withValues(alpha: 0.5)),
+                      border: Border.all(
+                        color: isLight ? const Color(0xFFE5D4B3) : _goldColor.withValues(alpha: 0.5),
+                      ),
+                      boxShadow: [
+                        if (isLight)
+                          BoxShadow(
+                            color: const Color(0xFF8C7355).withValues(alpha: 0.08),
+                            blurRadius: 8,
+                          ),
+                      ],
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.search_rounded, color: Color(0xFFE5B54F), size: 18),
+                        Icon(Icons.search_rounded, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE5B54F), size: 18),
                         const SizedBox(width: 8),
                         Expanded(
                           child: TextField(
                             controller: _searchController,
                             autofocus: true,
-                            style: const TextStyle(fontFamily: 'Cairo', fontSize: 13, color: Colors.white),
-                            decoration: const InputDecoration(
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 13,
+                              color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                            ),
+                            decoration: InputDecoration(
                               hintText: 'ابحث عن آية في هذه السورة...',
-                              hintStyle: TextStyle(fontFamily: 'Cairo', fontSize: 12, color: Color(0xFF64748B)),
+                              hintStyle: TextStyle(
+                                fontFamily: 'Cairo',
+                                fontSize: 12,
+                                color: isLight ? const Color(0xFF78716C) : const Color(0xFF64748B),
+                              ),
                               border: InputBorder.none,
                               isDense: true,
                             ),
@@ -302,7 +324,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                               _searchController.clear();
                             });
                           },
-                          child: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8), size: 18),
+                          child: Icon(Icons.close_rounded, color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8), size: 18),
                         ),
                       ],
                     ),
@@ -323,12 +345,12 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                             height: 140,
                             child: IgnorePointer(
                               child: Opacity(
-                                opacity: 0.18,
+                                opacity: isLight ? 0.08 : 0.18,
                                 child: Image.asset(
                                   'assets/img_coran/pack/scene_window_mosque.png',
                                   fit: BoxFit.contain,
                                   errorBuilder: (_, __, ___) => Image.asset(
-                                    'assets/home_hero_mosque.jpg',
+                                    isLight ? 'assets/daylight_mosque_bg.jpg' : 'assets/home_hero_mosque.jpg',
                                     fit: BoxFit.contain,
                                     errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                                   ),
@@ -363,7 +385,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
 
                               return Column(
                                 children: [
-                                  _buildAyahItem(num, text, isActive),
+                                  _buildAyahItem(num, text, isActive, isLight),
                                   if (ayahIndex < displayedAyahs.length - 1)
                                     _buildAyahDivider(),
                                 ],
@@ -376,16 +398,16 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
 
               // 4. Floating Audio Player Bar (when audio is active / toggled)
               if (_showAudioPlayerBar && (isAudioPlaying || _audioService.currentPosition.inSeconds > 0)) ...[
-                _buildLiveAudioPlayerFloatingBar(),
+                _buildLiveAudioPlayerFloatingBar(isLight),
               ],
 
               // 5. Surah Navigation Row
               if (!_isFullscreen) ...[
-                _buildSurahNavigationRow(),
+                _buildSurahNavigationRow(isLight),
                 const SizedBox(height: 6),
 
                 // 6. App Bottom Navigation Bar
-                _buildAppBottomNavBar(),
+                _buildAppBottomNavBar(isLight),
               ],
             ],
           ),
@@ -395,7 +417,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
   }
 
   /// Top Bar: [< Back] [Bookmark] | [❖ سورة الأنفال ❖ / Subtitle] | [Search] [Settings] [Fullscreen]
-  Widget _buildTopAppBar(SurahMeta meta, bool isFavorite) {
+  Widget _buildTopAppBar(SurahMeta meta, bool isFavorite, bool isLight) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Row(
@@ -404,6 +426,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
           _buildCircularButton(
             icon: Icons.chevron_left_rounded,
             size: 26,
+            isLight: isLight,
             onTap: () => Navigator.pop(context),
           ),
           const SizedBox(width: 8),
@@ -411,8 +434,9 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
           // Bookmark Button
           _buildCircularButton(
             icon: isFavorite ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-            iconColor: isFavorite ? _goldColor : const Color(0xFFCBD5E1),
+            iconColor: isFavorite ? _goldColor : (isLight ? const Color(0xFF78716C) : const Color(0xFFCBD5E1)),
             size: 20,
+            isLight: isLight,
             onTap: _toggleBookmark,
           ),
 
@@ -446,11 +470,11 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                   Text('❖ ', style: TextStyle(color: _goldColor.withValues(alpha: 0.7), fontSize: 9)),
                   Text(
                     'الجزء ${meta.juzNumber} • صفحة ${meta.pageNumber} • ${meta.ayahCount} آية',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF94A3B8),
+                      color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
                     ),
                   ),
                   Text(' ❖', style: TextStyle(color: _goldColor.withValues(alpha: 0.7), fontSize: 9)),
@@ -468,19 +492,22 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
               _buildCircularButton(
                 icon: Icons.search_rounded,
                 size: 20,
+                isLight: isLight,
                 onTap: () => setState(() => _isSearching = !_isSearching),
               ),
               const SizedBox(width: 8),
               _buildCircularButton(
                 icon: Icons.settings_outlined,
                 size: 20,
-                onTap: _showSettingsBottomSheet,
+                isLight: isLight,
+                onTap: () => _showSettingsBottomSheet(isLight),
               ),
               const SizedBox(width: 8),
               _buildCircularButton(
                 icon: _isFullscreen ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
-                iconColor: _isFullscreen ? _goldColor : const Color(0xFFCBD5E1),
+                iconColor: _isFullscreen ? _goldColor : (isLight ? const Color(0xFF78716C) : const Color(0xFFCBD5E1)),
                 size: 22,
+                isLight: isLight,
                 onTap: _toggleFullscreen,
               ),
             ],
@@ -490,12 +517,13 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
     );
   }
 
-  /// Circular Icon Button with subtle dark border
+  /// Circular Icon Button
   Widget _buildCircularButton({
     required IconData icon,
     required VoidCallback onTap,
     Color? iconColor,
     double size = 20,
+    required bool isLight,
   }) {
     return InkWell(
       onTap: onTap,
@@ -505,17 +533,24 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
         height: 38,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: const Color(0xFF101725).withValues(alpha: 0.8),
+          color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF101725).withValues(alpha: 0.8),
           border: Border.all(
-            color: const Color(0xFF334155).withValues(alpha: 0.7),
+            color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFF334155).withValues(alpha: 0.7),
             width: 1,
           ),
+          boxShadow: [
+            if (isLight)
+              BoxShadow(
+                color: const Color(0xFF8C7355).withValues(alpha: 0.08),
+                blurRadius: 6,
+              ),
+          ],
         ),
         child: Center(
           child: Icon(
             icon,
             size: size,
-            color: iconColor ?? const Color(0xFFCBD5E1),
+            color: iconColor ?? (isLight ? const Color(0xFF854D0E) : const Color(0xFFCBD5E1)),
           ),
         ),
       ),
@@ -523,7 +558,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
   }
 
   /// Quick Action Toolbar Pills: [حجم الخط A A] [ألوان القراءة 🎨] [الوضع الليلي 🌙] [▶ مِشَارِي العَفَاسِي ˅]
-  Widget _buildActionToolbarPills() {
+  Widget _buildActionToolbarPills(bool isLight) {
     final isPlaying = _audioService.isPlaying && _audioService.currentSurah.number == _currentSurahNumber;
     final reciterName = _audioService.currentReciter.nameArabic.replaceAll('مشاري بن راشد العفاسي', 'مشاري العفاسي');
 
@@ -537,8 +572,17 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
           _buildToolbarPill(
             icon: Icons.text_fields_rounded,
             label: 'حجم الخط',
-            trailing: const Text('A A', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFE5B54F))),
-            onTap: _showFontSizeSheet,
+            trailing: Text(
+              'A A',
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE5B54F),
+              ),
+            ),
+            isLight: isLight,
+            onTap: () => _showFontSizeSheet(isLight),
           ),
           const SizedBox(width: 8),
 
@@ -546,14 +590,16 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
           _buildToolbarPill(
             icon: Icons.palette_outlined,
             label: 'ألوان القراءة',
-            onTap: _showReadingColorsSheet,
+            isLight: isLight,
+            onTap: () => _showReadingColorsSheet(isLight),
           ),
           const SizedBox(width: 8),
 
           // Pill 3: Night Mode
           _buildToolbarPill(
             icon: _currentTheme == 'داكن' ? Icons.nightlight_round : Icons.wb_sunny_rounded,
-            label: 'الوضع الليلي',
+            label: _currentTheme == 'داكن' ? 'الوضع الليلي' : 'الوضع النهاري',
+            isLight: isLight,
             onTap: () {
               setState(() {
                 if (_currentTheme == 'داكن') {
@@ -570,21 +616,29 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
             decoration: BoxDecoration(
-              color: isPlaying ? const Color(0xFF231B0A) : const Color(0xFF101725).withValues(alpha: 0.8),
+              color: isPlaying
+                  ? (isLight ? const Color(0xFFFBF4E4) : const Color(0xFF231B0A))
+                  : (isLight ? const Color(0xFFFFFDF8) : const Color(0xFF101725).withValues(alpha: 0.8)),
               borderRadius: BorderRadius.circular(22),
               border: Border.all(
-                color: isPlaying ? _goldColor : const Color(0xFF334155).withValues(alpha: 0.7),
+                color: isPlaying
+                    ? (isLight ? const Color(0xFFC89B3C) : _goldColor)
+                    : (isLight ? const Color(0xFFE5D4B3) : const Color(0xFF334155).withValues(alpha: 0.7)),
                 width: 1.2,
               ),
-              boxShadow: isPlaying
-                  ? [
-                      BoxShadow(
-                        color: _goldColor.withValues(alpha: 0.2),
-                        blurRadius: 12,
-                        spreadRadius: 1,
-                      ),
-                    ]
-                  : null,
+              boxShadow: [
+                if (isLight)
+                  BoxShadow(
+                    color: const Color(0xFF8C7355).withValues(alpha: 0.08),
+                    blurRadius: 8,
+                  )
+                else if (isPlaying)
+                  BoxShadow(
+                    color: _goldColor.withValues(alpha: 0.2),
+                    blurRadius: 12,
+                    spreadRadius: 1,
+                  ),
+              ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -600,14 +654,20 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
                         colors: isPlaying
-                            ? [_goldColor, const Color(0xFFC89B3C)]
-                            : [const Color(0xFF263345), const Color(0xFF192230)],
+                            ? (isLight
+                                ? [const Color(0xFFFFDF7D), const Color(0xFFE5A83B)]
+                                : [_goldColor, const Color(0xFFC89B3C)])
+                            : (isLight
+                                ? [const Color(0xFFF1EAD8), const Color(0xFFE5D4B3)]
+                                : [const Color(0xFF263345), const Color(0xFF192230)]),
                       ),
                     ),
                     child: Center(
                       child: Icon(
                         isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                        color: isPlaying ? const Color(0xFF070B11) : _goldColor,
+                        color: isPlaying
+                            ? (isLight ? const Color(0xFF1C1917) : const Color(0xFF070B11))
+                            : (isLight ? const Color(0xFF854D0E) : _goldColor),
                         size: 18,
                       ),
                     ),
@@ -617,7 +677,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
 
                 // Reciter Name & Dropdown
                 InkWell(
-                  onTap: _showReciterSelectionSheet,
+                  onTap: () => _showReciterSelectionSheet(isLight),
                   borderRadius: BorderRadius.circular(12),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -630,11 +690,17 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                             fontFamily: 'Cairo',
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: isPlaying ? _goldColor : const Color(0xFFF1F5F9),
+                            color: isPlaying
+                                ? (isLight ? const Color(0xFF854D0E) : _goldColor)
+                                : (isLight ? const Color(0xFF1C1917) : const Color(0xFFF1F5F9)),
                           ),
                         ),
                         const SizedBox(width: 4),
-                        const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8), size: 16),
+                        Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
+                          size: 16,
+                        ),
                       ],
                     ),
                   ),
@@ -652,6 +718,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
     required String label,
     Widget? trailing,
     required VoidCallback onTap,
+    required bool isLight,
   }) {
     return InkWell(
       onTap: onTap,
@@ -659,25 +726,32 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: const Color(0xFF101725).withValues(alpha: 0.8),
+          color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF101725).withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: const Color(0xFF334155).withValues(alpha: 0.7),
+            color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFF334155).withValues(alpha: 0.7),
             width: 1,
           ),
+          boxShadow: [
+            if (isLight)
+              BoxShadow(
+                color: const Color(0xFF8C7355).withValues(alpha: 0.08),
+                blurRadius: 6,
+              ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: _goldColor, size: 15),
+            Icon(icon, color: isLight ? const Color(0xFF854D0E) : _goldColor, size: 15),
             const SizedBox(width: 6),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 11,
-                color: Color(0xFFF1F5F9),
-                fontWeight: FontWeight.w500,
+                color: isLight ? const Color(0xFF1C1917) : const Color(0xFFF1F5F9),
+                fontWeight: FontWeight.w600,
               ),
             ),
             if (trailing != null) ...[
@@ -691,7 +765,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
   }
 
   /// Live Floating Audio Player Bar with seek bar and controls
-  Widget _buildLiveAudioPlayerFloatingBar() {
+  Widget _buildLiveAudioPlayerFloatingBar(bool isLight) {
     final isPlaying = _audioService.isPlaying && _audioService.currentSurah.number == _currentSurahNumber;
     final pos = _audioService.currentPosition;
     final dur = _audioService.totalDuration;
@@ -702,18 +776,25 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
       margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
       padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF121A28),
+        color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF121A28),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _goldColor.withValues(alpha: 0.5), width: 1.2),
+        border: Border.all(
+          color: isLight ? const Color(0xFFE5D4B3) : _goldColor.withValues(alpha: 0.5),
+          width: 1.2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
+            color: isLight
+                ? const Color(0xFF8C7355).withValues(alpha: 0.12)
+                : Colors.black.withValues(alpha: 0.5),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),
           if (isPlaying)
             BoxShadow(
-              color: _goldColor.withValues(alpha: 0.15),
+              color: isLight
+                  ? const Color(0xFFE5A83B).withValues(alpha: 0.25)
+                  : _goldColor.withValues(alpha: 0.15),
               blurRadius: 18,
             ),
         ],
@@ -733,11 +814,13 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
-                      colors: [_goldColor, const Color(0xFFC89B3C)],
+                      colors: isLight
+                          ? [const Color(0xFFFFDF7D), const Color(0xFFE5A83B)]
+                          : [_goldColor, const Color(0xFFC89B3C)],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: _goldColor.withValues(alpha: 0.35),
+                        color: (isLight ? const Color(0xFFE5A83B) : _goldColor).withValues(alpha: 0.35),
                         blurRadius: 8,
                       ),
                     ],
@@ -763,25 +846,29 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                       children: [
                         Text(
                           'تلاوة سورة $_currentSurahName',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Amiri',
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: isLight ? const Color(0xFF1C1917) : Colors.white,
                           ),
                         ),
                         if (isPlaying) ...[
                           const SizedBox(width: 6),
-                          const Icon(Icons.graphic_eq_rounded, color: Color(0xFFE5B54F), size: 16),
+                          Icon(
+                            Icons.graphic_eq_rounded,
+                            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE5B54F),
+                            size: 16,
+                          ),
                         ],
                       ],
                     ),
                     Text(
                       _audioService.currentReciter.nameArabic,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 11,
-                        color: Color(0xFFE8D29A),
+                        color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE8D29A),
                       ),
                     ),
                   ],
@@ -791,11 +878,11 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
               // Timestamps
               Text(
                 '${_audioService.formatDuration(pos)} / ${_audioService.formatDuration(dur)}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFFCBD5E1),
+                  color: isLight ? const Color(0xFF78716C) : const Color(0xFFCBD5E1),
                 ),
               ),
               const SizedBox(width: 8),
@@ -803,7 +890,11 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
               // Close Bar Button
               InkWell(
                 onTap: () => setState(() => _showAudioPlayerBar = false),
-                child: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8), size: 18),
+                child: Icon(
+                  Icons.close_rounded,
+                  color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
+                  size: 18,
+                ),
               ),
             ],
           ),
@@ -812,9 +903,9 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
           SliderTheme(
             data: SliderThemeData(
               trackHeight: 3.0,
-              activeTrackColor: _goldColor,
-              inactiveTrackColor: const Color(0xFF334155),
-              thumbColor: _goldColor,
+              activeTrackColor: isLight ? const Color(0xFF854D0E) : _goldColor,
+              inactiveTrackColor: isLight ? const Color(0xFFE5D4B3) : const Color(0xFF334155),
+              thumbColor: isLight ? const Color(0xFF854D0E) : _goldColor,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
             ),
@@ -862,10 +953,8 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
   }
 
   /// Individual Ayah Item with Calm Color Highlights, Stop Mark & Action Sheet
-  Widget _buildAyahItem(int ayahNum, String text, bool isActive) {
+  Widget _buildAyahItem(int ayahNum, String text, bool isActive, bool isLight) {
     final highlightColorKey = _storage.getAyahHighlight(_currentSurahNumber, ayahNum);
-    final isStopMark = _storage.readingStopMark?.surahNumber == _currentSurahNumber &&
-        _storage.readingStopMark?.ayahNumber == ayahNum;
 
     Color ayahBgColor = Colors.transparent;
     Color ayahBorderColor = Colors.transparent;
@@ -899,8 +988,8 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
         ),
       ];
     } else if (isActive) {
-      ayahBgColor = _goldDimColor.withValues(alpha: 0.12);
-      ayahBorderColor = _goldColor;
+      ayahBgColor = _goldDimColor.withValues(alpha: isLight ? 0.18 : 0.12);
+      ayahBorderColor = isLight ? const Color(0xFFB8860B) : _goldColor;
       ayahShadow = [
         BoxShadow(
           color: _goldColor.withValues(alpha: 0.15),
@@ -913,10 +1002,10 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
     return InkWell(
       onTap: () {
         setState(() => _activeAyahNumber = ayahNum);
-        _showAyahActionSheet(ayahNum, text);
+        _showAyahActionSheet(ayahNum, text, isLight);
       },
       onLongPress: () {
-        _showAyahActionSheet(ayahNum, text);
+        _showAyahActionSheet(ayahNum, text, isLight);
       },
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
@@ -952,92 +1041,34 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                   ],
                 ),
               ),
-              Positioned(
-                bottom: -16,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(width: 14, height: 1, color: _goldColor),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3),
-                      child: Text('❖', style: TextStyle(color: _goldColor, fontSize: 8)),
-                    ),
-                    Container(width: 14, height: 1, color: _goldColor),
-                  ],
-                ),
-              ),
             ],
 
-            // Reading Stop Badge ribbon if marked
-            if (isStopMark)
-              Positioned(
-                top: -8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: _goldColor,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _goldColor.withValues(alpha: 0.4),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.bookmark_rounded, color: Color(0xFF070B11), size: 12),
-                      SizedBox(width: 4),
-                      Text(
-                        'موضع التوقف',
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF070B11),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-            // Verse Content Row
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Right Islamic Floral Star
-                Text(
-                  '❖',
-                  style: TextStyle(
-                    color: isActive ? _goldColor : _goldDimColor.withValues(alpha: 0.7),
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(width: 10),
-
-                // Center Verse Arabic Text
-                Expanded(
-                  child: Text(
-                    text,
-                    textAlign: TextAlign.center,
-                    textDirection: TextDirection.rtl,
+            // Verse Text + Rosette Badge
+            RichText(
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.rtl,
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: text,
                     style: TextStyle(
                       fontFamily: _selectedFont,
                       fontSize: _fontSize,
                       height: _lineHeight,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
                       color: _textColor,
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
-
-                // Left Ornate Islamic Ayah Rosette Medallion
-                _buildAyahRosetteBadge(ayahNum, isActive: isActive),
-              ],
+                  const WidgetSpan(
+                    alignment: PlaceholderAlignment.middle,
+                    child: SizedBox(width: 8),
+                  ),
+                  WidgetSpan(
+                    alignment: PlaceholderAlignment.middle,
+                    child: _buildAyahRosetteBadge(ayahNum, isActive: isActive),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -1045,7 +1076,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
     );
   }
 
-  void _showAyahActionSheet(int ayahNum, String text) {
+  void _showAyahActionSheet(int ayahNum, String text, bool isLight) {
     final currentHighlight = _storage.getAyahHighlight(_currentSurahNumber, ayahNum);
     final isStopMark = _storage.readingStopMark?.surahNumber == _currentSurahNumber &&
         _storage.readingStopMark?.ayahNumber == ayahNum;
@@ -1058,9 +1089,11 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
         return Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFF0D1522),
+            color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0D1522),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border.all(color: _goldColor.withValues(alpha: 0.3)),
+            border: Border.all(
+              color: isLight ? const Color(0xFFE5D4B3) : _goldColor.withValues(alpha: 0.3),
+            ),
           ),
           child: SafeArea(
             child: Directionality(
@@ -1075,7 +1108,9 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF64748B).withValues(alpha: 0.4),
+                        color: isLight
+                            ? const Color(0xFF78716C).withValues(alpha: 0.3)
+                            : const Color(0xFF64748B).withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -1092,7 +1127,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: _goldColor.withValues(alpha: 0.15),
+                              color: isLight ? const Color(0xFFFBF4E4) : _goldColor.withValues(alpha: 0.15),
                               border: Border.all(color: _goldColor),
                             ),
                             child: Text(
@@ -1111,11 +1146,11 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                             children: [
                               Text(
                                 'الآية $ayahNum من سورة $_currentSurahName',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: 'Cairo',
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: isLight ? const Color(0xFF1C1917) : Colors.white,
                                 ),
                               ),
                               Text(
@@ -1123,7 +1158,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                                 style: TextStyle(
                                   fontFamily: 'Cairo',
                                   fontSize: 12,
-                                  color: isStopMark ? _goldColor : const Color(0xFF94A3B8),
+                                  color: isStopMark ? _goldColor : (isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8)),
                                 ),
                               ),
                             ],
@@ -1131,7 +1166,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                         ],
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                        icon: Icon(Icons.close_rounded, color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8)),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
@@ -1143,9 +1178,11 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.03),
+                      color: isLight ? const Color(0xFFFBF4E4) : Colors.white.withValues(alpha: 0.03),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                      border: Border.all(
+                        color: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.06),
+                      ),
                     ),
                     child: Text(
                       text,
@@ -1162,13 +1199,13 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                   const SizedBox(height: 18),
 
                   // Colors Section Title
-                  const Text(
+                  Text(
                     'تلوين وتمييز الآية (ألوان هادئة للعين)',
                     style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFFE2E8F0),
+                      color: isLight ? const Color(0xFF1C1917) : const Color(0xFFE2E8F0),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -1182,6 +1219,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                           title: 'أخضر هادئ',
                           color: const Color(0xFF10B981),
                           isSelected: currentHighlight == 'emerald',
+                          isLight: isLight,
                           onTap: () async {
                             Navigator.pop(context);
                             await _storage.highlightAyah(_currentSurahNumber, ayahNum, 'emerald');
@@ -1196,6 +1234,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                           title: 'عنبري دافئ',
                           color: const Color(0xFFF59E0B),
                           isSelected: currentHighlight == 'amber',
+                          isLight: isLight,
                           onTap: () async {
                             Navigator.pop(context);
                             await _storage.highlightAyah(_currentSurahNumber, ayahNum, 'amber');
@@ -1210,6 +1249,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                           title: 'سماوي رقيق',
                           color: const Color(0xFF38BDF8),
                           isSelected: currentHighlight == 'sky',
+                          isLight: isLight,
                           onTap: () async {
                             Navigator.pop(context);
                             await _storage.highlightAyah(_currentSurahNumber, ayahNum, 'sky');
@@ -1251,102 +1291,65 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                     ),
                   ],
 
-                  const SizedBox(height: 14),
-                  const Divider(color: Colors.white12),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 16),
 
-                  // Reading Stop Mark Button
-                  InkWell(
-                    onTap: () async {
-                      Navigator.pop(context);
-                      await _storage.saveReadingStopMark(_currentSurahNumber, _currentSurahName, ayahNum);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('📍 تم حفظ موضع التوقف عند الآية $ayahNum من سورة $_currentSurahName بنجاح'),
-                            backgroundColor: const Color(0xFF0F766E),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                        );
-                      }
-                    },
-                    borderRadius: BorderRadius.circular(14),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: isStopMark ? _goldColor.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.04),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isStopMark ? _goldColor : Colors.white.withValues(alpha: 0.1),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            isStopMark ? Icons.bookmark_added_rounded : Icons.bookmark_add_rounded,
-                            color: isStopMark ? _goldColor : const Color(0xFFCBD5E1),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  isStopMark ? 'موضع التوقف الحالي (محفوظ)' : 'تحديد كموضع التوقف (علامة الوقف)',
-                                  style: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: isStopMark ? _goldColor : Colors.white,
-                                  ),
-                                ),
-                                const Text(
-                                  'لحفظ مكان وقوفك والعودة إليه مباشرة من الصفحة الرئيسية',
-                                  style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Color(0xFF94A3B8)),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // Quick Action Buttons (Copy, Tafseer)
+                  // Actions: [موضع توقف] [نسخ الآية] [التفسير]
                   Row(
                     children: [
                       Expanded(
                         child: _buildSecondaryActionButton(
+                          icon: isStopMark ? Icons.bookmark_added_rounded : Icons.bookmark_add_outlined,
+                          label: isStopMark ? 'موضع التوقف' : 'حفظ كموضع توقف',
+                          isLight: isLight,
+                          onTap: () async {
+                            Navigator.pop(context);
+                            await _storage.setReadingStopMark(
+                              surahNumber: _currentSurahNumber,
+                              surahName: _currentSurahName,
+                              ayahNumber: ayahNum,
+                            );
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('تم تثبيت موضع التوقف عند الآية $ayahNum من سورة $_currentSurahName'),
+                                  backgroundColor: const Color(0xFF064E3B),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildSecondaryActionButton(
                           icon: Icons.copy_rounded,
                           label: 'نسخ الآية',
+                          isLight: isLight,
                           onTap: () {
-                            Clipboard.setData(ClipboardData(text: text));
                             Navigator.pop(context);
+                            Clipboard.setData(ClipboardData(text: '﴿ $text ﴾ [$_currentSurahName: $ayahNum]'));
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('تم نسخ الآية الكريمة إلى الحافظة')),
+                              const SnackBar(content: Text('تم نسخ الآية إلى الحافظة')),
                             );
                           },
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: _buildSecondaryActionButton(
                           icon: Icons.menu_book_rounded,
-                          label: 'تفسير الآية',
+                          label: 'التفسير',
+                          isLight: isLight,
                           onTap: () {
                             Navigator.pop(context);
                             showModalBottomSheet(
                               context: context,
-                              backgroundColor: Colors.transparent,
                               isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
                               builder: (_) => IqraTafsirSheet(
-                                surahNumber: _currentSurahNumber,
                                 ayahNumber: ayahNum,
                                 ayahText: text,
+                                surahNumber: _currentSurahNumber,
                                 surahName: _currentSurahName,
                               ),
                             );
@@ -1369,6 +1372,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
     required Color color,
     required bool isSelected,
     required VoidCallback onTap,
+    required bool isLight,
   }) {
     return InkWell(
       onTap: onTap,
@@ -1376,10 +1380,12 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.25) : Colors.white.withValues(alpha: 0.04),
+          color: isSelected
+              ? color.withValues(alpha: 0.25)
+              : (isLight ? const Color(0xFFFBF4E4) : Colors.white.withValues(alpha: 0.04)),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? color : color.withValues(alpha: 0.3),
+            color: isSelected ? color : (isLight ? const Color(0xFFE5D4B3) : color.withValues(alpha: 0.3)),
             width: isSelected ? 1.8 : 1.0,
           ),
         ),
@@ -1408,7 +1414,9 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                 fontFamily: 'Cairo',
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? Colors.white : const Color(0xFFCBD5E1),
+                color: isSelected
+                    ? (isLight ? const Color(0xFF1C1917) : Colors.white)
+                    : (isLight ? const Color(0xFF78716C) : const Color(0xFFCBD5E1)),
               ),
             ),
           ],
@@ -1421,6 +1429,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    required bool isLight,
   }) {
     return InkWell(
       onTap: onTap,
@@ -1428,9 +1437,11 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.04),
+          color: isLight ? const Color(0xFFFBF4E4) : Colors.white.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          border: Border.all(
+            color: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.08),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1439,7 +1450,12 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
             const SizedBox(width: 8),
             Text(
               label,
-              style: const TextStyle(fontFamily: 'Cairo', fontSize: 12, color: Colors.white),
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 12,
+                color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -1503,7 +1519,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
   }
 
   /// Surah Navigation Row: [< السورة السابقة] | [ 8 / 114 Slider ] | [السورة التالية >]
-  Widget _buildSurahNavigationRow() {
+  Widget _buildSurahNavigationRow(bool isLight) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
@@ -1515,18 +1531,36 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF101725).withValues(alpha: 0.9),
+                color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF101725).withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF334155).withValues(alpha: 0.7)),
+                border: Border.all(
+                  color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFF334155).withValues(alpha: 0.7),
+                ),
+                boxShadow: [
+                  if (isLight)
+                    BoxShadow(
+                      color: const Color(0xFF8C7355).withValues(alpha: 0.06),
+                      blurRadius: 6,
+                    ),
+                ],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(Icons.chevron_right_rounded, color: Color(0xFFE5B54F), size: 18),
-                  SizedBox(width: 4),
+                children: [
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE5B54F),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 4),
                   Text(
                     'السورة السابقة',
-                    style: TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                    ),
                   ),
                 ],
               ),
@@ -1541,11 +1575,11 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                 SliderTheme(
                   data: SliderThemeData(
                     trackHeight: 3.5,
-                    activeTrackColor: _goldColor,
-                    inactiveTrackColor: const Color(0xFF334155),
-                    thumbColor: _goldColor,
+                    activeTrackColor: isLight ? const Color(0xFF854D0E) : _goldColor,
+                    inactiveTrackColor: isLight ? const Color(0xFFE5D4B3) : const Color(0xFF334155),
+                    thumbColor: isLight ? const Color(0xFF854D0E) : _goldColor,
                     thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                    overlayColor: _goldColor.withValues(alpha: 0.2),
+                    overlayColor: (isLight ? const Color(0xFF854D0E) : _goldColor).withValues(alpha: 0.2),
                     overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
                   ),
                   child: Slider(
@@ -1569,11 +1603,11 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                 ),
                 Text(
                   '$_currentSurahNumber / 114',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF94A3B8),
+                    color: isLight ? const Color(0xFF854D0E) : const Color(0xFF94A3B8),
                   ),
                 ),
               ],
@@ -1587,19 +1621,37 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF101725).withValues(alpha: 0.9),
+                color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF101725).withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF334155).withValues(alpha: 0.7)),
+                border: Border.all(
+                  color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFF334155).withValues(alpha: 0.7),
+                ),
+                boxShadow: [
+                  if (isLight)
+                    BoxShadow(
+                      color: const Color(0xFF8C7355).withValues(alpha: 0.06),
+                      blurRadius: 6,
+                    ),
+                ],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
+                children: [
                   Text(
                     'السورة التالية',
-                    style: TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                    ),
                   ),
-                  SizedBox(width: 4),
-                  Icon(Icons.chevron_left_rounded, color: Color(0xFFE5B54F), size: 18),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.chevron_left_rounded,
+                    color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE5B54F),
+                    size: 18,
+                  ),
                 ],
               ),
             ),
@@ -1609,27 +1661,45 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
     );
   }
 
-  /// App Bottom Navigation Bar matching media_1789448573582.png
-  Widget _buildAppBottomNavBar() {
+  /// App Bottom Navigation Bar
+  Widget _buildAppBottomNavBar(bool isLight) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF0A0E17),
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
+        color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0A0E17),
+        border: Border(
+          top: BorderSide(
+            color: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.06),
+          ),
+        ),
+        boxShadow: [
+          if (isLight)
+            BoxShadow(
+              color: const Color(0xFF8C7355).withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, -2),
+            ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(Icons.home_outlined, 'الرئيسية', false, () => Navigator.pop(context)),
+          _buildNavItem(Icons.home_outlined, 'الرئيسية', false, () => Navigator.pop(context), isLight),
           // Active Quran Tab with Luxurious Gold Gradient Container
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFE5B54F), Color(0xFFC89B3C)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              gradient: isLight
+                  ? const LinearGradient(
+                      colors: [Color(0xFFFFDF7D), Color(0xFFE5A83B)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : const LinearGradient(
+                      colors: [Color(0xFFE5B54F), Color(0xFFC89B3C)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -1640,36 +1710,34 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(Icons.menu_book_rounded, color: Color(0xFF070B11), size: 18),
-                SizedBox(width: 6),
+              children: [
+                Icon(
+                  Icons.menu_book_rounded,
+                  color: isLight ? const Color(0xFF1C1917) : const Color(0xFF070B11),
+                  size: 18,
+                ),
+                const SizedBox(width: 6),
                 Text(
                   'القرآن الكريم',
                   style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF070B11),
+                    color: isLight ? const Color(0xFF1C1917) : const Color(0xFF070B11),
                   ),
                 ),
               ],
             ),
           ),
-          _buildNavItem(Icons.groups_outlined, 'المصاحف', false, () {
-            Navigator.pop(context);
-          }),
-          _buildNavItem(Icons.radio_outlined, 'الراديو', false, () {
-            Navigator.pop(context);
-          }),
-          _buildNavItem(Icons.access_time_outlined, 'المواعيد', false, () {
-            Navigator.pop(context);
-          }),
+          _buildNavItem(Icons.groups_outlined, 'المصاحف', false, () => Navigator.pop(context), isLight),
+          _buildNavItem(Icons.radio_outlined, 'الراديو', false, () => Navigator.pop(context), isLight),
+          _buildNavItem(Icons.access_time_outlined, 'المواعيد', false, () => Navigator.pop(context), isLight),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isSelected, VoidCallback onTap) {
+  Widget _buildNavItem(IconData icon, String label, bool isSelected, VoidCallback onTap, bool isLight) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -1678,14 +1746,18 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 20, color: const Color(0xFF8E9BAE)),
+            Icon(
+              icon,
+              size: 20,
+              color: isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE),
+            ),
             const SizedBox(height: 3),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 10,
-                color: Color(0xFF8E9BAE),
+                color: isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE),
               ),
             ),
           ],
@@ -1695,10 +1767,10 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
   }
 
   /// Font Size Adjustment Bottom Sheet
-  void _showFontSizeSheet() {
+  void _showFontSizeSheet(bool isLight) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF101725),
+      backgroundColor: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF101725),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) {
         return StatefulBuilder(
@@ -1710,14 +1782,29 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: isLight ? const Color(0xFF78716C).withValues(alpha: 0.3) : Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
                     const SizedBox(height: 16),
-                    const Text('تخصيص حجم ونمط الخط', style: TextStyle(fontFamily: 'Amiri', fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                    Text(
+                      'تخصيص حجم ونمط الخط',
+                      style: TextStyle(
+                        fontFamily: 'Amiri',
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                      ),
+                    ),
                     const SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('حجم الخط', style: TextStyle(fontFamily: 'Cairo', color: Colors.white70)),
+                        Text('حجم الخط', style: TextStyle(fontFamily: 'Cairo', color: isLight ? const Color(0xFF78716C) : Colors.white70)),
                         Text('${_fontSize.toInt()}', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, color: _goldColor)),
                       ],
                     ),
@@ -1726,6 +1813,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                       min: 18.0,
                       max: 36.0,
                       activeColor: _goldColor,
+                      inactiveColor: isLight ? const Color(0xFFE5D4B3) : null,
                       onChanged: (val) {
                         setSheetState(() => _fontSize = val);
                         setState(() => _fontSize = val);
@@ -1735,7 +1823,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('تباعد الأسطر', style: TextStyle(fontFamily: 'Cairo', color: Colors.white70)),
+                        Text('تباعد الأسطر', style: TextStyle(fontFamily: 'Cairo', color: isLight ? const Color(0xFF78716C) : Colors.white70)),
                         Text(_lineHeight.toStringAsFixed(1), style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, color: _goldColor)),
                       ],
                     ),
@@ -1744,6 +1832,7 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                       min: 1.6,
                       max: 3.0,
                       activeColor: _goldColor,
+                      inactiveColor: isLight ? const Color(0xFFE5D4B3) : null,
                       onChanged: (val) {
                         setSheetState(() => _lineHeight = val);
                         setState(() => _lineHeight = val);
@@ -1760,18 +1849,18 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
   }
 
   /// Reading Colors Bottom Sheet
-  void _showReadingColorsSheet() {
+  void _showReadingColorsSheet(bool isLight) {
     final themes = [
       {'id': 'داكن', 'name': 'الوضع الداكن الملكي', 'color': const Color(0xFF060910)},
       {'id': 'كحلي', 'name': 'الوضع الليلي الكحلي', 'color': const Color(0xFF0A111E)},
-      {'id': 'ورقي', 'name': 'الورقي الدافئ', 'color': const Color(0xFFFBF4E4)},
+      {'id': 'ورقي', 'name': 'الورقي الدافئ (النهاري)', 'color': const Color(0xFFFBF4E4)},
       {'id': 'أخضر', 'name': 'أخضر الروضة', 'color': const Color(0xFF071B13)},
       {'id': 'أبيض', 'name': 'الأبيض النقي', 'color': const Color(0xFFFAF9F6)},
     ];
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF101725),
+      backgroundColor: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF101725),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) {
         return Directionality(
@@ -1781,9 +1870,24 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isLight ? const Color(0xFF78716C).withValues(alpha: 0.3) : Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
                 const SizedBox(height: 16),
-                const Text('ألوان وثيم القراءة', style: TextStyle(fontFamily: 'Amiri', fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text(
+                  'ألوان وثيم القراءة',
+                  style: TextStyle(
+                    fontFamily: 'Amiri',
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 ...themes.map((t) {
                   final isSel = _currentTheme == t['id'];
@@ -1801,7 +1905,14 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                         border: Border.all(color: _goldColor),
                       ),
                     ),
-                    title: Text(t['name'] as String, style: const TextStyle(fontFamily: 'Cairo', color: Colors.white, fontSize: 13)),
+                    title: Text(
+                      t['name'] as String,
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                        fontSize: 13,
+                      ),
+                    ),
                     trailing: isSel ? Icon(Icons.check_circle_rounded, color: _goldColor) : null,
                   );
                 }),
@@ -1814,10 +1925,10 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
   }
 
   /// Reciter Selection Bottom Sheet
-  void _showReciterSelectionSheet() {
+  void _showReciterSelectionSheet(bool isLight) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF101725),
+      backgroundColor: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF101725),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) {
         final currentReciter = _audioService.currentReciter;
@@ -1828,14 +1939,29 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isLight ? const Color(0xFF78716C).withValues(alpha: 0.3) : Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('اختر القارئ المفضل', style: TextStyle(fontFamily: 'Amiri', fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                    Text(
+                      'اختر القارئ المفضل',
+                      style: TextStyle(
+                        fontFamily: 'Amiri',
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                      ),
+                    ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                      icon: Icon(Icons.close_rounded, color: isLight ? const Color(0xFF78716C) : Colors.white70),
                       onPressed: () => Navigator.pop(ctx),
                     ),
                   ],
@@ -1862,18 +1988,28 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                           });
                         },
                         leading: CircleAvatar(
-                          backgroundColor: const Color(0xFF1B2433),
-                          child: Icon(Icons.person_rounded, color: isSel ? _goldColor : const Color(0xFF94A3B8)),
+                          backgroundColor: isLight ? const Color(0xFFF1EAD8) : const Color(0xFF1B2433),
+                          child: Icon(
+                            Icons.person_rounded,
+                            color: isSel ? _goldColor : (isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8)),
+                          ),
                         ),
                         title: Text(
                           r.nameArabic,
                           style: TextStyle(
                             fontFamily: 'Cairo',
                             fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                            color: isSel ? _goldColor : Colors.white,
+                            color: isSel ? _goldColor : (isLight ? const Color(0xFF1C1917) : Colors.white),
                           ),
                         ),
-                        subtitle: Text(r.style, style: const TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Color(0xFF94A3B8))),
+                        subtitle: Text(
+                          r.style,
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 11,
+                            color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
+                          ),
+                        ),
                         trailing: isSel ? Icon(Icons.check_circle_rounded, color: _goldColor) : null,
                       );
                     },
@@ -1888,10 +2024,10 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
   }
 
   /// General Settings Bottom Sheet
-  void _showSettingsBottomSheet() {
+  void _showSettingsBottomSheet(bool isLight) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF101725),
+      backgroundColor: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF101725),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) {
         return Directionality(
@@ -1901,13 +2037,31 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isLight ? const Color(0xFF78716C).withValues(alpha: 0.3) : Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
                 const SizedBox(height: 16),
-                const Text('إعدادات المصحف الشريف', style: TextStyle(fontFamily: 'Amiri', fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text(
+                  'إعدادات المصحف الشريف',
+                  style: TextStyle(
+                    fontFamily: 'Amiri',
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: isLight ? const Color(0xFF1C1917) : Colors.white,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 ListTile(
                   leading: Icon(Icons.volume_up_rounded, color: _goldColor),
-                  title: const Text('تشغيل / إيقاف الصوت', style: TextStyle(fontFamily: 'Cairo', color: Colors.white)),
+                  title: Text(
+                    'تشغيل / إيقاف الصوت',
+                    style: TextStyle(fontFamily: 'Cairo', color: isLight ? const Color(0xFF1C1917) : Colors.white),
+                  ),
                   onTap: () {
                     Navigator.pop(ctx);
                     _toggleSurahAudio();
@@ -1915,26 +2069,35 @@ class _SurahViewerScreenState extends State<SurahViewerScreen> with SingleTicker
                 ),
                 ListTile(
                   leading: Icon(Icons.text_fields_rounded, color: _goldColor),
-                  title: const Text('حجم ونمط الخط', style: TextStyle(fontFamily: 'Cairo', color: Colors.white)),
+                  title: Text(
+                    'حجم ونمط الخط',
+                    style: TextStyle(fontFamily: 'Cairo', color: isLight ? const Color(0xFF1C1917) : Colors.white),
+                  ),
                   onTap: () {
                     Navigator.pop(ctx);
-                    _showFontSizeSheet();
+                    _showFontSizeSheet(isLight);
                   },
                 ),
                 ListTile(
                   leading: Icon(Icons.palette_outlined, color: _goldColor),
-                  title: const Text('ثيم وألوان القراءة', style: TextStyle(fontFamily: 'Cairo', color: Colors.white)),
+                  title: Text(
+                    'ثيم وألوان القراءة',
+                    style: TextStyle(fontFamily: 'Cairo', color: isLight ? const Color(0xFF1C1917) : Colors.white),
+                  ),
                   onTap: () {
                     Navigator.pop(ctx);
-                    _showReadingColorsSheet();
+                    _showReadingColorsSheet(isLight);
                   },
                 ),
                 ListTile(
                   leading: Icon(Icons.record_voice_over_outlined, color: _goldColor),
-                  title: const Text('اختيار القارئ الصوتي', style: TextStyle(fontFamily: 'Cairo', color: Colors.white)),
+                  title: Text(
+                    'اختيار القارئ الصوتي',
+                    style: TextStyle(fontFamily: 'Cairo', color: isLight ? const Color(0xFF1C1917) : Colors.white),
+                  ),
                   onTap: () {
                     Navigator.pop(ctx);
-                    _showReciterSelectionSheet();
+                    _showReciterSelectionSheet(isLight);
                   },
                 ),
               ],

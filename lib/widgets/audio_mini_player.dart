@@ -42,17 +42,23 @@ class _AudioMiniPlayerState extends State<AudioMiniPlayer> {
     final total = _service.totalDuration;
     final progress = (total.inSeconds > 0 ? pos.inSeconds / total.inSeconds : 0.0).clamp(0.0, 1.0);
 
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return InkWell(
       onTap: widget.onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: DesignSystem.bgDarkest.withValues(alpha: 0.95),
+          color: isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgDarkest.withValues(alpha: 0.95),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.4)),
+          border: Border.all(
+            color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.4),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.5),
+              color: isLight
+                  ? const Color(0xFF8C7355).withValues(alpha: 0.15)
+                  : Colors.black.withValues(alpha: 0.5),
               blurRadius: 16,
               offset: const Offset(0, -4),
             ),
@@ -69,14 +75,30 @@ class _AudioMiniPlayerState extends State<AudioMiniPlayer> {
                   height: 40,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: DesignSystem.gold),
+                    border: Border.all(
+                      color: isLight ? const Color(0xFFC89B3C) : DesignSystem.gold,
+                    ),
                   ),
                   child: ClipOval(
-                    child: Image.network(
-                      reciter.photoUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(Icons.person, color: DesignSystem.goldLight, size: 20),
-                    ),
+                    child: reciter.photoUrl.startsWith('assets/')
+                        ? Image.asset(
+                            reciter.photoUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Icon(
+                              Icons.person,
+                              color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                              size: 20,
+                            ),
+                          )
+                        : Image.network(
+                            reciter.photoUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Icon(
+                              Icons.person,
+                              color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                              size: 20,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -88,17 +110,18 @@ class _AudioMiniPlayerState extends State<AudioMiniPlayer> {
                     children: [
                       Text(
                         'سورة ${surah.nameArabic}',
-                        style: const TextStyle(
-                          color: DesignSystem.textWhite,
+                        style: TextStyle(
+                          color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         reciter.nameArabic,
-                        style: const TextStyle(
-                          color: DesignSystem.goldLight,
+                        style: TextStyle(
+                          color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                           fontSize: 11,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -109,13 +132,17 @@ class _AudioMiniPlayerState extends State<AudioMiniPlayer> {
                 IconButton(
                   icon: Icon(
                     isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
-                    color: DesignSystem.goldLight,
+                    color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                     size: 34,
                   ),
                   onPressed: _service.togglePlayPause,
                 ),
                 IconButton(
-                  icon: const Icon(Icons.skip_next_rounded, color: DesignSystem.textWhite, size: 24),
+                  icon: Icon(
+                    Icons.skip_next_rounded,
+                    color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
+                    size: 24,
+                  ),
                   onPressed: _service.nextSurah,
                 ),
               ],
@@ -126,8 +153,12 @@ class _AudioMiniPlayerState extends State<AudioMiniPlayer> {
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 2,
-                backgroundColor: Colors.white.withValues(alpha: 0.08),
-                valueColor: const AlwaysStoppedAnimation<Color>(DesignSystem.gold),
+                backgroundColor: isLight
+                    ? const Color(0xFFE5D4B3).withValues(alpha: 0.5)
+                    : Colors.white.withValues(alpha: 0.08),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  isLight ? const Color(0xFFD97706) : DesignSystem.gold,
+                ),
               ),
             ),
           ],

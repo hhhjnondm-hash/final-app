@@ -6,6 +6,7 @@ import '../services/location_service.dart';
 import '../services/prayer_service_v2.dart';
 import '../utils/design_system.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/islamic_background.dart';
 import '../widgets/monthly_prayer_sheet.dart';
 import '../widgets/prayer_alert_sheet.dart';
 import '../widgets/prayer_hero_card.dart';
@@ -146,6 +147,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final location = _prayerService.currentLocation ?? const LocationProfile(
       cityName: 'القاهرة',
       countryName: 'مصر',
@@ -155,213 +157,228 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     );
 
     if (_isLoading) {
-      return SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const CircularProgressIndicator(color: DesignSystem.goldLight),
-              const SizedBox(height: 16),
-              Text(
-                'جاري تحميل بيانات الصلاة...',
-                style: TextStyle(color: DesignSystem.textMuted),
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: IslamicBackground(
+          child: SafeArea(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: isLight ? const Color(0xFFC89B3C) : DesignSystem.goldLight),
+                  const SizedBox(height: 16),
+                  Text(
+                    'جاري تحميل بيانات الصلاة...',
+                    style: TextStyle(color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       );
     }
 
     if (_errorMessage != null) {
-      return SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 48),
-              const SizedBox(height: 16),
-              Text(
-                _errorMessage!,
-                style: TextStyle(color: DesignSystem.textWhite),
-                textAlign: TextAlign.center,
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: IslamicBackground(
+          child: SafeArea(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                  const SizedBox(height: 16),
+                  Text(
+                    _errorMessage!,
+                    style: TextStyle(color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _loadPrayerData,
+                    child: const Text('إعادة المحاولة'),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _loadPrayerData,
-                child: const Text('إعادة المحاولة'),
-              ),
-            ],
+            ),
           ),
         ),
       );
     }
 
-    return SafeArea(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1000),
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // Top Luxury Header
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    DesignSystem.spacingL,
-                    DesignSystem.spacingM,
-                    DesignSystem.spacingL,
-                    DesignSystem.spacingS,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: IslamicBackground(
+        child: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1000),
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  // Top Luxury Header
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        DesignSystem.spacingL,
+                        DesignSystem.spacingM,
+                        DesignSystem.spacingL,
+                        DesignSystem.spacingS,
+                      ),
+                      child: _buildTopHeader(context, location, isLight),
+                    ),
                   ),
-                  child: _buildTopHeader(context, location),
-                ),
-              ),
 
-              // Hero Prayer Card with Artwork & Live Countdown
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: DesignSystem.spacingL,
-                    vertical: DesignSystem.spacingS,
+                  // Hero Prayer Card with Artwork & Live Countdown
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: DesignSystem.spacingL,
+                        vertical: DesignSystem.spacingS,
+                      ),
+                      child: PrayerHeroCard(
+                        onAthanTap: () {
+                          if (_nextPrayer != null) {
+                            showModalBottomSheet(
+                              context: context,
+                              backgroundColor: Colors.transparent,
+                              builder: (_) => PrayerAlertSheet(timing: _nextPrayer!),
+                            );
+                          }
+                        },
+                      ),
+                    ),
                   ),
-                  child: PrayerHeroCard(
-                    onAthanTap: () {
-                      if (_nextPrayer != null) {
-                        showModalBottomSheet(
-                          context: context,
-                          backgroundColor: Colors.transparent,
-                          builder: (_) => PrayerAlertSheet(timing: _nextPrayer!),
-                        );
-                      }
-                    },
-                  ),
-                ),
-              ),
 
-              // Date Bar & Date Picker Shortcut
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: DesignSystem.spacingL,
-                    vertical: DesignSystem.spacingS,
+                  // Date Bar & Date Picker Shortcut
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: DesignSystem.spacingL,
+                        vertical: DesignSystem.spacingS,
+                      ),
+                      child: _buildDateSelectorBar(context, isLight),
+                    ),
                   ),
-                  child: _buildDateSelectorBar(context),
-                ),
-              ),
 
-              // Section Title: مواقيت الصلاة اليوم
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    DesignSystem.spacingL,
-                    DesignSystem.spacingM,
-                    DesignSystem.spacingL,
-                    DesignSystem.spacingS,
-                  ),
-                  child: Row(
-                    children: [
-                      const Expanded(
-                        child: FittedBox(
-                          alignment: Alignment.centerRight,
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'مواقيت الصلاة اليوم',
-                            style: TextStyle(
-                              color: DesignSystem.textWhite,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                  // Section Title: مواقيت الصلاة اليوم
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        DesignSystem.spacingL,
+                        DesignSystem.spacingM,
+                        DesignSystem.spacingL,
+                        DesignSystem.spacingS,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: FittedBox(
+                              alignment: Alignment.centerRight,
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'مواقيت الصلاة اليوم',
+                                style: TextStyle(
+                                  color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+                          const SizedBox(width: 4),
+                          TextButton.icon(
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () {
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (_) => const MonthlyPrayerSheet(),
+                              );
+                            },
+                            icon: Icon(Icons.calendar_month_rounded, color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight, size: 15),
+                            label: Text('جدول الشهر', style: TextStyle(color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight, fontSize: 11)),
+                          ),
+                          const SizedBox(width: 4),
+                          TextButton.icon(
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () {
+                              _showAthanSettings(context);
+                            },
+                            icon: Icon(Icons.notifications_active_rounded, color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight, size: 15),
+                            label: Text('الأذان', style: TextStyle(color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight, fontSize: 11)),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 4),
-                      TextButton.icon(
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        onPressed: () {
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (_) => const MonthlyPrayerSheet(),
+                    ),
+                  ),
+
+                  // Prayer Timelines List
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final timing = _timings[index];
+                          final isCurrent = _currentPrayer != null && timing.type == _currentPrayer?.type;
+                          final isNext = _nextPrayer != null && timing.type == _nextPrayer?.type;
+
+                          return PrayerTimelineCard(
+                            timing: timing,
+                            isCurrent: isCurrent,
+                            isNext: isNext,
+                            onNotificationToggle: () {
+                              _showNotificationModeDialog(timing.type);
+                            },
                           );
                         },
-                        icon: const Icon(Icons.calendar_month_rounded, color: DesignSystem.goldLight, size: 15),
-                        label: const Text('جدول الشهر', style: TextStyle(color: DesignSystem.goldLight, fontSize: 11)),
+                        childCount: _timings.length,
                       ),
-                      const SizedBox(width: 4),
-                      TextButton.icon(
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        onPressed: () {
-                          _showAthanSettings(context);
-                        },
-                        icon: const Icon(Icons.notifications_active_rounded, color: DesignSystem.goldLight, size: 15),
-                        label: const Text('الأذان', style: TextStyle(color: DesignSystem.goldLight, fontSize: 11)),
+                    ),
+                  ),
+
+                  // Quick Prayer Tools (القبلة • المساجد القريبة • أذكار الصلاة • إعدادات الحساب)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(DesignSystem.spacingL),
+                      child: _buildQuickToolsSection(context, isLight),
+                    ),
+                  ),
+
+                  // Developer Credits Badge
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: DesignSystem.spacingL, vertical: 8),
+                      child: Center(
+                        child: DeveloperCreditsBadge(),
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
 
-              // Prayer Timelines List
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final timing = _timings[index];
-                      final isCurrent = _currentPrayer != null && timing.type == _currentPrayer?.type;
-                      final isNext = _nextPrayer != null && timing.type == _nextPrayer?.type;
-
-                      return PrayerTimelineCard(
-                        timing: timing,
-                        isCurrent: isCurrent,
-                        isNext: isNext,
-                        onNotificationToggle: () {
-                          _showNotificationModeDialog(timing.type);
-                        },
-                      );
-                    },
-                    childCount: _timings.length,
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: 100),
                   ),
-                ),
+                ],
               ),
-
-              // Quick Prayer Tools (القبلة • المساجد القريبة • أذكار الصلاة • إعدادات الحساب)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(DesignSystem.spacingL),
-                  child: _buildQuickToolsSection(context),
-                ),
-              ),
-
-              // Developer Credits Badge
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: DesignSystem.spacingL, vertical: 8),
-                  child: Center(
-                    child: DeveloperCreditsBadge(),
-                  ),
-                ),
-              ),
-
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 100),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTopHeader(BuildContext context, LocationProfile location) {
+  Widget _buildTopHeader(BuildContext context, LocationProfile location, bool isLight) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -375,10 +392,10 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: DesignSystem.gold.withValues(alpha: 0.15),
-                  border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.4)),
+                  color: isLight ? const Color(0xFFFBF4E4) : DesignSystem.gold.withValues(alpha: 0.15),
+                  border: Border.all(color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.4)),
                 ),
-                child: const Icon(Icons.location_on_rounded, color: DesignSystem.goldLight, size: 18),
+                child: Icon(Icons.location_on_rounded, color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight, size: 18),
               ),
               const SizedBox(width: 10),
               Column(
@@ -388,20 +405,20 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                     children: [
                       Text(
                         '${location.cityName}، ${location.countryName}',
-                        style: const TextStyle(
-                          color: DesignSystem.textWhite,
+                        style: TextStyle(
+                          color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(Icons.keyboard_arrow_down_rounded, color: DesignSystem.textMuted, size: 16),
+                      Icon(Icons.keyboard_arrow_down_rounded, color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted, size: 16),
                     ],
                   ),
                   Text(
                     _prayerService.getFormattedHijriDate(),
-                    style: const TextStyle(
-                      color: DesignSystem.goldLight,
+                    style: TextStyle(
+                      color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
@@ -417,6 +434,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
           children: [
             _buildHeaderCircleButton(
               icon: Icons.explore_rounded,
+              isLight: isLight,
               onTap: () {
                 showModalBottomSheet(
                   context: context,
@@ -428,6 +446,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
             const SizedBox(width: 8),
             _buildHeaderCircleButton(
               icon: Icons.settings_rounded,
+              isLight: isLight,
               onTap: () {
                 showModalBottomSheet(
                   context: context,
@@ -442,39 +461,60 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     );
   }
 
-  Widget _buildHeaderCircleButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _buildHeaderCircleButton({required IconData icon, required VoidCallback onTap, required bool isLight}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: DesignSystem.bgCard.withValues(alpha: 0.8),
+          color: isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgCard.withValues(alpha: 0.8),
           shape: BoxShape.circle,
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.1),
           ),
+          boxShadow: [
+            if (isLight)
+              BoxShadow(
+                color: const Color(0xFFC89B3C).withValues(alpha: 0.08),
+                blurRadius: 6,
+              ),
+          ],
         ),
-        child: Icon(icon, color: DesignSystem.goldLight, size: 20),
+        child: Icon(icon, color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight, size: 20),
       ),
     );
   }
 
-  Widget _buildDateSelectorBar(BuildContext context) {
-    return GlassCard(
-      borderRadius: DesignSystem.radiusLarge,
+  Widget _buildDateSelectorBar(BuildContext context, bool isLight) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0C131D),
+        borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
+        border: Border.all(
+          color: isLight ? const Color(0xFFE5D4B3) : Colors.white10,
+        ),
+        boxShadow: [
+          if (isLight)
+            BoxShadow(
+              color: const Color(0xFFC89B3C).withValues(alpha: 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+        ],
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              const Icon(Icons.event_note_rounded, color: DesignSystem.cyanAccent, size: 20),
+              Icon(Icons.event_note_rounded, color: isLight ? const Color(0xFF854D0E) : DesignSystem.cyanAccent, size: 20),
               const SizedBox(width: 10),
               Text(
                 _prayerService.getFormattedGregorianDate(),
-                style: const TextStyle(
-                  color: DesignSystem.textWhite,
+                style: TextStyle(
+                  color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
@@ -491,12 +531,19 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                 builder: (context, child) {
                   return Theme(
                     data: Theme.of(context).copyWith(
-                      colorScheme: const ColorScheme.dark(
-                        primary: DesignSystem.gold,
-                        onPrimary: DesignSystem.bgDarkest,
-                        surface: DesignSystem.bgCard,
-                        onSurface: Colors.white,
-                      ),
+                      colorScheme: isLight
+                          ? const ColorScheme.light(
+                              primary: Color(0xFFC89B3C),
+                              onPrimary: Colors.white,
+                              surface: Color(0xFFFFFDF8),
+                              onSurface: Color(0xFF1C1917),
+                            )
+                          : const ColorScheme.dark(
+                              primary: DesignSystem.gold,
+                              onPrimary: DesignSystem.bgDarkest,
+                              surface: DesignSystem.bgCard,
+                              onSurface: Colors.white,
+                            ),
                     ),
                     child: child!,
                   );
@@ -510,22 +557,22 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: DesignSystem.gold.withValues(alpha: 0.15),
+                color: isLight ? const Color(0xFFFBF4E4) : DesignSystem.gold.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.4)),
+                border: Border.all(color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.4)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   Text(
                     'تغيير اليوم',
                     style: TextStyle(
-                      color: DesignSystem.goldLight,
+                      color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(width: 4),
-                  Icon(Icons.edit_calendar_rounded, color: DesignSystem.goldLight, size: 12),
+                  const SizedBox(width: 4),
+                  Icon(Icons.edit_calendar_rounded, color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight, size: 12),
                 ],
               ),
             ),
@@ -535,12 +582,12 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     );
   }
 
-  Widget _buildQuickToolsSection(BuildContext context) {
+  Widget _buildQuickToolsSection(BuildContext context, bool isLight) {
     final tools = [
       {
         'title': 'اتجاه القبلة',
         'icon': Icons.explore_rounded,
-        'color': DesignSystem.gold,
+        'color': isLight ? const Color(0xFF854D0E) : DesignSystem.gold,
         'onTap': () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const QiblaScreen()),
@@ -549,7 +596,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       {
         'title': 'جدول الشهر',
         'icon': Icons.calendar_month_rounded,
-        'color': DesignSystem.cyanAccent,
+        'color': isLight ? const Color(0xFF0284C7) : DesignSystem.cyanAccent,
         'onTap': () => showModalBottomSheet(
               context: context,
               isScrollControlled: true,
@@ -560,7 +607,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       {
         'title': 'أذكار الصلاة',
         'icon': Icons.menu_book_rounded,
-        'color': DesignSystem.electricBlue,
+        'color': isLight ? const Color(0xFF2563EB) : DesignSystem.electricBlue,
         'onTap': () {
           final afterPrayerCategory = AllAzkarData.categories.firstWhere(
             (c) => c.type == AzkarCategoryType.afterPrayer,
@@ -577,7 +624,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       {
         'title': 'إعدادات الحساب',
         'icon': Icons.tune_rounded,
-        'color': DesignSystem.goldLight,
+        'color': isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
         'onTap': () => showModalBottomSheet(
               context: context,
               backgroundColor: Colors.transparent,
@@ -589,10 +636,10 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'أدوات ومميزات الصلاة',
           style: TextStyle(
-            color: DesignSystem.textWhite,
+            color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -610,37 +657,54 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
           itemCount: tools.length,
           itemBuilder: (context, index) {
             final tool = tools[index];
-            return GlassCard(
-              borderRadius: DesignSystem.radiusLarge,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            return InkWell(
               onTap: tool['onTap'] as VoidCallback,
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: (tool['color'] as Color).withValues(alpha: 0.15),
-                      border: Border.all(color: (tool['color'] as Color).withValues(alpha: 0.4)),
-                    ),
-                    child: Icon(
-                      tool['icon'] as IconData,
-                      color: tool['color'] as Color,
-                      size: 20,
-                    ),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0C131D),
+                  borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
+                  border: Border.all(
+                    color: isLight ? const Color(0xFFE5D4B3) : Colors.white10,
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      tool['title'] as String,
-                      style: const TextStyle(
-                        color: DesignSystem.textWhite,
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
+                  boxShadow: [
+                    if (isLight)
+                      BoxShadow(
+                        color: const Color(0xFFC89B3C).withValues(alpha: 0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                  ],
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isLight ? const Color(0xFFFBF4E4) : (tool['color'] as Color).withValues(alpha: 0.15),
+                        border: Border.all(color: isLight ? const Color(0xFFE5D4B3) : (tool['color'] as Color).withValues(alpha: 0.4)),
+                      ),
+                      child: Icon(
+                        tool['icon'] as IconData,
+                        color: tool['color'] as Color,
+                        size: 20,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        tool['title'] as String,
+                        style: TextStyle(
+                          color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -650,32 +714,37 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   }
 
   void _showNotificationModeDialog(PrayerType prayer) {
+    final isLight = DesignSystem.isLightMode;
+    final dialogBg = isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1621);
+    final goldAccent = isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight;
+    final dialogBorder = isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.4);
+
     showDialog(
       context: context,
       builder: (context) {
         return Dialog(
-          backgroundColor: DesignSystem.bgDarkest,
+          backgroundColor: dialogBg,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
-            side: BorderSide(color: DesignSystem.gold.withValues(alpha: 0.4)),
+            side: BorderSide(color: dialogBorder),
           ),
           child: Padding(
             padding: const EdgeInsets.all(DesignSystem.spacingL),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   'وضع التنبيه للصلاة',
                   style: TextStyle(
-                    color: DesignSystem.goldLight,
+                    color: goldAccent,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildNotificationOption(prayer, NotificationMode.athan, 'الأذان كاملاً', Icons.volume_up_rounded),
-                _buildNotificationOption(prayer, NotificationMode.notificationOnly, 'تنبيه هادئ فقط', Icons.notifications_active_rounded),
-                _buildNotificationOption(prayer, NotificationMode.silent, 'بدون صوت (صامت)', Icons.notifications_off_rounded),
+                _buildNotificationOption(prayer, NotificationMode.athan, 'الأذان كاملاً 🔊', Icons.volume_up_rounded, isLight),
+                _buildNotificationOption(prayer, NotificationMode.notificationOnly, 'تنبيه هادئ فقط 🔔', Icons.notifications_active_rounded, isLight),
+                _buildNotificationOption(prayer, NotificationMode.silent, 'بدون صوت (صامت) 🔕', Icons.notifications_off_rounded, isLight),
               ],
             ),
           ),
@@ -684,8 +753,20 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     );
   }
 
-  Widget _buildNotificationOption(PrayerType prayer, NotificationMode mode, String title, IconData icon) {
+  Widget _buildNotificationOption(PrayerType prayer, NotificationMode mode, String title, IconData icon, bool isLight) {
     final isSelected = _prayerService.notificationSettings[prayer] == mode;
+    final activeBg = isLight ? const Color(0xFFFBF4E4) : DesignSystem.gold.withValues(alpha: 0.15);
+    final inactiveBg = isLight ? Colors.white : Colors.white.withValues(alpha: 0.03);
+    final border = isSelected
+        ? (isLight ? const Color(0xFF854D0E) : DesignSystem.gold)
+        : (isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.08));
+    final textColor = isSelected
+        ? (isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight)
+        : (isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite);
+    final iconColor = isSelected
+        ? (isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight)
+        : (isLight ? const Color(0xFF78716C) : DesignSystem.textSecondary);
+
     return InkWell(
       onTap: () async {
         Navigator.pop(context);
@@ -696,18 +777,18 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? DesignSystem.gold.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.03),
+          color: isSelected ? activeBg : inactiveBg,
           borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-          border: Border.all(color: isSelected ? DesignSystem.gold : Colors.white.withValues(alpha: 0.08)),
+          border: Border.all(color: border),
         ),
         child: Row(
           children: [
-            Icon(icon, color: isSelected ? DesignSystem.goldLight : DesignSystem.textSecondary, size: 20),
+            Icon(icon, color: iconColor, size: 20),
             const SizedBox(width: 12),
             Text(
               title,
               style: TextStyle(
-                color: isSelected ? DesignSystem.goldLight : DesignSystem.textWhite,
+                color: textColor,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -718,6 +799,12 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   }
 
   void _showLocationSelectorDialog(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+    final dialogBg = isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1621);
+    final goldAccent = isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight;
+    final dialogBorder = isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.4);
+    final textTitle = isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite;
+
     final cities = [
       const LocationProfile(cityName: 'القاهرة', countryName: 'مصر', latitude: 30.0444, longitude: 31.2357, qiblaAngle: 136.0),
       const LocationProfile(cityName: 'الإسكندرية', countryName: 'مصر', latitude: 31.2001, longitude: 29.9187, qiblaAngle: 138.0),
@@ -732,10 +819,10 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       context: context,
       builder: (context) {
         return Dialog(
-          backgroundColor: DesignSystem.bgDarkest,
+          backgroundColor: dialogBg,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
-            side: BorderSide(color: DesignSystem.gold.withValues(alpha: 0.4)),
+            side: BorderSide(color: dialogBorder),
           ),
           child: Padding(
             padding: const EdgeInsets.all(DesignSystem.spacingL),
@@ -743,10 +830,10 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     'اختيار المدينة والموقع',
                     style: TextStyle(
-                      color: DesignSystem.goldLight,
+                      color: goldAccent,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -758,19 +845,19 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                     onTap: () async {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Row(
                             children: [
                               SizedBox(
                                 width: 18,
                                 height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: DesignSystem.goldLight),
+                                child: CircularProgressIndicator(strokeWidth: 2, color: goldAccent),
                               ),
-                              SizedBox(width: 12),
-                              Text('جاري تحديد موقعك الدقيق عبر GPS...'),
+                              const SizedBox(width: 12),
+                              const Text('جاري تحديد موقعك الدقيق عبر GPS...'),
                             ],
                           ),
-                          duration: Duration(seconds: 4),
+                          duration: const Duration(seconds: 4),
                         ),
                       );
 
@@ -785,7 +872,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('تم تحديث الموقع بنجاح: ${locService.currentLocation!.cityName}'),
-                                backgroundColor: Colors.green.shade800,
+                                backgroundColor: isLight ? const Color(0xFF16A34A) : Colors.green.shade800,
                               ),
                             );
                           }
@@ -808,23 +895,25 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [
-                            DesignSystem.gold.withValues(alpha: 0.25),
-                            DesignSystem.goldLight.withValues(alpha: 0.1),
-                          ],
+                          colors: isLight
+                              ? [const Color(0xFFFBF4E4), const Color(0xFFFFFDF8)]
+                              : [
+                                  DesignSystem.gold.withValues(alpha: 0.25),
+                                  DesignSystem.goldLight.withValues(alpha: 0.1),
+                                ],
                         ),
                         borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-                        border: Border.all(color: DesignSystem.gold),
+                        border: Border.all(color: goldAccent),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.my_location_rounded, color: DesignSystem.goldLight, size: 20),
-                          SizedBox(width: 8),
+                          Icon(Icons.my_location_rounded, color: goldAccent, size: 20),
+                          const SizedBox(width: 8),
                           Text(
                             'تحديد موقعي الحالي تلقائياً (GPS)',
                             style: TextStyle(
-                              color: DesignSystem.goldLight,
+                              color: goldAccent,
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
@@ -834,45 +923,47 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                     ),
                   ),
 
-                  const Divider(color: Colors.white24, height: 16),
+                  Divider(color: isLight ? const Color(0xFFE5D4B3) : Colors.white24, height: 16),
 
-                  ...cities.map((city) => InkWell(
-                    onTap: () async {
-                      Navigator.pop(context);
-                      await _prayerService.setLocation(city);
-                      await _loadPrayerData();
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: _prayerService.currentLocation?.cityName == city.cityName
-                            ? DesignSystem.gold.withValues(alpha: 0.15)
-                            : Colors.white.withValues(alpha: 0.03),
-                        borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
-                        border: Border.all(
-                          color: _prayerService.currentLocation?.cityName == city.cityName
-                              ? DesignSystem.gold
-                              : Colors.white.withValues(alpha: 0.08),
+                  ...cities.map((city) {
+                    final isCurrent = _prayerService.currentLocation?.cityName == city.cityName;
+                    final itemBg = isCurrent
+                        ? (isLight ? const Color(0xFFFBF4E4) : DesignSystem.gold.withValues(alpha: 0.15))
+                        : (isLight ? Colors.white : Colors.white.withValues(alpha: 0.03));
+                    final itemBorder = isCurrent
+                        ? goldAccent
+                        : (isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.08));
+
+                    return InkWell(
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await _prayerService.setLocation(city);
+                        await _loadPrayerData();
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: itemBg,
+                          borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
+                          border: Border.all(color: itemBorder),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '${city.cityName}، ${city.countryName}',
+                              style: TextStyle(
+                                color: isCurrent ? goldAccent : textTitle,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Icon(Icons.location_city_rounded, color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted, size: 18),
+                          ],
                         ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${city.cityName}، ${city.countryName}',
-                            style: TextStyle(
-                              color: _prayerService.currentLocation?.cityName == city.cityName
-                                  ? DesignSystem.goldLight
-                                  : DesignSystem.textWhite,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Icon(Icons.location_city_rounded, color: DesignSystem.textMuted, size: 18),
-                        ],
-                      ),
-                    ),
-                  )),
+                    );
+                  }),
                 ],
               ),
             ),

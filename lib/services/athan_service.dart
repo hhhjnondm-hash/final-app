@@ -55,12 +55,12 @@ class AthanSettings {
     this.enabled = true,
     this.method = AthanMethod.egyptianGeneralAuthorityOfSurvey,
     this.sound = AthanSound.customDownloaded,
-    this.volume = 0.9,
+    this.volume = 1.0,
     this.vibrate = true,
     this.playFullAthan = true,
     this.playFajrSpecial = true,
-    this.respectSilentMode = true,
-    this.shortAthanOnSilent = true,
+    this.respectSilentMode = false,
+    this.shortAthanOnSilent = false,
     this.enabledPrayers = const {
       'Fajr': true,
       'Dhuhr': true,
@@ -116,12 +116,12 @@ class AthanSettings {
       enabled: json['enabled'] ?? true,
       method: AthanMethod.values[(json['method'] ?? 2).clamp(0, AthanMethod.values.length - 1)],
       sound: AthanSound.values[(json['sound'] ?? 0).clamp(0, AthanSound.values.length - 1)],
-      volume: json['volume']?.toDouble() ?? 0.9,
+      volume: json['volume']?.toDouble() ?? 1.0,
       vibrate: json['vibrate'] ?? true,
       playFullAthan: json['playFullAthan'] ?? true,
       playFajrSpecial: json['playFajrSpecial'] ?? true,
-      respectSilentMode: json['respectSilentMode'] ?? true,
-      shortAthanOnSilent: json['shortAthanOnSilent'] ?? true,
+      respectSilentMode: json['respectSilentMode'] ?? false,
+      shortAthanOnSilent: json['shortAthanOnSilent'] ?? false,
       enabledPrayers: json['enabledPrayers'] != null
           ? Map<String, bool>.from(json['enabledPrayers'])
           : const {
@@ -750,9 +750,9 @@ class AthanService extends ChangeNotifier {
         }
       }
 
-      // 4. Play audio (Full Athan or Smart Short Athan on Silent Mode)
+      // 4. Play audio (Full Athan)
       final isShortAthan = forceShortAthan || (isSilent && _settings.shortAthanOnSilent);
-      final shouldPlayAudio = _settings.sound != AthanSound.none && (!isSilent || isShortAthan || forceShortAthan);
+      final shouldPlayAudio = _settings.sound != AthanSound.none;
 
       if (shouldPlayAudio) {
         String audioPath;
@@ -880,6 +880,9 @@ class AthanService extends ChangeNotifier {
       );
     }
     await playAthan(prayer: 'Dhuhr', showDialog: context == null);
+    if (!kIsWeb) {
+      await testNativeBackgroundAthan(prayer: 'Dhuhr');
+    }
     _settings = _settings.copyWith(sound: previousSound);
   }
 

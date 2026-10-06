@@ -20,7 +20,6 @@ class ThemeSelectionModal extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeService = ThemeService.instance;
     final currentPalette = themeService.effectivePalette;
-    final isDark = currentPalette.isDark;
 
     return ListenableBuilder(
       listenable: themeService,

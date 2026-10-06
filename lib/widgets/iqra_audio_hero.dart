@@ -27,7 +27,9 @@ class IqraAudioHero extends StatelessWidget {
   });
 
   @override
+  @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final audio = AudioQuranService();
     final reciter = audio.currentReciter;
     final isPlaying = audio.isPlaying;
@@ -43,24 +45,41 @@ class IqraAudioHero extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.4), width: 1.2),
-        gradient: const RadialGradient(
-          center: Alignment(0, -0.3),
-          radius: 1.2,
-          colors: [
-            Color(0xFF261D0F),
-            Color(0xFF131A26),
-            Color(0xFF070B11),
-          ],
+        border: Border.all(
+          color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.4),
+          width: 1.2,
         ),
+        gradient: isLight
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFFFFDF8),
+                  Color(0xFFFAF5EB),
+                  Color(0xFFF5EBD7),
+                ],
+              )
+            : const RadialGradient(
+                center: Alignment(0, -0.3),
+                radius: 1.2,
+                colors: [
+                  Color(0xFF261D0F),
+                  Color(0xFF131A26),
+                  Color(0xFF070B11),
+                ],
+              ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFC89B3C).withValues(alpha: 0.18),
+            color: isLight
+                ? const Color(0xFFC89B3C).withValues(alpha: 0.1)
+                : const Color(0xFFC89B3C).withValues(alpha: 0.18),
             blurRadius: 28,
             offset: const Offset(0, 6),
           ),
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.6),
+            color: isLight
+                ? Colors.black.withValues(alpha: 0.04)
+                : Colors.black.withValues(alpha: 0.6),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -68,13 +87,13 @@ class IqraAudioHero extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // Background Cinematic Image
+          // Background Image
           ClipRRect(
             borderRadius: BorderRadius.circular(24),
             child: Opacity(
-              opacity: 0.45,
+              opacity: isLight ? 0.35 : 0.45,
               child: Image.asset(
-                'assets/audio_hero.jpg',
+                isLight ? 'assets/daylight_mosque_bg.jpg' : 'assets/audio_hero.jpg',
                 height: 330,
                 width: double.infinity,
                 fit: BoxFit.cover,
@@ -89,7 +108,7 @@ class IqraAudioHero extends StatelessWidget {
             ),
           ),
 
-          // Soft Dark Gradient Overlay
+          // Soft Gradient Overlay
           Container(
             height: 330,
             decoration: BoxDecoration(
@@ -97,11 +116,17 @@ class IqraAudioHero extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.2),
-                  const Color(0xFF070B11).withValues(alpha: 0.8),
-                  const Color(0xFF070B11).withValues(alpha: 0.98),
-                ],
+                colors: isLight
+                    ? [
+                        const Color(0xFFFFFDF8).withValues(alpha: 0.2),
+                        const Color(0xFFFFFDF8).withValues(alpha: 0.82),
+                        const Color(0xFFFFFDF8).withValues(alpha: 0.98),
+                      ]
+                    : [
+                        Colors.black.withValues(alpha: 0.2),
+                        const Color(0xFF070B11).withValues(alpha: 0.8),
+                        const Color(0xFF070B11).withValues(alpha: 0.98),
+                      ],
                 stops: const [0.0, 0.55, 1.0],
               ),
             ),
@@ -126,9 +151,11 @@ class IqraAudioHero extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF101722).withValues(alpha: 0.9),
+                            color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF101722).withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.5)),
+                            border: Border.all(
+                              color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.5),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -136,11 +163,11 @@ class IqraAudioHero extends StatelessWidget {
                               Container(
                                 width: 22,
                                 height: 22,
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Color(0xFFFFD56B),
+                                  color: isLight ? const Color(0xFFE5A83B) : const Color(0xFFFFD56B),
                                 ),
-                                child: const Icon(Icons.person, color: Color(0xFF070B11), size: 14),
+                                child: Icon(Icons.person, color: isLight ? Colors.white : const Color(0xFF070B11), size: 14),
                               ),
                               const SizedBox(width: 8),
                               ConstrainedBox(
@@ -148,8 +175,8 @@ class IqraAudioHero extends StatelessWidget {
                                 child: Text(
                                   reciter.nameArabic,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: Color(0xFFF6F8FA),
+                                  style: TextStyle(
+                                    color: isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA),
                                     fontSize: 11,
                                     fontFamily: 'Cairo',
                                     fontWeight: FontWeight.bold,
@@ -157,7 +184,7 @@ class IqraAudioHero extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFFFFD56B), size: 18),
+                              Icon(Icons.keyboard_arrow_down_rounded, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B), size: 18),
                             ],
                           ),
                         ),
@@ -170,19 +197,21 @@ class IqraAudioHero extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF101722).withValues(alpha: 0.9),
+                            color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF101722).withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.5)),
+                            border: Border.all(
+                              color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.5),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.format_list_bulleted_rounded, color: Color(0xFFFFD56B), size: 16),
+                              Icon(Icons.format_list_bulleted_rounded, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B), size: 16),
                               const SizedBox(width: 6),
                               Text(
                                 'سورة ${currentSurah.nameArabic}',
-                                style: const TextStyle(
-                                  color: Color(0xFFF6F8FA),
+                                style: TextStyle(
+                                  color: isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA),
                                   fontSize: 11,
                                   fontFamily: 'Cairo',
                                   fontWeight: FontWeight.bold,
@@ -206,11 +235,11 @@ class IqraAudioHero extends StatelessWidget {
                         textAlign: TextAlign.center,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Amiri',
                           fontSize: 19,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFFF6F8FA),
+                          color: isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA),
                           height: 1.6,
                         ),
                       ),
@@ -223,11 +252,11 @@ class IqraAudioHero extends StatelessWidget {
                   Center(
                     child: Text(
                       'سورة ${currentSurah.nameArabic}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFFFFD56B),
+                        color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                       ),
                     ),
                   ),
@@ -238,10 +267,10 @@ class IqraAudioHero extends StatelessWidget {
                   Center(
                     child: Text(
                       'الجزء ${currentSurah.juzNumber} • الآية $activeAyahNumber من ${currentSurah.ayahCount}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 11,
-                        color: Color(0xFF94A3B8),
+                        color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -257,10 +286,10 @@ class IqraAudioHero extends StatelessWidget {
                           trackHeight: 3.5,
                           thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
                           overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
-                          activeTrackColor: const Color(0xFFFFD56B),
-                          inactiveTrackColor: Colors.white.withValues(alpha: 0.15),
-                          thumbColor: const Color(0xFFFFD56B),
-                          overlayColor: const Color(0xFFFFD56B).withValues(alpha: 0.2),
+                          activeTrackColor: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
+                          inactiveTrackColor: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.15),
+                          thumbColor: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
+                          overlayColor: (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)).withValues(alpha: 0.2),
                         ),
                         child: Slider(
                           value: progress,
@@ -276,11 +305,11 @@ class IqraAudioHero extends StatelessWidget {
                           children: [
                             Text(
                               audio.formatDuration(pos),
-                              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontFamily: 'Cairo'),
+                              style: TextStyle(color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8), fontSize: 10, fontFamily: 'Cairo'),
                             ),
                             Text(
                               audio.formatDuration(total),
-                              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontFamily: 'Cairo'),
+                              style: TextStyle(color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8), fontSize: 10, fontFamily: 'Cairo'),
                             ),
                           ],
                         ),
@@ -298,7 +327,9 @@ class IqraAudioHero extends StatelessWidget {
                       IconButton(
                         icon: Icon(
                           isRepeat ? Icons.repeat_one_rounded : Icons.repeat_rounded,
-                          color: isRepeat ? const Color(0xFFFFD56B) : const Color(0xFF94A3B8),
+                          color: isRepeat
+                              ? (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B))
+                              : (isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8)),
                           size: 22,
                         ),
                         onPressed: onToggleRepeat,
@@ -307,7 +338,7 @@ class IqraAudioHero extends StatelessWidget {
 
                       // Previous Ayah / Surah
                       IconButton(
-                        icon: const Icon(Icons.skip_next_rounded, color: Color(0xFFE8D29A), size: 28),
+                        icon: Icon(Icons.skip_next_rounded, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE8D29A), size: 28),
                         onPressed: onPrevAyah ?? audio.previousSurah,
                         tooltip: 'السابق',
                       ),
@@ -321,14 +352,16 @@ class IqraAudioHero extends StatelessWidget {
                           height: 56,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFFD56B), Color(0xFFC89B3C)],
+                            gradient: LinearGradient(
+                              colors: isLight
+                                  ? const [Color(0xFFFFDF7D), Color(0xFFE5A83B), Color(0xFFC89B3C)]
+                                  : const [Color(0xFFFFD56B), Color(0xFFC89B3C)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFFFD56B).withValues(alpha: 0.35),
+                                color: (isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B)).withValues(alpha: 0.35),
                                 blurRadius: 18,
                                 spreadRadius: 2,
                               ),
@@ -336,7 +369,7 @@ class IqraAudioHero extends StatelessWidget {
                           ),
                           child: Icon(
                             isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                            color: const Color(0xFF070B11),
+                            color: isLight ? const Color(0xFF1C1917) : const Color(0xFF070B11),
                             size: 34,
                           ),
                         ),
@@ -344,7 +377,7 @@ class IqraAudioHero extends StatelessWidget {
 
                       // Next Ayah / Surah
                       IconButton(
-                        icon: const Icon(Icons.skip_previous_rounded, color: Color(0xFFE8D29A), size: 28),
+                        icon: Icon(Icons.skip_previous_rounded, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFE8D29A), size: 28),
                         onPressed: onNextAyah ?? audio.nextSurah,
                         tooltip: 'التالي',
                       ),
@@ -361,14 +394,16 @@ class IqraAudioHero extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF161F2E),
+                            color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF161F2E),
                             borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.3)),
+                            border: Border.all(
+                              color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.3),
+                            ),
                           ),
                           child: Text(
                             '${audio.playbackSpeed}x',
-                            style: const TextStyle(
-                              color: Color(0xFFFFD56B),
+                            style: TextStyle(
+                              color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                               fontSize: 11,
                               fontFamily: 'Cairo',
                               fontWeight: FontWeight.bold,

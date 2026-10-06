@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../services/audio_quran_service.dart';
 import '../utils/design_system.dart';
 import 'visual_effects/floating_particles.dart';
-import 'visual_effects/shimmer_sweep.dart';
 import 'quran_download_sheet.dart';
 
 class AudioHeroPlayer extends StatefulWidget {
@@ -47,6 +46,8 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
     final total = _service.totalDuration;
     final progress = (total.inSeconds > 0 ? pos.inSeconds / total.inSeconds : 0.0).clamp(0.0, 1.0);
 
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -54,24 +55,34 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF0D1D3A),
-            const Color(0xFF071324),
-            DesignSystem.bgDarkest,
-          ],
+          colors: isLight
+              ? [
+                  const Color(0xFFFFFFFF),
+                  const Color(0xFFFFFDF8),
+                  const Color(0xFFFAF4E8),
+                ]
+              : [
+                  const Color(0xFF0D1D3A),
+                  const Color(0xFF071324),
+                  DesignSystem.bgDarkest,
+                ],
         ),
         border: Border.all(
-          color: DesignSystem.gold.withValues(alpha: 0.4),
+          color: isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.4),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: DesignSystem.gold.withValues(alpha: 0.18),
+            color: isLight
+                ? const Color(0xFFC89B3C).withValues(alpha: 0.15)
+                : DesignSystem.gold.withValues(alpha: 0.18),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.65),
+            color: isLight
+                ? const Color(0xFF854D0E).withValues(alpha: 0.06)
+                : Colors.black.withValues(alpha: 0.65),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -92,7 +103,7 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
             ),
           ),
 
-          // Deep Dark Gradient Overlay
+          // Deep Gradient Overlay
           Container(
             height: 380,
             decoration: BoxDecoration(
@@ -100,11 +111,17 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  DesignSystem.bgDarkest.withValues(alpha: 0.75),
-                  DesignSystem.bgDarkest.withValues(alpha: 0.98),
-                ],
+                colors: isLight
+                    ? [
+                        Colors.white.withValues(alpha: 0.15),
+                        const Color(0xFFFFFDF8).withValues(alpha: 0.88),
+                        const Color(0xFFFFFDF8).withValues(alpha: 0.98),
+                      ]
+                    : [
+                        Colors.transparent,
+                        DesignSystem.bgDarkest.withValues(alpha: 0.75),
+                        DesignSystem.bgDarkest.withValues(alpha: 0.98),
+                      ],
                 stops: const [0.0, 0.45, 1.0],
               ),
             ),
@@ -133,21 +150,29 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: DesignSystem.bgDarkest.withValues(alpha: 0.8),
+                        color: isLight
+                            ? const Color(0xFFFBF4E4)
+                            : DesignSystem.bgDarkest.withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
                         border: Border.all(
-                          color: DesignSystem.gold.withValues(alpha: 0.5),
+                          color: isLight
+                              ? const Color(0xFFE5D4B3)
+                              : DesignSystem.gold.withValues(alpha: 0.5),
                         ),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.graphic_eq_rounded, color: DesignSystem.goldLight, size: 14),
-                          SizedBox(width: 6),
+                          Icon(
+                            Icons.graphic_eq_rounded,
+                            color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 6),
                           Text(
                             'المصحف الصوتي المرتل',
                             style: TextStyle(
-                              color: DesignSystem.goldLight,
+                              color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
@@ -165,17 +190,31 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
-                                color: DesignSystem.gold.withValues(alpha: 0.18),
+                                color: isLight
+                                    ? const Color(0xFFFBF4E4)
+                                    : DesignSystem.gold.withValues(alpha: 0.18),
                                 borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                                border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.5)),
+                                border: Border.all(
+                                  color: isLight
+                                      ? const Color(0xFFE5D4B3)
+                                      : DesignSystem.gold.withValues(alpha: 0.5),
+                                ),
                               ),
-                              child: const Row(
+                              child: Row(
                                 children: [
-                                  Icon(Icons.menu_book_rounded, color: DesignSystem.goldLight, size: 14),
-                                  SizedBox(width: 4),
+                                  Icon(
+                                    Icons.menu_book_rounded,
+                                    color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 4),
                                   Text(
                                     'السور (114)',
-                                    style: TextStyle(color: DesignSystem.goldLight, fontSize: 11, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -190,18 +229,32 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.08),
+                                color: isLight
+                                    ? const Color(0xFFF1EAD8)
+                                    : Colors.white.withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
-                                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+                                border: Border.all(
+                                  color: isLight
+                                      ? const Color(0xFFE5D4B3)
+                                      : Colors.white.withValues(alpha: 0.12),
+                                ),
                               ),
-                              child: const Row(
+                              child: Row(
                                 children: [
                                   Text(
                                     'القراء',
-                                    style: TextStyle(color: DesignSystem.textWhite, fontSize: 11),
+                                    style: TextStyle(
+                                      color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                  SizedBox(width: 4),
-                                  Icon(Icons.keyboard_arrow_down_rounded, color: DesignSystem.goldLight, size: 14),
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                                    size: 14,
+                                  ),
                                 ],
                               ),
                             ),
@@ -231,22 +284,26 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                                   Flexible(
                                     child: Text(
                                       'سورة ${surah.nameArabic}',
-                                      style: const TextStyle(
-                                        color: DesignSystem.textWhite,
+                                      style: TextStyle(
+                                        color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  const Icon(Icons.touch_app_rounded, color: DesignSystem.goldLight, size: 18),
+                                  Icon(
+                                    Icons.touch_app_rounded,
+                                    color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                                    size: 18,
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 'القارئ: ${reciter.nameArabic}',
-                                style: const TextStyle(
-                                  color: DesignSystem.goldLight,
+                                style: TextStyle(
+                                  color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -266,7 +323,9 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                           width: 4,
                           height: isPlaying ? (12.0 + (index % 3) * 10) : 6.0,
                           decoration: BoxDecoration(
-                            color: isPlaying ? DesignSystem.goldLight : DesignSystem.textMuted,
+                            color: isPlaying
+                                ? (isLight ? const Color(0xFFD97706) : DesignSystem.goldLight)
+                                : (isLight ? const Color(0xFFC4B5A5) : DesignSystem.textMuted),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         );
@@ -285,10 +344,12 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                         trackHeight: 4,
                         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
                         overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-                        activeTrackColor: DesignSystem.gold,
-                        inactiveTrackColor: Colors.white.withValues(alpha: 0.12),
-                        thumbColor: DesignSystem.goldLight,
-                        overlayColor: DesignSystem.gold.withValues(alpha: 0.2),
+                        activeTrackColor: isLight ? const Color(0xFFD97706) : DesignSystem.gold,
+                        inactiveTrackColor: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.12),
+                        thumbColor: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                        overlayColor: isLight
+                            ? const Color(0xFFD97706).withValues(alpha: 0.2)
+                            : DesignSystem.gold.withValues(alpha: 0.2),
                       ),
                       child: Slider(
                         value: progress,
@@ -304,11 +365,17 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                         children: [
                           Text(
                             _service.formatDuration(pos),
-                            style: const TextStyle(color: DesignSystem.textMuted, fontSize: 11),
+                            style: TextStyle(
+                              color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                              fontSize: 11,
+                            ),
                           ),
                           Text(
                             _service.formatDuration(total),
-                            style: const TextStyle(color: DesignSystem.textMuted, fontSize: 11),
+                            style: TextStyle(
+                              color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                              fontSize: 11,
+                            ),
                           ),
                         ],
                       ),
@@ -324,14 +391,22 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                   children: [
                     // Shuffle / Repeat
                     IconButton(
-                      icon: const Icon(Icons.shuffle_rounded, color: DesignSystem.textMuted, size: 20),
+                      icon: Icon(
+                        Icons.shuffle_rounded,
+                        color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                        size: 20,
+                      ),
                       onPressed: () {},
                     ),
                     const SizedBox(width: 12),
 
                     // Previous Surah Button
                     IconButton(
-                      icon: const Icon(Icons.skip_previous_rounded, color: DesignSystem.goldLight, size: 30),
+                      icon: Icon(
+                        Icons.skip_previous_rounded,
+                        color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                        size: 30,
+                      ),
                       onPressed: _service.previousSurah,
                     ),
                     const SizedBox(width: 14),
@@ -345,12 +420,26 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                         height: 64,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: DesignSystem.goldGradient,
-                          boxShadow: DesignSystem.goldGlow,
+                          gradient: isLight
+                              ? const LinearGradient(
+                                  colors: [Color(0xFFFFDF7D), Color(0xFFE5A83B)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                )
+                              : DesignSystem.goldGradient,
+                          boxShadow: isLight
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFFE5A83B).withValues(alpha: 0.4),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ]
+                              : DesignSystem.goldGlow,
                         ),
                         child: Icon(
                           isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                          color: DesignSystem.bgDarkest,
+                          color: isLight ? const Color(0xFF1C1917) : DesignSystem.bgDarkest,
                           size: 36,
                         ),
                       ),
@@ -359,7 +448,11 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
 
                     // Next Surah Button
                     IconButton(
-                      icon: const Icon(Icons.skip_next_rounded, color: DesignSystem.goldLight, size: 30),
+                      icon: Icon(
+                        Icons.skip_next_rounded,
+                        color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                        size: 30,
+                      ),
                       onPressed: _service.nextSurah,
                     ),
                     const SizedBox(width: 12),
@@ -377,27 +470,31 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.06),
+                          color: isLight
+                              ? const Color(0xFFFBF4E4)
+                              : Colors.white.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
                           border: Border.all(
-                            color: DesignSystem.gold.withValues(alpha: 0.4),
+                            color: isLight
+                                ? const Color(0xFFE5D4B3)
+                                : DesignSystem.gold.withValues(alpha: 0.4),
                             width: 1,
                           ),
                         ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.download_rounded,
-                              color: DesignSystem.goldLight,
+                              color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                               size: 20,
                             ),
                             const SizedBox(height: 2),
-                            const Text(
+                            Text(
                               'تنزيل',
                               style: TextStyle(
                                 fontFamily: 'Cairo',
-                                color: DesignSystem.goldLight,
+                                color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -417,12 +514,21 @@ class _AudioHeroPlayerState extends State<AudioHeroPlayer> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
+                          color: isLight
+                              ? const Color(0xFFF1EAD8)
+                              : Colors.white.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(DesignSystem.radiusSmall),
+                          border: Border.all(
+                            color: isLight ? const Color(0xFFE5D4B3) : Colors.transparent,
+                          ),
                         ),
                         child: Text(
                           '${_service.playbackSpeed}x',
-                          style: const TextStyle(color: DesignSystem.goldLight, fontSize: 11, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),

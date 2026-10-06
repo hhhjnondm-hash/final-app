@@ -16,17 +16,24 @@ class IqraSettingsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         decoration: BoxDecoration(
-          color: const Color(0xFF0F1621),
+          color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1621),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.4), width: 1.2),
+          border: Border.all(
+            color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.4),
+            width: 1.2,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.6),
+              color: isLight
+                  ? const Color(0xFF8C7355).withValues(alpha: 0.15)
+                  : Colors.black.withValues(alpha: 0.6),
               blurRadius: 30,
               offset: const Offset(0, -5),
             ),
@@ -42,7 +49,9 @@ class IqraSettingsSheet extends StatelessWidget {
                 width: 44,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF64748B),
+                  color: isLight
+                      ? const Color(0xFF78716C).withValues(alpha: 0.3)
+                      : const Color(0xFF64748B),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -52,17 +61,17 @@ class IqraSettingsSheet extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'إعدادات القراءة والمظهر',
                   style: TextStyle(
                     fontFamily: 'Amiri',
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFFFD56B),
+                    color: isLight ? const Color(0xFF1C1917) : const Color(0xFFFFD56B),
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Color(0xFF94A3B8)),
+                  icon: Icon(Icons.close, color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8)),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -73,14 +82,22 @@ class IqraSettingsSheet extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'حجم خط الآيات',
-                  style: TextStyle(fontFamily: 'Cairo', color: Color(0xFFF6F8FA), fontSize: 14, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    color: isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.remove_circle_outline_rounded, color: Color(0xFFFFD56B)),
+                      icon: Icon(
+                        Icons.remove_circle_outline_rounded,
+                        color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
+                      ),
                       onPressed: () {
                         if (fontSize > 18) onFontSizeChanged(fontSize - 2);
                       },
@@ -88,17 +105,27 @@ class IqraSettingsSheet extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF161F2E),
+                        color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF161F2E),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFC89B3C).withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C).withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Text(
                         '${fontSize.toInt()}',
-                        style: const TextStyle(color: Color(0xFFFFD56B), fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Cairo'),
+                        style: TextStyle(
+                          color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Cairo',
+                        ),
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.add_circle_outline_rounded, color: Color(0xFFFFD56B)),
+                      icon: Icon(
+                        Icons.add_circle_outline_rounded,
+                        color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
+                      ),
                       onPressed: () {
                         if (fontSize < 38) onFontSizeChanged(fontSize + 2);
                       },
@@ -111,9 +138,14 @@ class IqraSettingsSheet extends StatelessWidget {
             const SizedBox(height: 18),
 
             // Reading Themes Options
-            const Text(
+            Text(
               'ألوان وخلفيات المصحف',
-              style: TextStyle(fontFamily: 'Cairo', color: Color(0xFFF6F8FA), fontSize: 14, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                color: isLight ? const Color(0xFF1C1917) : const Color(0xFFF6F8FA),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 12),
             SingleChildScrollView(
@@ -128,6 +160,7 @@ class IqraSettingsSheet extends StatelessWidget {
                     bgColor: const Color(0xFFFDF7E7),
                     textColor: const Color(0xFF231C10),
                     isSelected: theme == 'cream',
+                    isLight: isLight,
                   ),
                   const SizedBox(width: 10),
                   _buildThemeCard(
@@ -137,6 +170,7 @@ class IqraSettingsSheet extends StatelessWidget {
                     bgColor: const Color(0xFF0B111A),
                     textColor: const Color(0xFFFFD56B),
                     isSelected: theme == 'dark',
+                    isLight: isLight,
                   ),
                   const SizedBox(width: 10),
                   _buildThemeCard(
@@ -146,6 +180,7 @@ class IqraSettingsSheet extends StatelessWidget {
                     bgColor: const Color(0xFFE8F5E9),
                     textColor: const Color(0xFF1B5E20),
                     isSelected: theme == 'green',
+                    isLight: isLight,
                   ),
                   const SizedBox(width: 10),
                   _buildThemeCard(
@@ -155,6 +190,7 @@ class IqraSettingsSheet extends StatelessWidget {
                     bgColor: const Color(0xFF071426),
                     textColor: const Color(0xFFE2E8F0),
                     isSelected: theme == 'blue',
+                    isLight: isLight,
                   ),
                   const SizedBox(width: 10),
                   _buildThemeCard(
@@ -164,6 +200,7 @@ class IqraSettingsSheet extends StatelessWidget {
                     bgColor: const Color(0xFFFAFAFA),
                     textColor: const Color(0xFF1E293B),
                     isSelected: theme == 'ivory',
+                    isLight: isLight,
                   ),
                 ],
               ),
@@ -173,8 +210,8 @@ class IqraSettingsSheet extends StatelessWidget {
 
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFC89B3C),
-                foregroundColor: const Color(0xFF070B11),
+                backgroundColor: isLight ? const Color(0xFF854D0E) : const Color(0xFFC89B3C),
+                foregroundColor: isLight ? Colors.white : const Color(0xFF070B11),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
@@ -197,6 +234,7 @@ class IqraSettingsSheet extends StatelessWidget {
     required Color bgColor,
     required Color textColor,
     required bool isSelected,
+    required bool isLight,
   }) {
     return InkWell(
       onTap: () => onThemeChanged(themeKey),
@@ -208,13 +246,15 @@ class IqraSettingsSheet extends StatelessWidget {
           color: bgColor,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? const Color(0xFFFFD56B) : Colors.black.withValues(alpha: 0.15),
+            color: isSelected
+                ? (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B))
+                : Colors.black.withValues(alpha: 0.15),
             width: isSelected ? 2.5 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFFFFD56B).withValues(alpha: 0.3),
+                    color: (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)).withValues(alpha: 0.3),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   ),
@@ -238,7 +278,7 @@ class IqraSettingsSheet extends StatelessWidget {
             ),
             if (isSelected) ...[
               const SizedBox(height: 4),
-              const Icon(Icons.check_circle, color: Color(0xFFC89B3C), size: 16),
+              Icon(Icons.check_circle, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFC89B3C), size: 16),
             ],
           ],
         ),

@@ -18,6 +18,7 @@ import '../widgets/quran_download_progress_sheet.dart';
 import '../widgets/visual_effects/floating_particles.dart';
 import '../widgets/visual_effects/interactive_motion_card.dart';
 import '../widgets/visual_effects/star_glint.dart';
+import '../widgets/islamic_background.dart';
 
 class AudioScreen extends StatefulWidget {
   const AudioScreen({super.key});
@@ -78,148 +79,154 @@ class _AudioScreenState extends State<AudioScreen> {
       return matchesCategory && matchesSearch;
     }).toList();
 
+    final isLight = DesignSystem.isLightMode;
+
     return Scaffold(
-      backgroundColor: DesignSystem.bgDarkest,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Background subtle floating golden particles (GPU-isolated)
-            const Positioned.fill(
-              child: RepaintBoundary(
-                child: FloatingParticles(
-                  numberOfParticles: 14,
-                  particleColor: DesignSystem.goldLight,
+      backgroundColor: Colors.transparent,
+      body: IslamicBackground(
+        child: SafeArea(
+          child: Stack(
+            children: [
+              // Background subtle floating golden particles (GPU-isolated)
+              const Positioned.fill(
+                child: RepaintBoundary(
+                  child: FloatingParticles(
+                    numberOfParticles: 14,
+                    particleColor: DesignSystem.goldLight,
+                  ),
                 ),
               ),
-            ),
 
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1000),
-                child: CustomScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  slivers: [
-                    // Top Luxury Header
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          DesignSystem.spacingL,
-                          DesignSystem.spacingM,
-                          DesignSystem.spacingL,
-                          DesignSystem.spacingS,
-                        ),
-                        child: _buildHeader(context),
-                      ),
-                    ),
-
-                    // Search Bar
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: DesignSystem.spacingL,
-                          vertical: DesignSystem.spacingS,
-                        ),
-                        child: _buildSearchBar(),
-                      ),
-                    ),
-
-                    // Hero Audio Player
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: DesignSystem.spacingL,
-                          vertical: DesignSystem.spacingS,
-                        ),
-                        child: AudioHeroPlayer(
-                          onSurahChangeTap: () => _showSurahSelectorModal(context),
-                          onReciterChangeTap: () => _showSurahSelectorModal(context),
-                        ),
-                      ),
-                    ),
-
-                    // Horizontal Category Filter Pills
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: DesignSystem.spacingM),
-                        child: _buildCategoryPills(),
-                      ),
-                    ),
-
-                    // Section Title: القراء المشهورون
-                    if (_selectedCategory == ReciterCategory.all && _searchQuery.isEmpty) ...[
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1000),
+                  child: CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      // Top Luxury Header
                       SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(
                             DesignSystem.spacingL,
+                            DesignSystem.spacingM,
+                            DesignSystem.spacingL,
                             DesignSystem.spacingS,
+                          ),
+                          child: _buildHeader(context),
+                        ),
+                      ),
+
+                      // Search Bar
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: DesignSystem.spacingL,
+                            vertical: DesignSystem.spacingS,
+                          ),
+                          child: _buildSearchBar(),
+                        ),
+                      ),
+
+                      // Hero Audio Player
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: DesignSystem.spacingL,
+                            vertical: DesignSystem.spacingS,
+                          ),
+                          child: AudioHeroPlayer(
+                            onSurahChangeTap: () => _showSurahSelectorModal(context),
+                            onReciterChangeTap: () => _showSurahSelectorModal(context),
+                          ),
+                        ),
+                      ),
+
+                      // Horizontal Category Filter Pills
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: DesignSystem.spacingM),
+                          child: _buildCategoryPills(),
+                        ),
+                      ),
+
+                      // Section Title: القراء المشهورون
+                      if (_selectedCategory == ReciterCategory.all && _searchQuery.isEmpty) ...[
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                              DesignSystem.spacingL,
+                              DesignSystem.spacingS,
+                              DesignSystem.spacingL,
+                              DesignSystem.spacingS,
+                            ),
+                            child: Row(
+                              children: [
+                                StarGlint(
+                                  color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'القراء المشهورون',
+                                  style: TextStyle(
+                                    color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // Horizontal Cards for Popular Reciters
+                        SliverToBoxAdapter(
+                          child: SizedBox(
+                            height: 170,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
+                              itemCount: popularReciters.length,
+                              itemBuilder: (context, index) {
+                                final reciter = popularReciters[index];
+                                return _buildPopularReciterCard(reciter);
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      // Section Title: جميع القراء والمصاحف
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            DesignSystem.spacingL,
+                            DesignSystem.spacingL,
                             DesignSystem.spacingL,
                             DesignSystem.spacingS,
                           ),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const StarGlint(
-                                color: DesignSystem.goldLight,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'القراء المشهورون',
+                              Text(
+                                'جميع القراء والمصاحف',
                                 style: TextStyle(
-                                  color: DesignSystem.textWhite,
+                                  color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                '${filteredReciters.length} قارئ',
+                                style: TextStyle(
+                                  color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                                  fontSize: 12,
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ),
-
-                      // Horizontal Cards for Popular Reciters
-                      SliverToBoxAdapter(
-                        child: SizedBox(
-                          height: 170,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
-                            itemCount: popularReciters.length,
-                            itemBuilder: (context, index) {
-                              final reciter = popularReciters[index];
-                              return _buildPopularReciterCard(reciter);
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-
-                    // Section Title: جميع القراء والمصاحف
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          DesignSystem.spacingL,
-                          DesignSystem.spacingL,
-                          DesignSystem.spacingL,
-                          DesignSystem.spacingS,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'جميع القراء والمصاحف',
-                              style: TextStyle(
-                                color: DesignSystem.textWhite,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              '${filteredReciters.length} قارئ',
-                              style: const TextStyle(color: DesignSystem.textMuted, fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
 
                     // All Reciters List
                     SliverPadding(
@@ -278,31 +285,34 @@ class _AudioScreenState extends State<AudioScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildHeader(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'المصاحف الصوتية',
               style: TextStyle(
-                color: DesignSystem.textWhite,
+                color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 2),
+            const SizedBox(height: 2),
             Text(
               'استمع للقرآن الكريم بأجمل أصوات العالم الإسلامي',
               style: TextStyle(
-                color: DesignSystem.goldLight,
+                color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
                 fontSize: 12,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -311,6 +321,7 @@ class _AudioScreenState extends State<AudioScreen> {
           children: [
             _buildHeaderCircleButton(
               icon: Icons.cloud_download_outlined,
+              isLight: isLight,
               onTap: () {
                 QuranDownloadProgressSheet.show(context);
               },
@@ -318,11 +329,13 @@ class _AudioScreenState extends State<AudioScreen> {
             const SizedBox(width: 8),
             _buildHeaderCircleButton(
               icon: Icons.format_list_bulleted_rounded,
+              isLight: isLight,
               onTap: () => _showSurahSelectorModal(context),
             ),
             const SizedBox(width: 8),
             _buildHeaderCircleButton(
               icon: Icons.graphic_eq_rounded,
+              isLight: isLight,
               onTap: () {
                 showDialog(
                   context: context,
@@ -336,41 +349,74 @@ class _AudioScreenState extends State<AudioScreen> {
     );
   }
 
-  Widget _buildHeaderCircleButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _buildHeaderCircleButton({
+    required IconData icon,
+    required bool isLight,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: DesignSystem.bgCard.withValues(alpha: 0.8),
+          color: isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgCard.withValues(alpha: 0.8),
           shape: BoxShape.circle,
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.1),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.1) : Colors.black26,
+              blurRadius: 6,
+            ),
+          ],
         ),
-        child: Icon(icon, color: DesignSystem.goldLight, size: 20),
+        child: Icon(
+          icon,
+          color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+          size: 20,
+        ),
       ),
     );
   }
 
   Widget _buildSearchBar() {
+    final isLight = DesignSystem.isLightMode;
+
     return Container(
       decoration: BoxDecoration(
-        color: DesignSystem.bgCard.withValues(alpha: 0.7),
+        color: isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgCard.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(DesignSystem.radiusLarge),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(
+          color: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.08),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isLight ? const Color(0xFF8C7355).withValues(alpha: 0.08) : Colors.black12,
+            blurRadius: 8,
+          ),
+        ],
       ),
       child: TextField(
-        style: const TextStyle(color: DesignSystem.textWhite),
+        style: TextStyle(color: isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite),
         onChanged: (val) => setState(() => _searchQuery = val.trim()),
         decoration: InputDecoration(
           hintText: 'ابحث عن اسم القارئ، الدولة، أو الرواية...',
-          hintStyle: const TextStyle(color: DesignSystem.textMuted, fontSize: 13),
-          prefixIcon: const Icon(Icons.search_rounded, color: DesignSystem.goldLight),
+          hintStyle: TextStyle(
+            color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+            fontSize: 13,
+          ),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+          ),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear_rounded, color: DesignSystem.textMuted),
+                  icon: Icon(
+                    Icons.clear_rounded,
+                    color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                  ),
                   onPressed: () => setState(() => _searchQuery = ''),
                 )
               : null,
@@ -382,6 +428,7 @@ class _AudioScreenState extends State<AudioScreen> {
   }
 
   Widget _buildCategoryPills() {
+    final isLight = DesignSystem.isLightMode;
     final categories = [
       {'title': 'كل القراء', 'cat': ReciterCategory.all},
       {'title': 'القراء المشهورون', 'cat': ReciterCategory.popular},
@@ -410,19 +457,36 @@ class _AudioScreenState extends State<AudioScreen> {
                 duration: const Duration(milliseconds: 250),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  gradient: isSelected ? DesignSystem.goldGradient : null,
-                  color: isSelected ? null : DesignSystem.bgCard.withValues(alpha: 0.7),
+                  gradient: isSelected
+                      ? (isLight
+                          ? const LinearGradient(colors: [Color(0xFFFFDF7D), Color(0xFFE5A83B)])
+                          : DesignSystem.goldGradient)
+                      : null,
+                  color: isSelected
+                      ? null
+                      : (isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgCard.withValues(alpha: 0.7)),
                   borderRadius: BorderRadius.circular(DesignSystem.radiusPill),
                   border: Border.all(
-                    color: isSelected ? DesignSystem.gold : Colors.white.withValues(alpha: 0.1),
+                    color: isSelected
+                        ? (isLight ? const Color(0xFFB8860B) : DesignSystem.gold)
+                        : (isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.1)),
                   ),
-                  boxShadow: isSelected ? DesignSystem.goldGlow : null,
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.35 : 0.4),
+                            blurRadius: 10,
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Center(
                   child: Text(
                     item['title'] as String,
                     style: TextStyle(
-                      color: isSelected ? DesignSystem.bgDarkest : DesignSystem.textWhite,
+                      color: isSelected
+                          ? const Color(0xFF1A1002)
+                          : (isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite),
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       fontSize: 12,
                     ),
@@ -437,6 +501,7 @@ class _AudioScreenState extends State<AudioScreen> {
   }
 
   Widget _buildPopularReciterCard(ReciterProfile reciter) {
+    final isLight = DesignSystem.isLightMode;
     final isCurrent = _audioService.currentReciter.id == reciter.id;
 
     return Container(
@@ -450,58 +515,85 @@ class _AudioScreenState extends State<AudioScreen> {
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: DesignSystem.bgCard.withValues(alpha: 0.8),
+            color: isLight ? const Color(0xFFFFFDF8) : DesignSystem.bgCard.withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isCurrent ? DesignSystem.gold : Colors.white.withValues(alpha: 0.08),
+              color: isCurrent
+                  ? (isLight ? const Color(0xFF854D0E) : DesignSystem.gold)
+                  : (isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.08)),
               width: isCurrent ? 1.5 : 1.0,
             ),
-            boxShadow: isCurrent
-                ? [BoxShadow(color: DesignSystem.gold.withValues(alpha: 0.15), blurRadius: 14)]
-                : null,
-          ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 58,
-              height: 58,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: isCurrent ? DesignSystem.gold : Colors.white.withValues(alpha: 0.2), width: 2),
-                boxShadow: isCurrent ? DesignSystem.goldGlow : null,
+            boxShadow: [
+              BoxShadow(
+                color: isLight
+                    ? const Color(0xFF8C7355).withValues(alpha: 0.08)
+                    : (isCurrent ? DesignSystem.gold.withValues(alpha: 0.15) : Colors.black26),
+                blurRadius: isCurrent ? 14 : 8,
               ),
-              child: ClipOval(
-                child: Image.network(
-                  reciter.photoUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Icon(Icons.person, color: DesignSystem.goldLight),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 58,
+                height: 58,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isCurrent
+                        ? (isLight ? const Color(0xFF854D0E) : DesignSystem.gold)
+                        : (isLight ? const Color(0xFFC89B3C) : Colors.white.withValues(alpha: 0.2)),
+                    width: 2,
+                  ),
+                  boxShadow: isCurrent ? DesignSystem.goldGlow : null,
+                ),
+                child: ClipOval(
+                  child: reciter.photoUrl.startsWith('assets/')
+                      ? Image.asset(
+                          reciter.photoUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.person,
+                            color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                          ),
+                        )
+                      : Image.network(
+                          reciter.photoUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.person,
+                            color: isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight,
+                          ),
+                        ),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              reciter.nameArabic,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: isCurrent ? DesignSystem.goldLight : DesignSystem.textWhite,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
+              const SizedBox(height: 8),
+              Text(
+                reciter.nameArabic,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: isLight ? const Color(0xFF1C1917) : (isCurrent ? DesignSystem.goldLight : DesignSystem.textWhite),
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              reciter.country,
-              style: const TextStyle(color: DesignSystem.textMuted, fontSize: 10),
-            ),
-          ],
+              const SizedBox(height: 2),
+              Text(
+                reciter.country,
+                style: TextStyle(
+                  color: isLight ? const Color(0xFF78716C) : DesignSystem.textMuted,
+                  fontSize: 10,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   void _showSurahSelectorModal(BuildContext context) {
     showModalBottomSheet(

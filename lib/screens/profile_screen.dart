@@ -4,6 +4,7 @@ import '../models/prayer_models.dart';
 import '../services/quran_storage_service.dart';
 import '../utils/design_system.dart';
 import '../widgets/interactive_tasbih_card.dart';
+import '../widgets/islamic_background.dart';
 import '../widgets/visual_effects/star_glint.dart';
 import '../widgets/visual_effects/shimmer_sweep.dart';
 import '../widgets/visual_effects/pulsing_halo.dart';
@@ -168,13 +169,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isLight = DesignSystem.isLightMode;
-
     return Scaffold(
-      backgroundColor: isLight ? const Color(0xFFF8F6F0) : const Color(0xFF07090E),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
+      backgroundColor: Colors.transparent,
+      body: IslamicBackground(
+        child: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1300),
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -277,12 +277,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   // ==================== 1. TOP BAR ====================
   Widget _buildTopBar(BuildContext context) {
-    final isLight = DesignSystem.isLightMode;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Row(
       children: [
@@ -296,12 +297,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color(0xFFFFD56B).withValues(alpha: 0.6),
+                  color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B).withValues(alpha: 0.6),
                   width: 1.2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFFD56B).withValues(alpha: 0.2),
+                    color: isLight
+                        ? const Color(0xFFC89B3C).withValues(alpha: 0.15)
+                        : const Color(0xFFFFD56B).withValues(alpha: 0.2),
                     blurRadius: 8,
                   ),
                 ],
@@ -310,9 +313,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Image.asset(
                   isLight ? 'assets/out logo app/lightapp.png' : 'assets/out logo app/darkapp.png',
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Icon(
+                  errorBuilder: (_, __, ___) => Icon(
                     Icons.mosque,
-                    color: Color(0xFFFFD56B),
+                    color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                     size: 20,
                   ),
                 ),
@@ -327,16 +330,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   'Rafeeq',
                   style: TextStyle(
                     fontFamily: 'Cairo',
-                    color: isLight ? const Color(0xFF102A43) : Colors.white,
+                    color: isLight ? const Color(0xFF1C1917) : Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const Text(
+                Text(
                   'رفيقك في رحلتك الإيمانية',
                   style: TextStyle(
                     fontFamily: 'Cairo',
-                    color: Color(0xFFC89B3C),
+                    color: isLight ? const Color(0xFF854D0E) : const Color(0xFFC89B3C),
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
@@ -354,16 +357,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             height: 42,
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
-              color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C131D),
+              color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0C131D),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFF1E293B),
+                color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFF1E293B),
                 width: 1.1,
               ),
               boxShadow: [
                 BoxShadow(
                   color: isLight
-                      ? const Color(0xFF102A43).withValues(alpha: 0.04)
+                      ? const Color(0xFFC89B3C).withValues(alpha: 0.06)
                       : Colors.black.withValues(alpha: 0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
@@ -375,7 +378,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Icon(
                   Icons.search_rounded,
                   size: 19,
-                  color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                  color: isLight ? const Color(0xFF854D0E) : const Color(0xFF94A3B8),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -384,14 +387,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 12.5,
-                      color: isLight ? const Color(0xFF102A43) : Colors.white,
+                      color: isLight ? const Color(0xFF1C1917) : Colors.white,
                     ),
                     decoration: InputDecoration(
                       hintText: 'ابحث في القرآن، الأذكار، المحتوى...',
                       hintStyle: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 12,
-                        color: isLight ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        color: isLight ? const Color(0xFF78716C) : const Color(0xFF64748B),
                       ),
                       border: InputBorder.none,
                       isDense: true,
@@ -423,15 +426,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C131D),
+                  color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0C131D),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFF1E293B),
+                    color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFF1E293B),
                   ),
                 ),
                 child: Icon(
                   isLight ? Icons.wb_sunny_rounded : Icons.nightlight_round,
-                  color: const Color(0xFFFFD56B),
+                  color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                   size: 18,
                 ),
               ),
@@ -455,15 +458,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
-                      color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C131D),
+                      color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0C131D),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isLight ? const Color(0xFFDCE3EC) : const Color(0xFF1E293B),
+                        color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFF1E293B),
                       ),
                     ),
                     child: Icon(
                       Icons.notifications_none_rounded,
-                      color: isLight ? const Color(0xFF102A43) : Colors.white,
+                      color: isLight ? const Color(0xFF854D0E) : Colors.white,
                       size: 19,
                     ),
                   ),
@@ -473,15 +476,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Container(
                       width: 16,
                       height: 16,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFFFD56B),
+                      decoration: BoxDecoration(
+                        color: isLight ? const Color(0xFFD97706) : const Color(0xFFFFD56B),
                         shape: BoxShape.circle,
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
                           '1',
                           style: TextStyle(
-                            color: Color(0xFF07090E),
+                            color: isLight ? Colors.white : const Color(0xFF07090E),
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -502,15 +505,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C131D),
+                  color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0C131D),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: const Color(0xFFFFD56B).withValues(alpha: 0.45),
+                    color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.45),
                     width: 1.1,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFFD56B).withValues(alpha: 0.12),
+                      color: isLight
+                          ? const Color(0xFFC89B3C).withValues(alpha: 0.08)
+                          : const Color(0xFFFFD56B).withValues(alpha: 0.12),
                       blurRadius: 8,
                     ),
                   ],
@@ -526,7 +531,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           'مرحباً بك في',
                           style: TextStyle(
                             fontFamily: 'Cairo',
-                            color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                            color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
                             fontSize: 9.5,
                           ),
                         ),
@@ -534,7 +539,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           'رفيق',
                           style: TextStyle(
                             fontFamily: 'Cairo',
-                            color: isLight ? const Color(0xFF102A43) : Colors.white,
+                            color: isLight ? const Color(0xFF1C1917) : Colors.white,
                             fontSize: 11.5,
                             fontWeight: FontWeight.bold,
                           ),
@@ -548,7 +553,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: const Color(0xFFFFD56B),
+                          color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
                           width: 1.2,
                         ),
                       ),
@@ -556,9 +561,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Image.asset(
                           'assets/profile_hero.png',
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(
+                          errorBuilder: (_, __, ___) => Icon(
                             Icons.person,
-                            color: Color(0xFFFFD56B),
+                            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                             size: 18,
                           ),
                         ),
@@ -576,24 +581,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // ==================== 2. TOP HERO GREETING CARD ====================
   Widget _buildHeroGreetingCard(BuildContext context) {
-    final isLight = DesignSystem.isLightMode;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return ShimmerSweep(
       duration: const Duration(milliseconds: 3200),
       pauseDuration: const Duration(milliseconds: 3000),
-      shimmerColor: const Color(0xFFFFD56B),
+      shimmerColor: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
       child: Container(
         height: 205,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.35 : 0.45),
+            color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.45),
             width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
               color: isLight
-                  ? const Color(0xFF102A43).withValues(alpha: 0.08)
+                  ? const Color(0xFFC89B3C).withValues(alpha: 0.1)
                   : Colors.black.withValues(alpha: 0.6),
               blurRadius: 20,
               offset: const Offset(0, 6),
@@ -604,34 +609,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
           borderRadius: BorderRadius.circular(24),
           child: Stack(
             children: [
-              // Sunset Mosque Panorama Artwork
+              // Mosque Panorama Artwork
               Positioned.fill(
                 child: Image.asset(
-                  'assets/home_hero_mosque.jpg',
+                  isLight ? 'assets/daylight_mosque_bg.jpg' : 'assets/home_hero_mosque.jpg',
                   fit: BoxFit.cover,
                   alignment: Alignment.center,
                   errorBuilder: (_, __, ___) => Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF1B2E4B), Color(0xFF0A121D)],
+                        colors: isLight
+                            ? [const Color(0xFFFFFDF8), const Color(0xFFFAF5EB)]
+                            : [const Color(0xFF1B2E4B), const Color(0xFF0A121D)],
                       ),
                     ),
                   ),
                 ),
               ),
 
-              // Deep Dark Vignette Overlay for Crisp Text Contrast
+              // Deep Overlay for Crisp Text Contrast
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.centerRight,
                       end: Alignment.centerLeft,
-                      colors: [
-                        const Color(0xFF07090E).withValues(alpha: 0.94),
-                        const Color(0xFF07090E).withValues(alpha: 0.70),
-                        const Color(0xFF07090E).withValues(alpha: 0.25),
-                      ],
+                      colors: isLight
+                          ? [
+                              const Color(0xFFFFFDF8).withValues(alpha: 0.95),
+                              const Color(0xFFFFFDF8).withValues(alpha: 0.75),
+                              const Color(0xFFFFFDF8).withValues(alpha: 0.20),
+                            ]
+                          : [
+                              const Color(0xFF07090E).withValues(alpha: 0.94),
+                              const Color(0xFF07090E).withValues(alpha: 0.70),
+                              const Color(0xFF07090E).withValues(alpha: 0.25),
+                            ],
                     ),
                   ),
                 ),
@@ -641,17 +654,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Positioned.fill(
                 child: CustomPaint(
                   painter: IslamicArchBorderPainter(
-                    primaryColor: const Color(0xFFFFD56B),
-                    secondaryColor: const Color(0xFFC89B3C),
+                    primaryColor: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
+                    secondaryColor: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFC89B3C),
                   ),
                 ),
               ),
 
               // Sparkle Glint at corner
-              const Positioned(
+              Positioned(
                 top: 8,
                 left: 14,
-                child: StarGlint(size: 18),
+                child: StarGlint(
+                  size: 18,
+                  color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
+                ),
               ),
 
               // Text Content
@@ -664,30 +680,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'أهلاً ومرحباً بك',
                           style: TextStyle(
                             fontFamily: 'Cairo',
-                            color: Color(0xFFFFD56B),
+                            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 2),
-                        const Text(
+                        Text(
                           'مرحباً بك في رفيق',
                           style: TextStyle(
                             fontFamily: 'Cairo',
-                            color: Colors.white,
+                            color: isLight ? const Color(0xFF1C1917) : Colors.white,
                             fontSize: 26,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 0.4,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black,
-                                blurRadius: 10,
-                              ),
-                            ],
+                            shadows: isLight
+                                ? null
+                                : const [
+                                    Shadow(
+                                      color: Colors.black,
+                                      blurRadius: 10,
+                                    ),
+                                  ],
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -695,7 +713,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           'بارك الله في يومك، واجعل لك فيه نصيباً من الخير والطاعة',
                           style: TextStyle(
                             fontFamily: 'Cairo',
-                            color: Colors.white.withValues(alpha: 0.88),
+                            color: isLight ? const Color(0xFF78716C) : Colors.white.withValues(alpha: 0.88),
                             fontSize: 12,
                             height: 1.4,
                           ),
@@ -707,26 +725,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0C131D).withValues(alpha: 0.85),
+                        color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF0C131D).withValues(alpha: 0.85),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: const Color(0xFFFFD56B).withValues(alpha: 0.35),
+                          color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.35),
                         ),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             Icons.calendar_month_rounded,
                             size: 14,
-                            color: Color(0xFFFFD56B),
+                            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
                             'الاثنين 27 سبتمبر 2026 • 4 ربيع الآخر 1448 هـ',
                             style: TextStyle(
                               fontFamily: 'Cairo',
-                              color: Color(0xFFFFD56B),
+                              color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
@@ -746,22 +764,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // ==================== 2.5 AYAH OF THE DAY CARD ====================
   Widget _buildAyahCard(BuildContext context) {
-    final isLight = DesignSystem.isLightMode;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Container(
       height: 205,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C131D),
+        color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0C131D),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.35 : 0.4),
+          color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.4),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
             color: isLight
-                ? const Color(0xFF102A43).withValues(alpha: 0.06)
+                ? const Color(0xFFC89B3C).withValues(alpha: 0.08)
                 : Colors.black.withValues(alpha: 0.6),
             blurRadius: 20,
             offset: const Offset(0, 6),
@@ -776,33 +794,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const StarGlint(size: 14),
+              StarGlint(
+                size: 14,
+                color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
+              ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFD56B).withValues(alpha: 0.15),
+                  color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFFFFD56B).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: const Color(0xFFFFD56B).withValues(alpha: 0.4),
+                    color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.4),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'آية اليوم',
                       style: TextStyle(
                         fontFamily: 'Cairo',
-                        color: Color(0xFFFFD56B),
+                        color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Icon(
                       Icons.menu_book_rounded,
                       size: 13,
-                      color: Color(0xFFFFD56B),
+                      color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                     ),
                   ],
                 ),
@@ -819,7 +840,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               fontSize: 20,
               fontWeight: FontWeight.bold,
               height: 1.5,
-              color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
+              color: isLight ? const Color(0xFF1C1917) : const Color(0xFFFFD56B),
               shadows: [
                 if (!isLight)
                   Shadow(
@@ -852,22 +873,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF151D2A),
+                    color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF151D2A),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: const Color(0xFFFFD56B).withValues(alpha: 0.4),
+                      color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.4),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.chevron_left_rounded, size: 14, color: Color(0xFFFFD56B)),
-                      SizedBox(width: 2),
+                      Icon(
+                        Icons.chevron_left_rounded,
+                        size: 14,
+                        color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
+                      ),
+                      const SizedBox(width: 2),
                       Text(
                         'تفسير الآية',
                         style: TextStyle(
                           fontFamily: 'Cairo',
-                          color: Color(0xFFFFD56B),
+                          color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                           fontSize: 10.5,
                           fontWeight: FontWeight.bold,
                         ),
@@ -881,7 +906,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 'سورة الرعد • الآية 28',
                 style: TextStyle(
                   fontFamily: 'Cairo',
-                  color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                  color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                 ),
@@ -895,20 +920,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // ==================== 3. PRAYER TIMES SPOTLIGHT & COUNTDOWN ====================
   Widget _buildPrayerTimesSpotlightCard(BuildContext context) {
-    final isLight = DesignSystem.isLightMode;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Container(
       decoration: BoxDecoration(
-        color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C131D),
+        color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0C131D),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.35 : 0.4),
+          color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.4),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
             color: isLight
-                ? const Color(0xFF102A43).withValues(alpha: 0.06)
+                ? const Color(0xFFC89B3C).withValues(alpha: 0.08)
                 : Colors.black.withValues(alpha: 0.6),
             blurRadius: 20,
             offset: const Offset(0, 6),
@@ -935,19 +960,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF151D2A),
+                    color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF151D2A),
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isLight ? const Color(0xFFE5D4B3) : Colors.transparent,
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.chevron_left_rounded, size: 14, color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8)),
+                      Icon(Icons.chevron_left_rounded, size: 14, color: isLight ? const Color(0xFF854D0E) : const Color(0xFF94A3B8)),
                       const SizedBox(width: 2),
                       Text(
                         'عرض اليوم كامل',
                         style: TextStyle(
                           fontFamily: 'Cairo',
-                          color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                          color: isLight ? const Color(0xFF854D0E) : const Color(0xFF94A3B8),
                           fontSize: 10.5,
                           fontWeight: FontWeight.w600,
                         ),
@@ -965,27 +993,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         'مواقيت الصلاة',
                         style: TextStyle(
                           fontFamily: 'Cairo',
-                          color: isLight ? const Color(0xFF102A43) : Colors.white,
+                          color: isLight ? const Color(0xFF1C1917) : Colors.white,
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const Row(
+                      Row(
                         children: [
                           Text(
                             'مكة المكرمة',
                             style: TextStyle(
                               fontFamily: 'Cairo',
-                              color: Color(0xFFFFD56B),
+                              color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          SizedBox(width: 4),
+                          const SizedBox(width: 4),
                           Icon(
                             Icons.location_on_rounded,
                             size: 13,
-                            color: Color(0xFFFFD56B),
+                            color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                           ),
                         ],
                       ),
@@ -1025,7 +1053,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             height: 3,
             margin: const EdgeInsets.symmetric(horizontal: 8),
             decoration: BoxDecoration(
-              color: isLight ? const Color(0xFFCBD5E1) : const Color(0xFF1E293B),
+              color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(3),
             ),
             child: Stack(
@@ -1037,11 +1065,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: 240,
                     height: 3,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFD56B),
+                      color: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
                       borderRadius: BorderRadius.circular(3),
-                      boxShadow: const [
+                      boxShadow: [
                         BoxShadow(
-                          color: Color(0xFFFFD56B),
+                          color: (isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B)).withValues(alpha: 0.5),
                           blurRadius: 6,
                         ),
                       ],
@@ -1062,12 +1090,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: isLight
-                    ? [const Color(0xFFF1F5F9), const Color(0xFFE2E8F0)]
+                    ? [const Color(0xFFFBF4E4), const Color(0xFFF5EBD7)]
                     : [const Color(0xFF131C28), const Color(0xFF090E16)],
               ),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isLight ? const Color(0xFFDCE3EC) : Colors.white10,
+                color: isLight ? const Color(0xFFE5D4B3) : Colors.white10,
               ),
             ),
             child: Row(
@@ -1077,9 +1105,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Row(
                   children: [
                     _buildTimeBox(_secondsStr, 'ثانية', isLight),
-                    _buildTimeColon(),
+                    _buildTimeColon(isLight),
                     _buildTimeBox(_minutesStr, 'دقيقة', isLight),
-                    _buildTimeColon(),
+                    _buildTimeColon(isLight),
                     _buildTimeBox(_hoursStr, 'ساعة', isLight),
                   ],
                 ),
@@ -1092,7 +1120,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       'الوقت المتبقي على ${_nextPrayer?.nameArabic ?? "العصر"}',
                       style: TextStyle(
                         fontFamily: 'Cairo',
-                        color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                        color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
                         fontSize: 11.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1115,28 +1143,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (isActive) {
       return PulsingHalo(
         isActive: true,
-        haloColor: const Color(0xFFFFD56B),
+        haloColor: isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B),
         borderRadius: 14,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF263852),
-                Color(0xFF132032),
-                Color(0xFF0B1420),
-              ],
+              colors: isLight
+                  ? [
+                      const Color(0xFFFFDF7D),
+                      const Color(0xFFE5A83B),
+                      const Color(0xFFC89B3C),
+                    ]
+                  : [
+                      const Color(0xFF263852),
+                      const Color(0xFF132032),
+                      const Color(0xFF0B1420),
+                    ],
             ),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: const Color(0xFFFFD56B),
+              color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
               width: 1.5,
             ),
-            boxShadow: const [
+            boxShadow: [
               BoxShadow(
-                color: Color(0xFFFFD56B),
+                color: (isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B)).withValues(alpha: 0.4),
                 blurRadius: 10,
                 spreadRadius: 1,
               ),
@@ -1145,9 +1179,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.mosque_rounded,
-                color: Color(0xFFFFD56B),
+                color: isLight ? const Color(0xFF1C1917) : const Color(0xFFFFD56B),
                 size: 16,
               ),
               const SizedBox(height: 4),
@@ -1157,9 +1191,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Text(
                   prayer.nameArabic,
                   softWrap: false,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Cairo',
-                    color: Color(0xFFFFD56B),
+                    color: isLight ? const Color(0xFF1C1917) : const Color(0xFFFFD56B),
                     fontSize: 11.5,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1172,9 +1206,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Text(
                   prayer.formattedTimeArabic,
                   softWrap: false,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Cairo',
-                    color: Colors.white,
+                    color: isLight ? const Color(0xFF1C1917) : Colors.white,
                     fontSize: 9.5,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1184,14 +1218,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFD56B).withValues(alpha: 0.2),
+                  color: isLight ? Colors.white.withValues(alpha: 0.5) : const Color(0xFFFFD56B).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: const Text(
+                child: Text(
                   'الآن',
                   style: TextStyle(
                     fontFamily: 'Cairo',
-                    color: Color(0xFFFFD56B),
+                    color: isLight ? const Color(0xFF1C1917) : const Color(0xFFFFD56B),
                     fontSize: 8.5,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1206,10 +1240,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
       decoration: BoxDecoration(
-        color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF121B27),
+        color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF121B27),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isLight ? const Color(0xFFE2E8F0) : Colors.white.withValues(alpha: 0.06),
+          color: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.06),
         ),
       ),
       child: Column(
@@ -1217,7 +1251,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Icon(
             prayer.icon,
-            color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+            color: isLight ? const Color(0xFF854D0E) : const Color(0xFF8E9BAE),
             size: 16,
           ),
           const SizedBox(height: 4),
@@ -1229,7 +1263,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               softWrap: false,
               style: TextStyle(
                 fontFamily: 'Cairo',
-                color: isLight ? const Color(0xFF102A43) : Colors.white70,
+                color: isLight ? const Color(0xFF1C1917) : Colors.white70,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),
@@ -1244,7 +1278,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               softWrap: false,
               style: TextStyle(
                 fontFamily: 'Cairo',
-                color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                color: isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE),
                 fontSize: 9.5,
               ),
             ),
@@ -1262,7 +1296,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           value,
           style: TextStyle(
             fontFamily: 'Cairo',
-            color: isLight ? const Color(0xFF102A43) : Colors.white,
+            color: isLight ? const Color(0xFF1C1917) : Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.w900,
           ),
@@ -1271,7 +1305,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           unit,
           style: TextStyle(
             fontFamily: 'Cairo',
-            color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+            color: isLight ? const Color(0xFF78716C) : const Color(0xFF8E9BAE),
             fontSize: 9.5,
           ),
         ),
@@ -1279,13 +1313,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildTimeColon() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 6),
+  Widget _buildTimeColon(bool isLight) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
       child: Text(
         ':',
         style: TextStyle(
-          color: Color(0xFFFFD56B),
+          color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
@@ -1295,7 +1329,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // ==================== 4. QUICK TOOLS SECTION ("أدوات سريعة") ====================
   Widget _buildQuickToolsSection(BuildContext context) {
-    final isLight = DesignSystem.isLightMode;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1306,13 +1340,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               'أدوات سريعة',
               style: TextStyle(
                 fontFamily: 'Cairo',
-                color: isLight ? const Color(0xFF102A43) : Colors.white,
+                color: isLight ? const Color(0xFF1C1917) : Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(width: 6),
-            const Icon(Icons.flash_on_rounded, size: 16, color: Color(0xFFFFD56B)),
+            Icon(Icons.flash_on_rounded, size: 16, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)),
           ],
         ),
 
@@ -1387,15 +1421,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
-          color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C131D),
+          color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0C131D),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isLight ? const Color(0xFFDCE3EC) : Colors.white.withValues(alpha: 0.08),
+            color: isLight ? const Color(0xFFE5D4B3) : Colors.white.withValues(alpha: 0.08),
           ),
           boxShadow: [
             BoxShadow(
               color: isLight
-                  ? const Color(0xFF102A43).withValues(alpha: 0.04)
+                  ? const Color(0xFFC89B3C).withValues(alpha: 0.05)
                   : Colors.black.withValues(alpha: 0.4),
               blurRadius: 10,
               offset: const Offset(0, 2),
@@ -1407,12 +1441,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFD56B).withValues(alpha: 0.14),
+                color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFFFFD56B).withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 tool.icon,
-                color: const Color(0xFFFFD56B),
+                color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                 size: 20,
               ),
             ),
@@ -1428,7 +1462,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontFamily: 'Cairo',
-                      color: isLight ? const Color(0xFF102A43) : Colors.white,
+                      color: isLight ? const Color(0xFF1C1917) : Colors.white,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1439,7 +1473,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontFamily: 'Cairo',
-                      color: isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                      color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8),
                       fontSize: 9.5,
                     ),
                   ),
@@ -1449,7 +1483,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Icon(
               Icons.chevron_left_rounded,
               size: 16,
-              color: isLight ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+              color: isLight ? const Color(0xFF854D0E) : const Color(0xFF64748B),
             ),
           ],
         ),
@@ -1458,44 +1492,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showEditProfileDialog(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF0C131D),
+        backgroundColor: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0C131D),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Color(0xFFFFD56B), width: 1.2),
+          side: BorderSide(color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B), width: 1.2),
         ),
-        title: const Text(
+        title: Text(
           'الملف الشخصي',
           textAlign: TextAlign.center,
-          style: TextStyle(fontFamily: 'Cairo', color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(fontFamily: 'Cairo', color: isLight ? const Color(0xFF1C1917) : Colors.white, fontWeight: FontWeight.bold),
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             CircleAvatar(
               radius: 36,
-              backgroundColor: Color(0xFF151D2A),
-              child: Icon(Icons.person, size: 40, color: Color(0xFFFFD56B)),
+              backgroundColor: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF151D2A),
+              child: Icon(Icons.person, size: 40, color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
               'فارس القرآن',
-              style: TextStyle(fontFamily: 'Cairo', color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontFamily: 'Cairo', color: isLight ? const Color(0xFF1C1917) : Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               'رفيقك الإيماني للقرآن والأذكار ومواقيت الصلاة',
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Cairo', color: Color(0xFF94A3B8), fontSize: 12),
+              style: TextStyle(fontFamily: 'Cairo', color: isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8), fontSize: 12),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('إغلاق', style: TextStyle(color: Color(0xFFFFD56B))),
+            child: Text('إغلاق', style: TextStyle(color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B))),
           ),
         ],
       ),

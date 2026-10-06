@@ -67,21 +67,21 @@ class _InteractiveTasbihCardState extends State<InteractiveTasbihCard>
 
   @override
   Widget build(BuildContext context) {
-    final isLight = DesignSystem.isLightMode;
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final currentDhikr = _adhkar[_selectedDhikrIndex];
 
     return Container(
       decoration: BoxDecoration(
-        color: isLight ? const Color(0xFFFFFFFF) : const Color(0xFF0C131D),
+        color: isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0C131D),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xFFFFD56B).withValues(alpha: isLight ? 0.35 : 0.4),
+          color: isLight ? const Color(0xFFE5D4B3) : const Color(0xFFFFD56B).withValues(alpha: 0.4),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
             color: isLight
-                ? const Color(0xFF102A43).withValues(alpha: 0.06)
+                ? const Color(0xFFC89B3C).withValues(alpha: 0.08)
                 : Colors.black.withValues(alpha: 0.6),
             blurRadius: 20,
             offset: const Offset(0, 6),
@@ -106,7 +106,7 @@ class _InteractiveTasbihCardState extends State<InteractiveTasbihCard>
                   Icon(
                     Icons.settings_outlined,
                     size: 18,
-                    color: isLight ? const Color(0xFF64748B) : const Color(0xFF8E9BAE),
+                    color: isLight ? const Color(0xFF854D0E) : const Color(0xFF8E9BAE),
                   ),
                 ],
               ),
@@ -116,7 +116,7 @@ class _InteractiveTasbihCardState extends State<InteractiveTasbihCard>
                     'السبحة الإلكترونية',
                     style: TextStyle(
                       fontFamily: 'Cairo',
-                      color: isLight ? const Color(0xFF102A43) : Colors.white,
+                      color: isLight ? const Color(0xFF1C1917) : Colors.white,
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
@@ -125,12 +125,15 @@ class _InteractiveTasbihCardState extends State<InteractiveTasbihCard>
                   Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFD56B).withValues(alpha: 0.15),
+                      color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFFFFD56B).withValues(alpha: 0.15),
                       shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isLight ? const Color(0xFFE5D4B3) : Colors.transparent,
+                      ),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.all_inclusive_rounded,
-                      color: Color(0xFFFFD56B),
+                      color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                       size: 15,
                     ),
                   ),
@@ -174,7 +177,7 @@ class _InteractiveTasbihCardState extends State<InteractiveTasbihCard>
                             '$_counter',
                             style: TextStyle(
                               fontFamily: 'Cairo',
-                              color: isLight ? const Color(0xFF102A43) : const Color(0xFFFFD56B),
+                              color: isLight ? const Color(0xFF1C1917) : const Color(0xFFFFD56B),
                               fontSize: 34,
                               fontWeight: FontWeight.w900,
                               shadows: [
@@ -191,7 +194,7 @@ class _InteractiveTasbihCardState extends State<InteractiveTasbihCard>
                             currentDhikr,
                             style: TextStyle(
                               fontFamily: 'Amiri',
-                              color: isLight ? const Color(0xFF64748B) : Colors.white70,
+                              color: isLight ? const Color(0xFF78716C) : Colors.white70,
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
@@ -217,15 +220,15 @@ class _InteractiveTasbihCardState extends State<InteractiveTasbihCard>
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF151D2A),
+                    color: isLight ? const Color(0xFFFBF4E4) : const Color(0xFF151D2A),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: isLight ? const Color(0xFFDCE3EC) : Colors.white12,
+                      color: isLight ? const Color(0xFFE5D4B3) : Colors.white12,
                     ),
                   ),
                   child: Icon(
                     Icons.refresh_rounded,
-                    color: isLight ? const Color(0xFF64748B) : const Color(0xFFFFD56B),
+                    color: isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B),
                     size: 16,
                   ),
                 ),
@@ -254,23 +257,25 @@ class _InteractiveTasbihCardState extends State<InteractiveTasbihCard>
                             padding: const EdgeInsets.symmetric(vertical: 7),
                             decoration: BoxDecoration(
                               gradient: isSelected
-                                  ? const LinearGradient(
-                                      colors: [Color(0xFFFFE082), Color(0xFFFFD56B), Color(0xFFC89B3C)],
+                                  ? LinearGradient(
+                                      colors: isLight
+                                          ? const [Color(0xFFFFDF7D), Color(0xFFE5A83B), Color(0xFFC89B3C)]
+                                          : const [Color(0xFFFFE082), Color(0xFFFFD56B), Color(0xFFC89B3C)],
                                     )
                                   : null,
                               color: isSelected
                                   ? null
-                                  : (isLight ? const Color(0xFFF8FAFC) : const Color(0xFF131B27)),
+                                  : (isLight ? const Color(0xFFFBF4E4) : const Color(0xFF131B27)),
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFFFFD56B)
-                                    : (isLight ? const Color(0xFFE2E8F0) : Colors.white10),
+                                    ? (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B))
+                                    : (isLight ? const Color(0xFFE5D4B3) : Colors.white10),
                               ),
                               boxShadow: isSelected
                                   ? [
                                       BoxShadow(
-                                        color: const Color(0xFFFFD56B).withValues(alpha: 0.35),
+                                        color: (isLight ? const Color(0xFFC89B3C) : const Color(0xFFFFD56B)).withValues(alpha: 0.35),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -285,8 +290,8 @@ class _InteractiveTasbihCardState extends State<InteractiveTasbihCard>
                               style: TextStyle(
                                 fontFamily: 'Cairo',
                                 color: isSelected
-                                    ? const Color(0xFF07090E)
-                                    : (isLight ? const Color(0xFF475569) : const Color(0xFF94A3B8)),
+                                    ? (isLight ? const Color(0xFF1C1917) : const Color(0xFF07090E))
+                                    : (isLight ? const Color(0xFF78716C) : const Color(0xFF94A3B8)),
                                 fontSize: 10.5,
                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                               ),

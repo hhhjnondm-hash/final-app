@@ -36,18 +36,25 @@ class _PrayerAlertSheetState extends State<PrayerAlertSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = DesignSystem.isLightMode;
     final isPlaying = _athanService.isPlayingAthan;
     final soundName = _athanService.getSoundDisplayName(_athanService.settings.sound);
+
+    final sheetBg = isLight ? const Color(0xFFFFFDF8) : const Color(0xFF0F1621);
+    final cardBorder = isLight ? const Color(0xFFE5D4B3) : DesignSystem.gold.withValues(alpha: 0.4);
+    final textTitle = isLight ? const Color(0xFF1C1917) : DesignSystem.textWhite;
+    final goldAccent = isLight ? const Color(0xFF854D0E) : DesignSystem.goldLight;
+    final textSub = isLight ? const Color(0xFF78716C) : DesignSystem.textMuted;
 
     return Container(
       padding: const EdgeInsets.all(DesignSystem.spacingL),
       decoration: BoxDecoration(
-        color: DesignSystem.bgDarkest,
+        color: sheetBg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(DesignSystem.radiusLarge)),
-        border: Border.all(color: DesignSystem.gold.withValues(alpha: 0.4)),
+        border: Border.all(color: cardBorder),
         boxShadow: [
           BoxShadow(
-            color: DesignSystem.gold.withValues(alpha: 0.2),
+            color: (isLight ? const Color(0xFF854D0E) : DesignSystem.gold).withValues(alpha: 0.15),
             blurRadius: 30,
             offset: const Offset(0, -4),
           ),
@@ -62,7 +69,7 @@ class _PrayerAlertSheetState extends State<PrayerAlertSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: DesignSystem.textMuted.withValues(alpha: 0.4),
+                color: isLight ? const Color(0xFFD6C7A1) : DesignSystem.textMuted.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -75,22 +82,32 @@ class _PrayerAlertSheetState extends State<PrayerAlertSheet> {
             height: 70,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: DesignSystem.goldGradient,
-              boxShadow: DesignSystem.goldGlow,
+              gradient: LinearGradient(
+                colors: isLight
+                    ? [const Color(0xFF854D0E), const Color(0xFFC89B3C)]
+                    : [const Color(0xFFD4AF37), const Color(0xFFFFD56B)],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: (isLight ? const Color(0xFF854D0E) : const Color(0xFFFFD56B)).withValues(alpha: 0.35),
+                  blurRadius: 16,
+                  spreadRadius: 2,
+                ),
+              ],
             ),
             child: const Icon(
               Icons.mosque_rounded,
-              color: DesignSystem.bgDarkest,
+              color: Colors.white,
               size: 36,
             ),
           ),
 
           const SizedBox(height: 16),
 
-          const Text(
+          Text(
             'اللَّهُ أَكْبَرُ • اللَّهُ أَكْبَرُ',
             style: TextStyle(
-              color: DesignSystem.goldLight,
+              color: goldAccent,
               fontSize: 22,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
@@ -101,10 +118,10 @@ class _PrayerAlertSheetState extends State<PrayerAlertSheet> {
 
           Text(
             'حان الآن موعد أذان صلاة ${widget.timing.nameArabic}',
-            style: const TextStyle(
-              color: DesignSystem.textWhite,
+            style: TextStyle(
+              color: textTitle,
               fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.bold,
             ),
           ),
 
@@ -113,9 +130,9 @@ class _PrayerAlertSheetState extends State<PrayerAlertSheet> {
           Text(
             soundName,
             style: TextStyle(
-              color: DesignSystem.gold.withValues(alpha: 0.9),
+              color: goldAccent,
               fontSize: 12,
-              fontWeight: FontWeight.w400,
+              fontWeight: FontWeight.w500,
             ),
           ),
 
@@ -127,24 +144,24 @@ class _PrayerAlertSheetState extends State<PrayerAlertSheet> {
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isPlaying ? Colors.redAccent : DesignSystem.gold,
-                    foregroundColor: isPlaying ? Colors.white : DesignSystem.bgDarkest,
+                    backgroundColor: isPlaying ? Colors.redAccent : (isLight ? const Color(0xFF854D0E) : DesignSystem.gold),
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(DesignSystem.radiusMedium),
                     ),
-                    elevation: 6,
+                    elevation: 0,
                   ),
                   onPressed: () {
                     if (isPlaying) {
                       _athanService.stopAthan();
                     } else {
-                      _athanService.playAthan(prayer: widget.timing.type.name);
+                      _athanService.playAthan(prayer: widget.timing.nameEnglish);
                     }
                   },
                   icon: Icon(isPlaying ? Icons.stop_rounded : Icons.volume_up_rounded),
                   label: Text(
-                    isPlaying ? 'إيقاف صوت الأذان' : 'تشغيل صوت الأذان',
+                    isPlaying ? 'إيقاف صوت الأذان' : 'تشغيل صوت الأذان 🔊',
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ),
@@ -155,7 +172,7 @@ class _PrayerAlertSheetState extends State<PrayerAlertSheet> {
                   _athanService.stopAthan();
                   Navigator.pop(context);
                 },
-                child: const Text('إغلاق', style: TextStyle(color: DesignSystem.textMuted)),
+                child: Text('إغلاق', style: TextStyle(color: textSub, fontWeight: FontWeight.bold)),
               ),
             ],
           ),

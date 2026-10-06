@@ -132,15 +132,13 @@ class AthanPlaybackService : Service() {
         }
 
         // Full-screen / tap intent opens MainActivity
-        val openAppIntent = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
+        val openAppIntent = Intent(this, MainActivity::class.java)
+        openAppIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         val openAppPendingIntent = PendingIntent.getActivity(this, 1001, openAppIntent, pendingIntentFlags)
 
         // Stop Athan action intent
-        val stopIntent = Intent(this, AthanPlaybackService::class.java).apply {
-            action = ACTION_STOP_ATHAN
-        }
+        val stopIntent = Intent(this, AthanPlaybackService::class.java)
+        stopIntent.action = ACTION_STOP_ATHAN
         val stopPendingIntent = PendingIntent.getService(this, 1002, stopIntent, pendingIntentFlags)
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
@@ -216,9 +214,8 @@ class AthanPlaybackService : Service() {
                 PendingIntent.FLAG_UPDATE_CURRENT
             }
 
-            val openIntent = Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
+            val openIntent = Intent(this, MainActivity::class.java)
+            openIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             val pendingIntent = PendingIntent.getActivity(this, 1003, openIntent, flags)
 
             val missedNotification = NotificationCompat.Builder(this, MISSED_CHANNEL_ID)

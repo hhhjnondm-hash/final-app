@@ -1,4 +1,4 @@
-package com.islamyat.islamyat_app
+package com.ahmed.islamyat
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -15,7 +15,7 @@ import androidx.core.app.NotificationManagerCompat
 class IslamicReminderReceiver : BroadcastReceiver() {
 
     companion object {
-        const val ACTION_TRIGGER_REMINDER = "com.islamyat.islamyat_app.ACTION_TRIGGER_REMINDER"
+        const val ACTION_TRIGGER_REMINDER = "com.ahmed.islamyat.ACTION_TRIGGER_REMINDER"
         private const val TAG = "IslamicReminderReceiver"
         private const val CHANNEL_ID = "islamic_reminders_v5"
         const val UNIFIED_REMINDER_NOTIFICATION_ID = 7777

@@ -92,7 +92,7 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
                 <action android:name="android.intent.action.TIME_SET"/>
                 <action android:name="android.intent.action.TIMEZONE_CHANGED"/>
-                <action android:name="com.islamyat.islamyat_app.ACTION_SWITCH_ICON"/>
+                <action android:name="com.ahmed.islamyat.ACTION_SWITCH_ICON"/>
             </intent-filter>
         </receiver>
 
@@ -114,7 +114,7 @@
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.islamyat.islamyat_app.ACTION_TRIGGER_ATHAN"/>
+                <action android:name="com.ahmed.islamyat.ACTION_TRIGGER_ATHAN"/>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
                 <action android:name="android.intent.action.TIME_SET"/>
@@ -134,7 +134,7 @@
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.islamyat.islamyat_app.ACTION_TRIGGER_REMINDER"/>
+                <action android:name="com.ahmed.islamyat.ACTION_TRIGGER_REMINDER"/>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
                 <action android:name="android.intent.action.TIME_SET"/>

@@ -1,4 +1,4 @@
-package com.islamyat.islamyat_app
+package com.ahmed.islamyat
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -10,7 +10,7 @@ import android.util.Log
 class AthanAlarmReceiver : BroadcastReceiver() {
 
     companion object {
-        const val ACTION_TRIGGER_ATHAN = "com.islamyat.islamyat_app.ACTION_TRIGGER_ATHAN"
+        const val ACTION_TRIGGER_ATHAN = "com.ahmed.islamyat.ACTION_TRIGGER_ATHAN"
         private const val TAG = "AthanAlarmReceiver"
     }
 

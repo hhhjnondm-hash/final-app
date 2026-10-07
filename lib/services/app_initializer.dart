@@ -238,7 +238,7 @@ class AppInitializer {
   static Future<String?> syncDynamicLauncherIconByTime() async {
     if (kIsWeb) return null;
     try {
-      const platform = MethodChannel('com.islamyat.islamyat_app/dynamic_icon');
+      const platform = MethodChannel('com.ahmed.islamyat/dynamic_icon');
       final currentHour = DateTime.now().hour;
       final mode = await platform.invokeMethod<String>('updateIconByTime', {'hour': currentHour});
       debugPrint('🎨 Launcher Icon synced for hour $currentHour -> Mode: $mode');

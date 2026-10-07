@@ -1,4 +1,4 @@
-package com.islamyat.islamyat_app
+package com.ahmed.islamyat
 
 import android.app.AlarmManager
 import android.app.PendingIntent

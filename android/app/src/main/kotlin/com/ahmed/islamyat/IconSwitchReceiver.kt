@@ -1,4 +1,4 @@
-﻿package com.islamyat.islamyat_app
+package com.ahmed.islamyat
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -13,7 +13,7 @@ import java.util.Calendar
 class IconSwitchReceiver : BroadcastReceiver() {
 
     companion object {
-        const val ACTION_SWITCH_ICON = "com.islamyat.islamyat_app.ACTION_SWITCH_ICON"
+        const val ACTION_SWITCH_ICON = "com.ahmed.islamyat.ACTION_SWITCH_ICON"
         private const val REQUEST_CODE = 9021
 
         fun scheduleNextAlarm(context: Context) {
@@ -69,8 +69,8 @@ class IconSwitchReceiver : BroadcastReceiver() {
             val isDay = hour in 6..17 // 6:00 AM until 5:59 PM
 
             val pm = context.packageManager
-            val dayComponent = ComponentName(context, "com.islamyat.islamyat_app.MainActivityDay")
-            val nightComponent = ComponentName(context, "com.islamyat.islamyat_app.MainActivityNight")
+            val dayComponent = ComponentName(context, "com.ahmed.islamyat.MainActivityDay")
+            val nightComponent = ComponentName(context, "com.ahmed.islamyat.MainActivityNight")
 
             try {
                 if (isDay) {

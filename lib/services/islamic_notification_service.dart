@@ -393,7 +393,7 @@ class IslamicNotificationService extends ChangeNotifier {
     // Register clean list in Native Android AlarmClock system (Single authoritative source on Android)
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android && nativeReminders.isNotEmpty) {
       try {
-        const nativeChannel = MethodChannel('com.islamyat.islamyat_app/reminders_native');
+        const nativeChannel = MethodChannel('com.ahmed.islamyat/reminders_native');
         await nativeChannel.invokeMethod('scheduleRemindersList', {
           'remindersJson': jsonEncode(nativeReminders),
         });

@@ -1,4 +1,4 @@
-package com.islamyat.islamyat_app
+package com.ahmed.islamyat
 
 import android.content.Context
 import android.content.Intent
@@ -9,10 +9,10 @@ import io.flutter.plugin.common.MethodChannel
 import java.util.Calendar
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "com.islamyat.islamyat_app/dynamic_icon"
-    private val SYSTEM_CHANNEL = "com.islamyat.islamyat_app/system_status"
-    private val ATHAN_NATIVE_CHANNEL = "com.islamyat.islamyat_app/athan_native"
-    private val REMINDERS_NATIVE_CHANNEL = "com.islamyat.islamyat_app/reminders_native"
+    private val CHANNEL = "com.ahmed.islamyat/dynamic_icon"
+    private val SYSTEM_CHANNEL = "com.ahmed.islamyat/system_status"
+    private val ATHAN_NATIVE_CHANNEL = "com.ahmed.islamyat/athan_native"
+    private val REMINDERS_NATIVE_CHANNEL = "com.ahmed.islamyat/reminders_native"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

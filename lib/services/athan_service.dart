@@ -144,8 +144,8 @@ class AthanService extends ChangeNotifier {
   final NotificationService _notificationService = NotificationService();
   static GlobalKey<NavigatorState>? globalNavigatorKey;
 
-  static const MethodChannel _systemChannel = MethodChannel('com.islamyat.islamyat_app/system_status');
-  static const MethodChannel _nativeAthanChannel = MethodChannel('com.islamyat.islamyat_app/athan_native');
+  static const MethodChannel _systemChannel = MethodChannel('com.ahmed.islamyat/system_status');
+  static const MethodChannel _nativeAthanChannel = MethodChannel('com.ahmed.islamyat/athan_native');
 
   /// Check if the Android device is currently in Silent or Vibrate mode
   static Future<bool> isDeviceInSilentMode() async {
@@ -562,7 +562,7 @@ class AthanService extends ChangeNotifier {
       }
 
       if (nativePreReminders.isNotEmpty) {
-        const nativeReminderChannel = MethodChannel('com.islamyat.islamyat_app/reminders_native');
+        const nativeReminderChannel = MethodChannel('com.ahmed.islamyat/reminders_native');
         await nativeReminderChannel.invokeMethod('scheduleRemindersList', {
           'remindersJson': jsonEncode(nativePreReminders),
         });

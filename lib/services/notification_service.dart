@@ -23,7 +23,7 @@ class NotificationService extends ChangeNotifier {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  static const MethodChannel _nativeReminderChannel = MethodChannel('com.islamyat.islamyat_app/reminders_native');
+  static const MethodChannel _nativeReminderChannel = MethodChannel('com.ahmed.islamyat/reminders_native');
 
   bool _isInitialized = false;
   bool _notificationsEnabled = true;

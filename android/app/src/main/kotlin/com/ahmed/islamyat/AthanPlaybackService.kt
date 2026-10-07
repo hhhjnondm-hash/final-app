@@ -1,4 +1,4 @@
-package com.islamyat.islamyat_app
+package com.ahmed.islamyat
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -22,7 +22,7 @@ import androidx.core.app.NotificationCompat
 class AthanPlaybackService : Service() {
 
     companion object {
-        const val ACTION_STOP_ATHAN = "com.islamyat.islamyat_app.ACTION_STOP_ATHAN"
+        const val ACTION_STOP_ATHAN = "com.ahmed.islamyat.ACTION_STOP_ATHAN"
         private const val TAG = "AthanPlaybackService"
         private const val CHANNEL_ID = "athan_native_foreground_v6"
         private const val MISSED_CHANNEL_ID = "missed_prayer_channel_v6"
